@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Text, View, TouchableOpacity, Image } from 'react-native'
-import { MessageModel, UserModel } from '../Models'
+import { MessageModel, UserModel } from '../models'
 import { styles } from '../styles'
 import { SIZES, FONTS, COLORS, images } from '../constants'
 import { getUser } from '../utils'
@@ -16,7 +16,7 @@ const MessageCard = ({ item, navigation }: MessageCardProps) => {
     const [userData, setUserData] = useState<UserModel>()
 
     const onPress = () => {
-        navigation.navigate('Chat', { userData: userData, userID: item.userID, chatID: item.id })
+        navigation.navigate('Chat', { userData: userData, chatID: item.id })
     }
 
     useEffect(() => {

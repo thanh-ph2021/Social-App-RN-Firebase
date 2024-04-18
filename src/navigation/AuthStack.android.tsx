@@ -12,7 +12,6 @@ const Stack = createNativeStackNavigator()
 function AuthStack() {
 
     const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null)
-    let routeName
 
     useEffect(() => {
         AsyncStorage.getItem('alreadyLaunched').then(value => {

@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react'
-import { Alert, FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, View } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
+import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Container } from '../styles/FeedStyles'
-import firestore from '@react-native-firebase/firestore'
-import storage from '@react-native-firebase/storage'
-import PostCard from '../components/PostCard'
-import { PostModel } from '../Models'
+
+import PostCard from '../components/Post/PostCard'
+import { PostModel } from '../models'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
-import { SIZES, images } from '../constants'
-import { styles } from '../styles'
-import { deletePost } from '../utils'
+import { COLORS, SIZES, images } from '../constants'
 import { usePost } from '../hooks'
+import PushNotification from 'react-native-push-notification'
+import { showNotification } from '../utils'
+import { UtilIcons } from '../utils/icons'
+import { Divider, TextComponent } from '../components'
+import StoryCard from '../components/StoryCard'
 
 export const LoadScreen = () => {
     return (
-        <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
             <SkeletonPlaceholder >
                 <View>
                     <View style={{ marginBottom: SIZES.padding, marginHorizontal: SIZES.padding }}>
@@ -26,11 +28,11 @@ export const LoadScreen = () => {
                             </View>
                         </View>
                         <View style={{ marginBottom: SIZES.base }}>
-                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 50, height: 20, borderRadius: SIZES.base }} />
-                            <View style={{ width: SIZES.width - 50, height: 20, borderRadius: SIZES.base }} />
+                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
+                            <View style={{ width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
                         </View>
 
-                        <View style={{ width: SIZES.width - 50, height: 200, borderRadius: SIZES.base }} />
+                        <View style={{ width: SIZES.width - 20, height: 200, borderRadius: SIZES.base }} />
                     </View>
                     <View style={{ marginBottom: SIZES.padding, marginHorizontal: SIZES.padding }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SIZES.base }}>
@@ -41,50 +43,171 @@ export const LoadScreen = () => {
                             </View>
                         </View>
                         <View style={{ marginBottom: SIZES.base }}>
-                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 50, height: 20, borderRadius: SIZES.base }} />
-                            <View style={{ width: SIZES.width - 50, height: 20, borderRadius: SIZES.base }} />
+                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
+                            <View style={{ width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
                         </View>
 
-                        <View style={{ width: SIZES.width - 50, height: 200, borderRadius: SIZES.base }} />
+                        <View style={{ width: SIZES.width - 20, height: 200, borderRadius: SIZES.base }} />
                     </View>
                 </View>
             </SkeletonPlaceholder>
-        </View>
+        </ScrollView>
 
     )
 }
 
+export const storyData = [
+    {
+        id: 1,
+        storyImage: images.OnBoarding01,
+        avatarImage: images.angry
+    },
+    {
+        id: 2,
+        storyImage: images.OnBoarding01,
+        avatarImage: images.angry
+    },
+    {
+        id: 3,
+        storyImage: images.OnBoarding01,
+        avatarImage: images.angry
+    },
+    {
+        id: 4,
+        storyImage: images.OnBoarding01,
+        avatarImage: images.angry
+    },
+]
+
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-    const [isDelete, setIsDelete] = useState<boolean>(false)
-    const [data, isLoading, collection, getPost] = usePost()
+    const [isloadNext, setIsLoadNext] = useState<boolean>(false)
+    const { data, isLoading, getPost, getPostNext, deletePost } = usePost()
 
     useEffect(() => {
         getPost()
-        setIsDelete(false)
-    }, [isDelete])
+        // testLocalNotification()
+        // testScheduleNotification()
+    }, [])
+
+    const testLocalNotification = () => {
+        PushNotification.localNotification({
+            channelId: "channel-id",
+            subText: "My Notification Subtitle",
+            title: "My Notification Title",
+            message: "My Notification Message",
+            picture: "https://www.example.tld/picture.jpg",
+            playSound: true,
+            soundName: "default",
+            number: 1
+        });
+    }
+
+    const testScheduleNotification = () => {
+        PushNotification.localNotificationSchedule({
+            channelId: "channel-id",
+            message: "My Notification Message", // (required)
+            date: new Date(Date.now() + 10 * 1000), // in 60 secs
+            allowWhileIdle: false, // (optional) set notification to work while on doze, default: false
+            number: 1,
+            /* Android Only Properties */
+            repeatTime: 1, // (optional) Increment of configured repeatType. Check 'Repeating Notifications' section for more info.
+        });
+    }
+
+    const onEndReachedHandle = async () => {
+        setIsLoadNext(true)
+        if (!isloadNext) {
+            await getPostNext().then(() => {
+                setIsLoadNext(false)
+            })
+        }
+    }
+
+    const onPressHandle = useCallback((userID: string) => {
+        navigation.navigate('Profile', { userID: userID })
+    }, [])
+
+    const onPressImage = useCallback((imageUrl: string) => {
+        if (imageUrl) {
+            navigation.navigate('ImageViewScreen', { imageUrl: imageUrl })
+        }
+    }, [])
+
+    const onDeletePost = useCallback((item: PostModel) => {
+        deletePost(item)
+        showNotification('Post deleted successfully', UtilIcons.success)
+    }, [])
+
+    const renderItem = ({ item }: ListRenderItemInfo<PostModel>) => {
+        return (
+            <PostCard
+                item={item}
+                onDeletePost={onDeletePost}
+                onPressUserName={onPressHandle}
+            />
+        )
+    }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            {isLoading ? <LoadScreen />
-                : (
-                    <Container>
-                        <FlatList
-                            data={data}
-                            renderItem={({ item }: ListRenderItemInfo<PostModel>) => (
-                                <PostCard
-                                    item={item}
-                                    onDelete={(postID) => deletePost(postID, setIsDelete)}
-                                    onPress={() => navigation.navigate('Profile', { userID: item.userID })}
-                                />
-                            )}
-                            keyExtractor={(item) => `${item.id}`}
-                            ListFooterComponent={() => <View style={{ height: 60 }} />}
-                            showsVerticalScrollIndicator={false}
-                            refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
-                        />
-                    </Container>
-                )}
+        <SafeAreaView style={{ backgroundColor: COLORS.darkBlack }}>
+
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SIZES.padding }}>
+                <TextComponent
+                    title={true}
+                    text='Good Morning, Alex.'
+                    styles={{ fontWeight: 'bold' }}
+                />
+
+                <TouchableOpacity style={{ width: 35, height: 35, borderColor: COLORS.lightGrey, borderWidth: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
+                    <UtilIcons.svgMessage />
+                    <View style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        borderWidth: 1,
+                        borderColor: COLORS.socialWhite,
+                        position: 'absolute',
+                        backgroundColor: 'red',
+                        top: 5,
+                        right: 5
+                    }} />
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Story */}
+                <View style={{ borderBottomColor: COLORS.darkGrey, borderBottomWidth: 1, paddingBottom: SIZES.padding }}>
+                    <FlatList
+                        data={storyData}
+                        horizontal
+                        contentContainerStyle={{ margin: SIZES.padding, columnGap: SIZES.padding }}
+                        ListFooterComponent={() => <View style={{ height: 100 }} />}
+                        renderItem={(item) => <StoryCard storySource={item.item.storyImage} avatarSource={item.item.storyImage} />}
+                        keyExtractor={(item, index) => `${item.id}_${index}`}
+                    />
+                </View>
+
+
+                {/* <FlatList /> */}
+
+                <FlatList
+                    data={data}
+                    scrollEnabled={false}
+                    renderItem={renderItem}
+                    keyExtractor={(item, index) => `${item.id}_${index}`}
+                    ListFooterComponent={() => <View style={{ height: 70 }} />}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
+                    onEndReached={onEndReachedHandle}
+                    ItemSeparatorComponent={() => <Divider />}
+                />
+            </ScrollView>
+
+
+
+
         </SafeAreaView>
     )
 }

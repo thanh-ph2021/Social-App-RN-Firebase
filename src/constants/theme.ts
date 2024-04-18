@@ -4,23 +4,25 @@ const { width, height } = Dimensions.get("window");
 
 export const COLORS = {
     // base colors
-    primary: "#7F5DF0",
-    secondary: "#5D2DFD",
+    darkBlack: "#181A1C",
+    socialWhite: "#ECEBED",
+    gradient: ["#F62E8E", "#AC1AF0"],
+    socialBlue: "#2E8AF6",
+    socialPink: "#F62E8E",
+    darkGrey: "#323436",
+    lightGrey: "#727477",
+
 
     //colors
     white: "#FFFFFF",
     black: "#000000",
-    green: '#37E39F',
-    blue: '#2727e8',
-    lightBlue: '#c6def5',
-    red: '#751a1e',
-    lightRed: "#fccacd",
-    gray: "#6A6A6A",
-    lightGray: "#dbdbdb",
-    lightGray2: "#f5f6fa",  
+    green: "#32a852",
+    text: "#FFFFFF",
+    blue: "blue"
 }
 
 export const SIZES = {
+    divider: 1,
     // global sizes
     base: 8,
     font: 14,
@@ -57,6 +59,8 @@ export const FONTS = {
     body5: { fontFamily: "Roboto-Regular", fontSize: SIZES.body5, lineHeight: 18},
 }
 
-const appTheme = {COLORS, SIZES, FONTS}
+export const URL_HOSTING = 'http://192.168.0.13:8086/api/notification/send'
+
+const appTheme = {COLORS, SIZES, FONTS, URL_HOSTING}
 
 export default appTheme;

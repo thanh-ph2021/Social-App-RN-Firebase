@@ -1,4 +1,6 @@
 export interface UserModel {
+    uid?: string
+    notifyToken?: string,
     lname?: string,
     fname?: string,
     email?: string,

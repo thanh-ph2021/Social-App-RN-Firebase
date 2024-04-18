@@ -1,4 +1,4 @@
-import { ImageSourcePropType } from "react-native";
+import { MediaItem } from "./MediaItem";
 
 export interface PostModel {
     id: string,
@@ -6,7 +6,20 @@ export interface PostModel {
     // title post
     post: string,
     postTime: any,
-    likes: number,
-    comments: number,
-    postImg?: string,
+    likes: LikeModel[],
+    comments: CommentModel[],
+    media?: MediaItem[],
+}
+
+export interface LikeModel {
+    type: string,
+    userID: string
+}
+
+export interface CommentModel {
+    text: string,
+    userID: string,
+    createAt: any,
+    likes: LikeModel[],
+    reply: CommentModel[]
 }

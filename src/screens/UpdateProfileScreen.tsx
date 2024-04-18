@@ -11,11 +11,11 @@ import useAuthContext from '../hooks/useAuthContext'
 import ImagePicker from 'react-native-image-crop-picker'
 import storage from '@react-native-firebase/storage'
 import BottomSheet from '@gorhom/bottom-sheet'
-import { UserModel } from '../Models'
+import { UserModel } from '../models'
 
 const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-    const { user } = useAuthContext()
+    const { user, setUser } = useAuthContext()
     const [userData, setUserData] = useState<UserModel>()
     const sheetRef = useRef<any>(null)
     const [image, setImage] = useState<any>(null)
@@ -23,7 +23,7 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [transferred, setTransferred] = useState<any>()
     const bottomSheetRef = useRef<BottomSheet>(null)
 
-    const snapPoints = useMemo(() => ['25%', '50%'], []);
+    const snapPoints = useMemo(() => ['25%', '50%'], [])
 
     const handleClosePress = () => {
         if (bottomSheetRef.current) {
@@ -60,6 +60,17 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             if (imageUrl == null && userData?.userImg) {
                 imageUrl = userData.userImg
             }
+
+            setUser({
+                ...user,
+                fname: userData.fname,
+                lname: userData.lname,
+                about: userData.about,
+                phone: userData.phone,
+                country: userData.country,
+                city: userData.city,
+                userImg: imageUrl ?? ''
+            })
 
             firestore()
                 .collection('users')

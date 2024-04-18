@@ -1,39 +1,32 @@
 import { useState } from 'react'
-import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore'
-import { MessageItemModel, MessageModel } from '../Models'
+import firestore from '@react-native-firebase/firestore'
+import { MessageItemModel, MessageModel } from '../models'
 import useAuthContext from './useAuthContext'
 
-const useChat = (): [
-    MessageModel[],
-    MessageItemModel[],
-    React.Dispatch<React.SetStateAction<MessageItemModel[]>>,
-    boolean,
-    FirebaseFirestoreTypes.CollectionReference<FirebaseFirestoreTypes.DocumentData>,
-    () => Promise<void>,
-    (toUID: string, callback: (chatID: string) => void) => Promise<void>,
-    (chatID: string, messages: any) => Promise<void>,
-    (chatID: string, messages: any) => Promise<void>,
-    (chatID: string, imgUrl: string) => void
-] => {
+const useChat = () => {
     const collection = firestore().collection('Chats')
     const [data, setData] = useState<MessageModel[]>([])
     const [messages, setMessages] = useState<MessageItemModel[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const { user } = useAuthContext()
+    const filter = firestore.Filter
 
     const getChat = async () => {
         setIsLoading(true)
         try {
             let data: MessageModel[] = []
             await collection
-                .where('userID', 'array-contains', user?.uid)
+                .where(filter.or(
+                    filter('to_user', '==', user?.uid),
+                    filter('from_user', '==', user?.uid)
+                ))
                 .get()
                 .then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
-                        const { last_msg, msg_time, userID } = doc.data()
+                        const { last_msg, msg_time, from_user, to_user } = doc.data()
                         data.push({
                             id: doc.id,
-                            userID: user && user.uid == userID[0] ? userID[1] : userID[0],
+                            userID: user && user.uid == from_user ? to_user : from_user,
                             messageText: last_msg,
                             messageTime: msg_time,
                         })
@@ -42,16 +35,47 @@ const useChat = (): [
                 })
         } catch (error) {
             console.log("🚀 ~ file: useChat.ts:26 ~ getChat ~ error:", error)
-
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const getChatCondition: (toUID: string) => Promise<string | undefined> = async (toUID: string) => {
+        try {
+            let chatID = undefined
+            await collection
+                .where(filter.or(
+                    filter('to_user', '==', user?.uid),
+                    filter('from_user', '==', user?.uid)
+                ))
+                .where(filter.or(
+                    filter('to_user', '==', toUID),
+                    filter('from_user', '==', toUID)
+                ))
+                .get()
+                .then(querySnapshot => {
+                    if (querySnapshot.size > 0) {
+                        chatID = querySnapshot.docs[0].id.toString()
+                    }
+                })
+            return chatID
+        } catch (error) {
+            console.log("🚀 ~ file: useChat.ts:67 ~ addChatData ~ error:", error)
+            return undefined
         }
     }
 
     const addChatData = async (toUID: string, callback: (chatID: string) => void) => {
         try {
             await collection
-                .where('userID', 'array-contains', [user?.uid, toUID])
+                .where(filter.or(
+                    filter('to_user', '==', user?.uid),
+                    filter('from_user', '==', user?.uid)
+                ))
+                .where(filter.or(
+                    filter('to_user', '==', toUID),
+                    filter('from_user', '==', toUID)
+                ))
                 .get()
                 .then(async (querySnapshot) => {
                     if (querySnapshot.size > 0) {
@@ -59,7 +83,8 @@ const useChat = (): [
                     } else {
                         await collection
                             .add({
-                                userID: [user?.uid, toUID],
+                                to_user: user?.uid,
+                                from_user: toUID,
                                 last_msg: '',
                                 msg_time: firestore.Timestamp.fromDate(new Date())
                             })
@@ -124,7 +149,7 @@ const useChat = (): [
             });
     }
 
-    return [data, messages, setMessages, isLoading, collection, getChat, addChatData, updateChat, addMessage, loadMessageRealTime]
+    return { data, messages, setMessages, isLoading, collection, getChat, addChatData, updateChat, addMessage, loadMessageRealTime, getChatCondition }
 }
 
 export default useChat

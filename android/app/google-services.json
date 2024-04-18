@@ -1,41 +1,92 @@
 {
   "project_info": {
-    "project_number": "974440527830",
-    "project_id": "rn-socialapp-7e442",
-    "storage_bucket": "rn-socialapp-7e442.appspot.com"
+    "project_number": "1002417125404",
+    "firebase_url": "https://the-shop-app-c11c1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "the-shop-app-c11c1",
+    "storage_bucket": "the-shop-app-c11c1.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:974440527830:android:722fc4f75e2c319b9e9677",
+        "mobilesdk_app_id": "1:1002417125404:android:fb3ffb050cf3484ee747d9",
         "android_client_info": {
-          "package_name": "com.socialapp"
+          "package_name": "com.demonotificationrn"
         }
       },
       "oauth_client": [
         {
-          "client_id": "974440527830-pdrorj9fmq4u1mfrjr1p93n9kvj00hnt.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.socialapp",
-            "certificate_hash": "0522552231a4dae2db67f7bceab03d7f85cdf873"
-          }
-        },
-        {
-          "client_id": "974440527830-9qo5oana9fm9uelss2l62e6ekq3fd1k2.apps.googleusercontent.com",
+          "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAarbE_YUAtE8B9MZ_ucmHAg5IYpUm4-Gc"
+          "current_key": "AIzaSyD292f-2xl69YSixyX1kZL1Me8QOTFt_tk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "974440527830-9qo5oana9fm9uelss2l62e6ekq3fd1k2.apps.googleusercontent.com",
+              "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002417125404:android:22f540a184ff2d16e747d9",
+        "android_client_info": {
+          "package_name": "com.socialapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD292f-2xl69YSixyX1kZL1Me8QOTFt_tk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002417125404:android:a3ab7174fb776a3ae747d9",
+        "android_client_info": {
+          "package_name": "com.thefoodapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD292f-2xl69YSixyX1kZL1Me8QOTFt_tk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1002417125404-culs0uad43uvsve1a6jsdn7k6u3efp20.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

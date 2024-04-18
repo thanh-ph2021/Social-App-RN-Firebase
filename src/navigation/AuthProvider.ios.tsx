@@ -1,12 +1,9 @@
 import { Dispatch, ReactNode, SetStateAction, createContext, useState } from "react"
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
+import { UserModel } from "../models"
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-interface UserModel {
-    uid: string
-}
 
 export interface AuthContextType {
     user: UserModel | null,

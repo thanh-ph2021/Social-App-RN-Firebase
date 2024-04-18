@@ -3,12 +3,9 @@ import auth from '@react-native-firebase/auth'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next'
 import firestore from '@react-native-firebase/firestore'
+import { UserModel } from "../models"
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-interface UserModel {
-    uid: string
-}
 
 export interface AuthContextType {
     user: UserModel | null,

@@ -1,7 +1,12 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
-import { Alert } from 'react-native'
-import { UserModel } from '../Models'
+import { Alert, Platform, View, Text } from 'react-native'
+import { UserModel } from '../models'
+import messaging from '@react-native-firebase/messaging'
+import { PermissionsAndroid } from 'react-native'
+import React from 'react'
+import { Notifier } from 'react-native-notifier'
+import { COLORS, FONTS, SIZES } from '../constants'
 
 export const deletePost = async (postId: string, setIsDelete: any) => {
     firestore().collection('Posts')
@@ -38,7 +43,6 @@ export function getPostImg(documentSnapshot: any) {
     return documentSnapshot.get('postImg')
 }
 
-
 export const getUser = async (userID: string, setUserData: (newValue: UserModel) => void) => {
     try {
         const currentUser = await firestore()
@@ -50,17 +54,10 @@ export const getUser = async (userID: string, setUserData: (newValue: UserModel)
                     const data = documentSnapshot.data()
                     if (data) {
                         setUserData({
-                            lname: data.lname,
-                            fname: data.fname,
-                            email: data.email,
-                            userImg: data.userImg,
-                            about: data.about,
-                            phone: data.phone,
-                            country: data.country,
-                            city: data.city
+                            ...data,
+                            uid: documentSnapshot.id
                         })
                     }
-
                 } else {
                     console.error("User does not exist");
                 }
@@ -68,4 +65,39 @@ export const getUser = async (userID: string, setUserData: (newValue: UserModel)
     } catch (error) {
         console.error("Error fetching user data:", error)
     }
+}
+
+export async function requestUserPermission() {
+    if (Platform.OS == 'android') {
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
+    } else {
+        const authStatus = await messaging().requestPermission()
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL
+
+        if (enabled) {
+            // console.log('Authorization status:', authStatus);
+        }
+    }
+
+}
+
+export const showNotification = (title: string, Icon: () => React.ReactElement) => {
+    Notifier.showNotification({
+        duration: 5000,
+        title: title,
+        Component: (props) => {
+            return (
+                <View style={{ flexDirection: 'row', backgroundColor: COLORS.white, padding: SIZES.base, margin: SIZES.base, borderRadius: SIZES.base, elevation: 5 }}>
+                    <Icon />
+                    <Text style={{ ...FONTS.body3, color: COLORS.black, paddingLeft: SIZES.padding }}>{props.title}</Text>
+                </View>
+            )
+        }
+    })
+}
+
+export const getTimeNow = () => {
+    return firestore.Timestamp.fromDate(new Date())
 }
