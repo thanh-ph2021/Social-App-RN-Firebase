@@ -4,12 +4,13 @@ import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import PushNotification, { Importance } from 'react-native-push-notification'
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging'
 import { Platform, StatusBar, TouchableOpacity } from 'react-native'
-import { requestUserPermission } from '../utils'
-import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { AddPostScreen, ImageViewScreen, PostDetailScreen } from '../screens'
 import BottomTabsNavigation from './BottomTabsNavigator'
+
+import { requestUserPermission } from '../utils'
+import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
+import { AddPostScreen, ImageViewScreen, PostDetailScreen, StoryScreen } from '../screens'
 import { COLORS, SIZES } from '../constants'
 import { Icon, TypeIcons } from '../components'
 
@@ -183,6 +184,7 @@ const AppStack = () => {
                     },
                 }}
             />
+            <Stack.Screen name='StoryScreen' component={StoryScreen} options={{ headerShown: false }}  />
         </Stack.Navigator>
     )
 }

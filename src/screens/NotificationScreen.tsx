@@ -1,10 +1,9 @@
-import { FlatList, SectionList, Text, View } from "react-native"
+import { useEffect, useState } from "react"
+import { FlatList, SectionList, Text, View, TouchableOpacity } from "react-native"
+import moment from "moment"
 
 import { COLORS, SIZES } from "../constants"
 import { Divider, TextComponent } from "../components"
-import { TouchableOpacity } from "react-native-gesture-handler"
-import { useEffect, useState } from "react"
-import moment from "moment"
 import { UtilIcons } from "../utils/icons"
 
 const date = new Date()
@@ -54,7 +53,6 @@ const NotificationScreen = () => {
     const [datas, setDatas] = useState<any>([])
 
     useEffect(() => {
-        console.log("🚀 ~ groups ~ notiDatas:", notiDatas)
         const groups = notiDatas.reduce((groups: any, data: any) => {
             const date = moment(data.date).format('DD/MM/YYYY')
             if (!groups[date]) {
@@ -72,7 +70,6 @@ const NotificationScreen = () => {
                 data: groups[date]
             };
         })
-        console.log("🚀 ~ groupArrays ~ groupArrays:", groupArrays)
 
         setDatas(groupArrays)
     }, [])
@@ -85,12 +82,12 @@ const NotificationScreen = () => {
                 <TextComponent
                     title={true}
                     text='Notifications'
-                    styles={{ fontWeight: 'bold' }}
+                    style={{ fontWeight: 'bold' }}
                 />
                 <TouchableOpacity>
                     <TextComponent
                         text='Mark all as read'
-                        styles={{ fontWeight: 'bold' }}
+                        style={{ fontWeight: 'bold' }}
                         color={COLORS.socialPink}
                     />
                 </TouchableOpacity>

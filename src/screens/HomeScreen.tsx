@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Container } from '../styles/FeedStyles'
+import PushNotification from 'react-native-push-notification'
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 
 import PostCard from '../components/Post/PostCard'
 import { PostModel } from '../models'
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import { COLORS, SIZES, images } from '../constants'
 import { usePost } from '../hooks'
-import PushNotification from 'react-native-push-notification'
 import { showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { Divider, TextComponent } from '../components'
@@ -157,7 +156,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 <TextComponent
                     title={true}
                     text='Good Morning, Alex.'
-                    styles={{ fontWeight: 'bold' }}
+                    style={{ fontWeight: 'bold' }}
                 />
 
                 <TouchableOpacity style={{ width: 35, height: 35, borderColor: COLORS.lightGrey, borderWidth: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
@@ -184,14 +183,16 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                         horizontal
                         contentContainerStyle={{ margin: SIZES.padding, columnGap: SIZES.padding }}
                         ListFooterComponent={() => <View style={{ height: 100 }} />}
-                        renderItem={(item) => <StoryCard storySource={item.item.storyImage} avatarSource={item.item.storyImage} />}
+                        renderItem={(item) => <StoryCard
+                            storySource={item.item.storyImage}
+                            avatarSource={item.item.storyImage}
+                            onPress={() => navigation.navigate('StoryScreen')}
+                        />}
                         keyExtractor={(item, index) => `${item.id}_${index}`}
                     />
                 </View>
 
-
                 {/* <FlatList /> */}
-
                 <FlatList
                     data={data}
                     scrollEnabled={false}
@@ -204,10 +205,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     ItemSeparatorComponent={() => <Divider />}
                 />
             </ScrollView>
-
-
-
-
         </SafeAreaView>
     )
 }

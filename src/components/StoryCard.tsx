@@ -1,26 +1,24 @@
-import { Image, ImageBackground, ImageSourcePropType, StyleSheet, View } from 'react-native'
-import { COLORS } from '../constants'
+import { Image, ImageSourcePropType, StyleSheet, TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
+import { COLORS } from '../constants'
 
 interface Props {
     storySource: ImageSourcePropType,
     avatarSource: ImageSourcePropType,
+    onPress: () => void
 }
 
 const StoryCard = (Props: Props) => {
 
-    const { storySource, avatarSource } = Props
+    const { storySource, avatarSource, onPress } = Props
     return (
-        <View style={{ flex: 1 }}>
+        <TouchableOpacity style={{ flex: 1 }} onPress={onPress}>
             <Image source={storySource} style={styles.storyStyle} />
             <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.avatarStyle}>
                 <Image source={avatarSource} style={styles.avatarStyle1} />
             </LinearGradient>
-        </View>
-        // <ImageBackground source={storySource} style={styles.storyStyle} borderRadius={16} resizeMode='center'>
-        //     <Image source={avatarSource} style={styles.avatarStyle} />
-        // </ImageBackground>
+        </TouchableOpacity>
     )
 }
 

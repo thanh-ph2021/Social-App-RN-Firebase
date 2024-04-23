@@ -1,4 +1,5 @@
 import { StyleProp, TextStyle, Text, Platform } from "react-native"
+
 import { utilStyles } from "../styles"
 import { COLORS } from "../constants"
 
@@ -7,13 +8,13 @@ interface Props {
     color?: string,
     size?: number,
     flex?: number,
-    styles?: StyleProp<TextStyle>,
+    style?: StyleProp<TextStyle>,
     title?: boolean,
     numberOfLines?: number
 }
 const TextComponent = (props: Props) => {
 
-    const { text, color, size, flex, styles, title, numberOfLines } = props
+    const { text, color, size, flex, style, title, numberOfLines } = props
 
     const fontSizeDefault = Platform.OS === 'ios' ? 16 : 14
 
@@ -27,7 +28,7 @@ const TextComponent = (props: Props) => {
                     flex: flex ?? 0,
                     fontSize: size ? size : title ? 18 : fontSizeDefault
                 },
-                styles,
+                style,
             ]}
         >
             {text}
