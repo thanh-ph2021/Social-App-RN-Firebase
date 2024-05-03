@@ -1,20 +1,16 @@
-import { useState, useEffect, memo, useRef, useCallback } from "react"
-import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TouchableHighlight } from "react-native"
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import { SIZES, images, FONTS, COLORS, TypeEmotion } from '../../constants'
-import { LikeModel, PostModel, UserModel } from "../../models"
-import useAuthContext from "../../hooks/useAuthContext"
+import { useState, useEffect, memo } from "react"
+import { View, Text, Image, StyleSheet } from "react-native"
 import { Alert } from "react-native"
 import moment from 'moment'
-import ProgressiveImage from "../ProgressiveImage"
-import { getUser, showNotification } from "../../utils"
-import Icon, { TypeIcons } from "../Icon"
 import { TouchableWithoutFeedback } from "react-native-gesture-handler"
+import { useNavigation } from "@react-navigation/native"
+
+import { SIZES, images, FONTS, COLORS } from '../../constants'
+import { LikeModel, PostModel, UserModel } from "../../models"
+import useAuthContext from "../../hooks/useAuthContext"
+import { getUser } from "../../utils"
 import MediaGridCollapse from "../MediaGridCollapse"
 import { usePost } from "../../hooks"
-import { useNavigation } from "@react-navigation/native"
-import { utilStyles } from "../../styles"
-import IconEmotionGroup from "./IconEmotionGroup"
 import LikeButton from "./LikeButton"
 import { UtilIcons } from "../../utils/icons"
 
@@ -108,7 +104,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     return (
         <View>
             {/* header */}
-            <TouchableWithoutFeedback onPress={() => console.log('clicked title')}>
+            <TouchableWithoutFeedback onPress={() => onPressUserName && onPressUserName(item.userID)}>
                 <View style={styles.titleContainer}>
                     {userData ? (
                         <Image source={{ uri: userData?.userImg }} style={styles.avatar} />
@@ -118,7 +114,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
                         <View style={styles.textWrap}>
                             {/* <TouchableOpacity onPress={() => onPressUserName && onPressUserName(item.userID)}> */}
-                                <Text style={[styles.text, { fontWeight: 'bold' }]}>{userData?.fname} {userData?.lname}</Text>
+                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{userData?.fname} {userData?.lname}</Text>
                             {/* </TouchableOpacity> */}
                             <Text style={[styles.text, { ...FONTS.body4, color: COLORS.lightGrey }]}>{moment(item.postTime.toDate()).fromNow()}</Text>
                         </View>
@@ -154,13 +150,13 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
 
             {/* button */}
             <View style={styles.buttonContainer}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1, alignItems: 'center' }}>
                     {/* likes button */}
                     <LikeButton
                         data={likes && likes.filter(item => item.userID == user?.uid).map(item => item.type)}
                         handleLike={handleLike}
                     />
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <UtilIcons.svgComment />
                         <Text style={[styles.text, { paddingLeft: SIZES.base }]}>1</Text>
                     </View>
@@ -187,7 +183,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: SIZES.padding,
-        marginTop: SIZES.padding * 2
     },
 
     textWrap: {
@@ -211,7 +206,6 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
         margin: SIZES.padding,

@@ -1,17 +1,11 @@
-import { useRef, useEffect } from 'react'
-import { Alert, AppState, Image, Platform, Text, View } from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import * as Animatable from 'react-native-animatable'
-import { COLORS, SIZES, images } from '../constants'
+import LinearGradient from 'react-native-linear-gradient'
 import { TouchableOpacity } from 'react-native'
-import { utilStyles } from '../styles'
 import FeedStack from './FeedStack'
-import MessageStack from './MessageStack'
 import ProfileStack from './ProfileStack'
 import { AddPostScreen, NotificationScreen, SearchScreen } from '../screens'
-import { Icon, TypeIcons } from '../components'
-import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
-import LinearGradient from 'react-native-linear-gradient'
+import { COLORS } from '../constants'
+import { useAuthContext } from '../hooks'
 import { UtilIcons } from '../utils/icons'
 
 const Tab = createBottomTabNavigator()
@@ -41,7 +35,7 @@ const BottomTabsNavigation = () => {
 
     return (
         <Tab.Navigator
-            initialRouteName='Home'
+            initialRouteName='HomeMain'
             screenOptions={{
                 tabBarStyle: {
                     height: 60,

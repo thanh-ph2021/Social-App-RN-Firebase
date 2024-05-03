@@ -1,20 +1,23 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import {
-    View, TextInput, TouchableOpacity, Text, Platform, Image, StyleSheet, ScrollView, KeyboardAvoidingView, SafeAreaView, PermissionsAndroid,
-    Alert, ActivityIndicator, Modal
+    View, TextInput, TouchableOpacity, Text, Platform, Image, StyleSheet, ScrollView, 
+    KeyboardAvoidingView, SafeAreaView, PermissionsAndroid,
+    ActivityIndicator, Modal
 } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { FONTS, SIZES, COLORS, images } from '../constants'
 import ImagePicker from 'react-native-image-crop-picker'
-import useAuthContext from '../hooks/useAuthContext'
-import { Icon, MediaGrid, TypeIcons } from '../components'
-import { MediaItem } from '../models'
 import { Notifier } from 'react-native-notifier'
 import Geolocation, { GeolocationResponse } from '@react-native-community/geolocation'
 import Geocoder from 'react-native-geocoding'
 import BottomSheet from '@gorhom/bottom-sheet'
 import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
+import LinearGradient from 'react-native-linear-gradient'
+
+import { FONTS, SIZES, COLORS, images } from '../constants'
+import { Avatar, Divider, Header, Icon, MediaGrid, TextComponent, TypeIcons } from '../components'
+import { MediaItem } from '../models'
+import useAuthContext from '../hooks/useAuthContext'
 import { showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 
@@ -47,24 +50,29 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [locationLoading, setLocationLoading] = useState<boolean>(false)
     const [upLoading, setUpLoading] = useState<any>(false)
     const [location, setLocation] = useState<string>()
+    const [showButton, setShowButton] = useState<boolean>(false)
+
+    // 1 - Post; 2 - Story
+    const [typeCreate, setTypeCreate] = useState<number>(1)
+
 
     useEffect(() => {
         Geocoder.init('AIzaSyD292f-2xl69YSixyX1kZL1Me8QOTFt_tk')
         inputRef.current.focus()
     }, [])
 
-    useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => {
-                const check = arrayMedia && arrayMedia.length > 0 || text
-                return (
-                    <TouchableOpacity onPress={submitPost} style={[styles.buttonPost, { backgroundColor: check ? COLORS.blue : COLORS.lightBlue }]} disabled={check ? false : true}>
-                        <Text style={{ ...FONTS.body3, color: COLORS.white, fontWeight: 'bold' }}>Post</Text>
-                    </TouchableOpacity>
-                )
-            }
-        })
-    }, [arrayMedia, text])
+    // useEffect(() => {
+    //     navigation.setOptions({
+    //         headerRight: () => {
+    //             const check = arrayMedia && arrayMedia.length > 0 || text
+    //             return (
+    //                 <TouchableOpacity onPress={submitPost} style={[styles.buttonPost, { backgroundColor: check ? COLORS.blue : COLORS.lightGrey }]} disabled={check ? false : true}>
+    //                     <Text style={{ ...FONTS.body3, color: COLORS.white, fontWeight: 'bold' }}>Post</Text>
+    //                 </TouchableOpacity>
+    //             )
+    //         }
+    //     })
+    // }, [arrayMedia, text])
 
     // Handle Post - begin
     const submitPost = async () => {
@@ -179,7 +187,16 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     title: 'Coming soon!',
                     Component: (props) => {
                         return (
-                            <View style={{ flexDirection: 'row', backgroundColor: COLORS.white, padding: SIZES.base, margin: SIZES.base, borderRadius: SIZES.base, elevation: 5 }}>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    backgroundColor: COLORS.white,
+                                    padding: SIZES.base,
+                                    margin: SIZES.base,
+                                    borderRadius: SIZES.base,
+                                    elevation: 5
+                                }}
+                            >
                                 <Icon type={TypeIcons.MaterialIcons} name={'notifications-active'} color={COLORS.blue} size={SIZES.icon} />
                                 <Text style={{ ...FONTS.body3, color: COLORS.black, paddingLeft: SIZES.padding }}>{props.title}</Text>
                             </View>
@@ -214,7 +231,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         } catch (err) {
             console.warn(err);
         }
-    };
+    }
     const getCurrentLocation = async () => {
         try {
             const position: GeolocationResponse = await new Promise((resolve, reject) => {
@@ -260,10 +277,10 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
         return (
             <View style={{ flexDirection: 'row', paddingTop: SIZES.base, marginLeft: -3, alignItems: 'center' }}>
-                <Icon type={TypeIcons.Ionicons} name='location-sharp' size={SIZES.icon} color={COLORS.gray} />
+                <Icon type={TypeIcons.Ionicons} name='location-sharp' size={SIZES.icon} color={COLORS.lightGrey} />
                 <Text style={{ ...FONTS.body4 }}>{location}</Text>
                 <TouchableOpacity style={{ marginLeft: SIZES.padding }} onPress={() => setLocation('')}>
-                    <Icon type={TypeIcons.Feather} name='x' size={SIZES.icon} color={COLORS.lightRed2} />
+                    <Icon type={TypeIcons.Feather} name='x' size={SIZES.icon} color={COLORS.lightGrey} />
                 </TouchableOpacity>
             </View>
         )
@@ -347,20 +364,35 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <Header
+                title={'CREATE'}
+                leftComponent={
+                    <TouchableOpacity style={{ marginLeft: SIZES.padding }} onPress={() => navigation.goBack()}>
+                        <TextComponent text='Discard' color={COLORS.socialBlue} style={{ fontWeight: 'bold' }} />
+                    </TouchableOpacity>
+                }
+                rightComponent={
+                    <TouchableOpacity
+                        style={{ backgroundColor: COLORS.socialPink, borderRadius: 24, width: '100%', alignItems: 'center', marginRight: SIZES.padding, paddingVertical: 3 }}
+                        onPress={() => navigation.goBack()}>
+                        <TextComponent text='Publish' color={COLORS.socialWhite} style={{ fontWeight: 'bold' }} />
+                    </TouchableOpacity>
+                }
+            />
             <KeyboardAvoidingView keyboardVerticalOffset={200} behavior='height' style={{ flex: 1 }}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={{ paddingHorizontal: SIZES.base }}>
-                        <View style={{ flexDirection: 'row' }}>
+                    <View style={{ paddingHorizontal: SIZES.padding }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             {user?.userImg ? (
-                                <Image source={{ uri: user?.userImg }} style={styles.avatar} />
+                                <Avatar source={{ uri: user?.userImg }} size='m' />
                             ) : (
                                 <Image source={images.defaultImage} style={styles.avatar} />
                             )}
-                            <View>
-                                <Text style={[styles.text, { fontWeight: 'bold', paddingHorizontal: SIZES.base }]}>{user?.fname} {user?.lname}</Text>
+                            <View style={{ paddingHorizontal: SIZES.padding }}>
+                                <TextComponent text={`${user?.fname} ${user?.lname}`} style={{ fontWeight: 'bold' }} />
                                 <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => handleOpenBottomSheet('scope')}>
-                                    <Text style={[styles.text, { paddingLeft: SIZES.base, color: COLORS.blue }]}>{scope}</Text>
-                                    <Icon type={TypeIcons.MaterialIcons} name='arrow-drop-down' size={SIZES.icon} color={COLORS.blue} style={{ marginTop: -2 }} />
+                                    <TextComponent text={scope} color={COLORS.socialPink} />
+                                    <Icon type={TypeIcons.MaterialIcons} name='arrow-drop-down' size={SIZES.icon} color={COLORS.socialPink} style={{ marginTop: -2 }} />
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -373,17 +405,57 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                             value={text}
                             onChangeText={setText}
                             placeholder="What's on your mind?"
+                            placeholderTextColor={COLORS.lightGrey}
                             style={{ ...FONTS.body3 }}
                         />
                     </View>
 
                     {arrayMedia.length > 0 ? <MediaGrid mediaArray={arrayMedia} delMedia={delMedia} /> : <></>}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => setShowButton(!showButton)}>
+                            {showButton ? <UtilIcons.svgClose color={COLORS.socialWhite} size={16} /> : <UtilIcons.svgPlus color={COLORS.socialWhite} size={16} />}
+                        </TouchableOpacity>
+
+                        {showButton && <View
+                            style={{
+                                flexDirection: 'row',
+                                backgroundColor: COLORS.darkGrey,
+                                borderRadius: 32,
+                                paddingVertical: SIZES.base,
+                                paddingHorizontal: SIZES.padding * 2,
+                                marginLeft: SIZES.padding,
+                                gap: SIZES.padding
+                            }}
+                        >
+                            <TouchableOpacity><UtilIcons.svgImage color={COLORS.socialWhite} /></TouchableOpacity>
+                            <TouchableOpacity><UtilIcons.svgGIF color={COLORS.socialWhite} /></TouchableOpacity>
+                            <TouchableOpacity><UtilIcons.svgCamera color={COLORS.socialWhite} /></TouchableOpacity>
+                            <TouchableOpacity><UtilIcons.svgAttachment color={COLORS.socialWhite} /></TouchableOpacity>
+                        </View>}
+                    </View>
+
                 </ScrollView>
             </KeyboardAvoidingView>
             <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-                <View style={styles.divider} />
+
                 <View style={styles.buttonContainer}>
-                    {buttonArray.map((item) => {
+                    <TouchableOpacity onPress={() => setTypeCreate(1)}>
+                        <LinearGradient
+                            style={styles.buttonTypeCreate}
+                            colors={typeCreate == 1 ? [COLORS.gradient[0], COLORS.gradient[1]] : ['transparent', 'transparent']}
+                        >
+                            <TextComponent text='POST' />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setTypeCreate(2)}>
+                        <LinearGradient
+                            style={styles.buttonTypeCreate}
+                            colors={typeCreate == 2 ? [COLORS.gradient[0], COLORS.gradient[1]] : ['transparent', 'transparent']}
+                        >
+                            <TextComponent text='STORY' />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                    {/* {buttonArray.map((item) => {
                         if (item.name == IconName.location && locationLoading) {
                             return <ActivityIndicator key={item.name} />
                         }
@@ -392,7 +464,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                 <Icon type={item.type} name={item.name} color={item.color} size={SIZES.icon} />
                             </TouchableOpacity>
                         )
-                    })}
+                    })} */}
                 </View>
             </View>
             {renderBottomSheet()}
@@ -414,23 +486,27 @@ const styles = StyleSheet.create({
 
     container: {
         flex: 1,
-        backgroundColor: COLORS.white,
+        backgroundColor: COLORS.darkBlack,
     },
 
     buttonContainer: {
-        flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingVertical: SIZES.padding,
-        backgroundColor: COLORS.white
+        alignSelf: 'center',
+        paddingVertical: SIZES.base,
+        paddingHorizontal: SIZES.padding * 2,
+        gap: SIZES.padding * 2,
+        borderRadius: 32,
+        borderWidth: 1,
+        borderColor: COLORS.darkGrey,
+        marginBottom: SIZES.base
     },
 
-    divider: {
-        height: 1,
-        backgroundColor: COLORS.lightGray,
-
+    buttonTypeCreate: {
+        paddingHorizontal: SIZES.padding,
+        borderRadius: 32,
+        alignItems: 'center'
     },
+
     image: {
         width: '100%',
         height: 250
@@ -445,5 +521,16 @@ const styles = StyleSheet.create({
     text: {
         color: COLORS.black,
         ...FONTS.body3
+    },
+
+    btnHeaderLeft: {
+        width: 32,
+        height: 32,
+        borderRadius: 20,
+        borderColor: COLORS.lightGrey,
+        borderWidth: 1,
+        marginHorizontal: SIZES.padding,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
 })

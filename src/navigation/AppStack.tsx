@@ -3,16 +3,14 @@ import { Notifier, Easing } from 'react-native-notifier'
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import PushNotification, { Importance } from 'react-native-push-notification'
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging'
-import { Platform, StatusBar, TouchableOpacity } from 'react-native'
+import { Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import BottomTabsNavigation from './BottomTabsNavigator'
 
 import { requestUserPermission } from '../utils'
 import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
-import { AddPostScreen, ImageViewScreen, PostDetailScreen, StoryScreen } from '../screens'
-import { COLORS, SIZES } from '../constants'
-import { Icon, TypeIcons } from '../components'
+import { AddPostScreen, ChatScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, SettingsScreen, StoryScreen } from '../screens'
 
 const Stack = createNativeStackNavigator()
 
@@ -159,32 +157,37 @@ const AppStack = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen name='Home' component={BottomTabsNavigation} options={{ headerShown: false }} />
-            <Stack.Screen name='PostDetailScreen' component={PostDetailScreen} options={{
-                title: 'Post',
-                headerShadowVisible: false,
-                contentStyle: {borderTopWidth: 1}
-            }}/>
-            <Stack.Screen name='ImageViewScreen' component={ImageViewScreen} options={{ headerShown: false }}  />
+            <Stack.Screen
+                name='PostDetailScreen'
+                component={PostDetailScreen}
+                options={{
+                    headerShown: false
+                }}
+            />
+            <Stack.Screen name='ImageViewScreen' component={ImageViewScreen} options={{ headerShown: false }} />
             <Stack.Screen
                 name='AddPost'
                 component={AddPostScreen}
-                options={{
-                    title: '',
-                    headerTitleAlign: 'center',
-                    headerTitleStyle: {
-                        fontWeight: 'bold'
-                    },
-                    headerShadowVisible: false,
-                    headerLeft: () => {
-                        return (
-                            <TouchableOpacity onPress={() => navigation.goBack()}>
-                                <Icon type={TypeIcons.Feather} name='arrow-left' color={COLORS.socialPink} size={SIZES.icon} />
-                            </TouchableOpacity>
-                        )
-                    },
-                }}
             />
-            <Stack.Screen name='StoryScreen' component={StoryScreen} options={{ headerShown: false }}  />
+            <Stack.Screen name='StoryScreen' component={StoryScreen} options={{ headerShown: false }} />
+            <Stack.Screen
+                name='Messages'
+                component={MessagesScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Chat'
+                component={ChatScreen}
+                options={({ route }: any) => ({
+                    title: route!.params!.userID ?? '',
+                    headerShown: false,
+                })}
+            />
+            <Stack.Screen
+                name='Settings'
+                component={SettingsScreen}
+                options={{ headerShown: false }}
+            />
         </Stack.Navigator>
     )
 }

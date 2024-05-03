@@ -1,15 +1,16 @@
-import { FlatList, ListRenderItemInfo, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native"
-import { utilStyles } from "../styles"
-import { COLORS, FONTS, SIZES } from "../constants"
-import { UtilIcons } from "../utils/icons"
-import { usePost } from "../hooks"
+import { FlatList, ListRenderItemInfo, RefreshControl, Text, TextInput, View } from "react-native"
 import { useCallback, useEffect, useState } from "react"
-import { PostModel } from "../models"
-import { Divider, PostCard } from "../components"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
-import { showNotification } from "../utils"
 import { ScrollView } from "react-native-gesture-handler"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
+
+import { UtilIcons } from "../utils/icons"
+import { COLORS, FONTS, SIZES } from "../constants"
+import { utilStyles } from "../styles"
+import { usePost } from "../hooks"
+import { PostModel } from "../models"
+import { showNotification } from "../utils"
+import { Divider, PostCard, TextComponent } from "../components"
 
 const tagDatas = [
     {
@@ -76,7 +77,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         )
     }
 
-    const renderTag = ({item}: ListRenderItemInfo<{id: number, name: string}>) => {
+    const renderTag = ({ item }: ListRenderItemInfo<{ id: number, name: string }>) => {
 
         const onPress = () => {
             setTag(item.id)
@@ -98,9 +99,16 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={{ backgroundColor: COLORS.darkBlack, flex: 1, padding: SIZES.padding }}>
+            <View style={{ backgroundColor: COLORS.darkBlack, flex: 1, paddingVertical: SIZES.padding }}>
                 {/* search bar */}
-                <View style={{ backgroundColor: COLORS.darkGrey, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{
+                    backgroundColor: COLORS.darkGrey,
+                    borderRadius: 32,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginHorizontal: SIZES.padding
+                }}>
                     <TextInput
                         placeholder="Search for people, posts, tags..."
                         placeholderTextColor={COLORS.socialWhite}
@@ -113,16 +121,19 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 {/* body */}
                 <View style={{ paddingVertical: SIZES.padding }}>
                     {/* header title */}
-                    <Text style={[utilStyles.text, { ...FONTS.h3 }]}>Popular</Text>
+                    <View style={{ marginLeft: SIZES.padding, marginBottom: SIZES.padding }}>
+                        <TextComponent text='Popular' style={{ ...FONTS.h3, fontWeight: 'bold' }} />
 
-                    {/* tags */}
-                    <FlatList
-                        horizontal
-                        data={tagDatas}
-                        contentContainerStyle={{ columnGap: SIZES.padding, paddingVertical: SIZES.base }}
-                        renderItem={renderTag}
-                        keyExtractor={(item, index) => item.name + index}
-                    />
+                        {/* tags */}
+                        <FlatList
+                            horizontal
+                            data={tagDatas}
+                            contentContainerStyle={{ columnGap: SIZES.padding, paddingVertical: SIZES.base }}
+                            renderItem={renderTag}
+                            keyExtractor={(item, index) => item.name + index}
+                        />
+                    </View>
+
 
                     {/* content search */}
                     <FlatList

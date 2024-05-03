@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native'
-import { FONTS, SIZES, COLORS } from '../constants'
+import { FONTS, COLORS } from '../constants'
 
 export const utilStyles = StyleSheet.create({
     container: {
@@ -44,7 +44,7 @@ export const utilStyles = StyleSheet.create({
     text: {
         fontSize: 14,
         color: COLORS.text
-    }
+    },
 })
 
 

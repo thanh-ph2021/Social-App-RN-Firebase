@@ -1,11 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+
 import HomeScreen from "../screens/HomeScreen"
-import AddPostScreen from "../screens/AddPostScreen"
-import Feather from 'react-native-vector-icons/Feather'
-import { COLORS, SIZES, FONTS } from "../constants"
-import { TouchableOpacity, Text, View } from 'react-native'
-import { ChatScreen, ImageViewScreen, ProfileScreen } from "../screens"
-import { Icon, TypeIcons } from "../components"
+import { ProfileScreen } from "../screens"
 
 const Stack = createNativeStackNavigator()
 
@@ -40,14 +36,8 @@ const FeedStack = ({ navigation }: any) => {
             // }}
             />
             <Stack.Screen name='Profile' component={ProfileScreen} options={{ headerShown: false }} />
-            <Stack.Screen
-                name='Chat'
-                component={ChatScreen}
-                options={({ route }: any) => ({
-                    title: route!.params!.userID ?? '',
-                    headerShadowVisible: false
-                })}
-            />
+            
+            
         </Stack.Navigator>
     )
 }

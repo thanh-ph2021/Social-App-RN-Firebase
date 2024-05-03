@@ -159,7 +159,17 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     style={{ fontWeight: 'bold' }}
                 />
 
-                <TouchableOpacity style={{ width: 35, height: 35, borderColor: COLORS.lightGrey, borderWidth: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Messages')}
+                    style={{
+                        width: 35,
+                        height: 35,
+                        borderColor: COLORS.lightGrey,
+                        borderWidth: 1,
+                        borderRadius: 20,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                     <UtilIcons.svgMessage />
                     <View style={{
                         width: 10,
@@ -203,6 +213,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
                     onEndReached={onEndReachedHandle}
                     ItemSeparatorComponent={() => <Divider />}
+                    style={{ paddingTop: SIZES.base }}
                 />
             </ScrollView>
         </SafeAreaView>

@@ -1,15 +1,16 @@
-import { View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { COLORS, SIZES } from '../constants'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat'
-import { IMessage } from 'react-native-gifted-chat/lib/Models'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { MessageItemModel, UserModel } from '../models'
 import { useRoute } from '@react-navigation/native'
-import firestore from '@react-native-firebase/firestore'
+
+import { COLORS, SIZES } from '../constants'
 import { useAuthContext, useChat } from '../hooks'
+import { MessageItemModel, UserModel } from '../models'
 import useNotification from '../hooks/useNotification'
+import { Avatar, Divider, Header, TextComponent } from '../components'
+import { UtilIcons } from '../utils/icons'
 
 const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
@@ -20,9 +21,6 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const { sendNotification } = useNotification()
 
     useEffect(() => {
-        navigation.setOptions({
-            title: `${receiveUser?.fname} ${receiveUser?.lname}`
-        })
         receiveUser.userImg
 
         const subscriber = loadMessageRealTime(params?.chatID, receiveUser.userImg ?? '')
@@ -76,24 +74,66 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const scrollToBottomComponent = () => {
         return (
-            <Ionicons name='arrow-down-circle-outline' size={SIZES.icon} color={COLORS.gray} />
+            <Ionicons name='arrow-down-circle-outline' size={SIZES.icon} color={COLORS.lightGrey} />
         )
     }
 
     return (
-        <GiftedChat
-            messages={messages}
-            onSend={messages => onSend(messages)}
-            user={{
-                _id: user!.uid!,
-            }}
-            renderBubble={renderBubble}
-            alwaysShowSend
-            renderSend={renderSend}
-            scrollToBottom
-            scrollToBottomComponent={scrollToBottomComponent}
-        />
+        <View style={{ flex: 1, backgroundColor: COLORS.darkBlack }}>
+            <Header
+                title={'CREATE'}
+                containerStyle={{ marginBottom: SIZES.padding }}
+                centerComponent={
+                    <View style={{ alignItems: 'center' }}>
+                        <Avatar source={{ uri: receiveUser.userImg }} size='m' />
+                        <TextComponent text={`${receiveUser.fname} ${receiveUser.lname}`} style={{ fontWeight: 'bold', marginTop: 4 }} />
+                    </View>
+                }
+                leftComponent={
+                    <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => navigation.goBack()}>
+                        <UtilIcons.svgArrowLeft color={COLORS.socialWhite} size={20} />
+                    </TouchableOpacity>
+                }
+                rightComponent={
+                    <TouchableOpacity
+                        style={styles.btnHeaderLeft}
+                        onPress={() => navigation.goBack()}>
+                        <UtilIcons.svgDotsVertical color={COLORS.socialWhite} size={20} />
+                    </TouchableOpacity>
+                }
+            />
+            <Divider />
+            <View style={{ flex: 1 }}>
+                <GiftedChat
+                    messages={messages}
+                    onSend={messages => onSend(messages)}
+                    user={{
+                        _id: user!.uid!,
+                    }}
+                    renderBubble={renderBubble}
+                    alwaysShowSend
+                    renderSend={renderSend}
+                    scrollToBottom
+                    scrollToBottomComponent={scrollToBottomComponent}
+                />
+            </View>
+
+        </View>
+
     )
 }
 
 export default ChatScreen
+
+const styles = StyleSheet.create({
+    btnHeaderLeft: {
+        width: 32,
+        height: 32,
+        borderRadius: 20,
+        borderColor: COLORS.lightGrey,
+        borderWidth: 1,
+        marginHorizontal: SIZES.padding,
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
+})

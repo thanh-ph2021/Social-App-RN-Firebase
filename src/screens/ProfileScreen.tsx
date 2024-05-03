@@ -2,15 +2,18 @@ import { useState, useEffect, useCallback } from 'react'
 import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, ListRenderItemInfo, FlatList } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import useAuthContext from '../hooks/useAuthContext'
-import { COLORS, SIZES, images, FONTS } from '../constants'
 import firestore from '@react-native-firebase/firestore'
-import PostCard from '../components/Post/PostCard'
-import { deletePost } from '../utils'
-import { UserModel } from '../models'
 import { useFocusEffect } from '@react-navigation/native'
-import { useChat, usePost } from '../hooks'
 import LinearGradient from 'react-native-linear-gradient'
+
+import { COLORS, SIZES, images, FONTS } from '../constants'
+import { UserModel } from '../models'
+import { deletePost } from '../utils'
+import PostCard from '../components/Post/PostCard'
+import { useChat, usePost } from '../hooks'
 import { utilStyles } from '../styles'
+import { Divider } from '../components'
+import { UtilIcons } from '../utils/icons'
 
 const tagDatas = [
     {
@@ -36,6 +39,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const { user, logout } = useAuthContext()
     const [isDelete, setIsDelete] = useState<boolean>(false)
     const params = route.params
+    console.log("🚀 ~ ProfileScreen ~ params:", params)
     const [userData, setUserData] = useState<UserModel>()
     const { data, getPostByUserID } = usePost()
     const { addChatData } = useChat()
@@ -124,10 +128,38 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     </LinearGradient>
                 </View>
 
-                <Text style={styles.textTitle}>
-                    {/* {userData?.fname} {userData?.lname} */}
-                    Alex Tsimikas
-                </Text>
+                {/* back button */}
+                {params && <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => navigation.goBack()}>
+                    <UtilIcons.svgArrowLeft color={COLORS.socialWhite} />
+                </TouchableOpacity>}
+
+                {!params && <TouchableOpacity style={[styles.btnHeaderLeft, {right: 0}]} onPress={() => navigation.navigate('Settings')}>
+                    <UtilIcons.svgSettings color={COLORS.socialWhite} />
+                </TouchableOpacity>}
+
+                <View style={styles.wrapUserName}>
+                    <Text style={styles.textTitle}>
+                        {userData?.fname} {userData?.lname}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => addChatData(params?.userID, navigateChatScreen)}
+                        style={{
+                            width: 35,
+                            height: 35,
+                            borderColor: COLORS.lightGrey,
+                            borderWidth: 1,
+                            borderRadius: 20,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            right: -50,
+                            bottom: -5
+                        }}>
+                        <UtilIcons.svgMessage />
+                    </TouchableOpacity>
+                </View>
+
+
 
                 {/* address */}
                 <Text style={styles.textAddress}>
@@ -177,9 +209,15 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                         <Text style={[styles.text, { color: COLORS.lightGrey }]}>Following</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UpdateProfile')}>
-                        <Text style={styles.buttonText}>Edit Profile</Text>
-                    </TouchableOpacity>
+                    {params ? (
+                        <TouchableOpacity style={[styles.button, { backgroundColor: COLORS.socialPink, borderWidth: 0 }]} onPress={() => console.log('follow')}>
+                            <Text style={styles.buttonText}>Follow</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UpdateProfile')}>
+                            <Text style={styles.buttonText}>Edit Profile</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* tags */}
@@ -189,7 +227,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     style={{
                         borderBottomColor: COLORS.lightGrey,
                         borderBottomWidth: 1,
-                        marginHorizontal: SIZES.padding
+                        marginHorizontal: SIZES.padding,
+                        marginBottom: SIZES.padding
                     }}
                     contentContainerStyle={{
                         justifyContent: 'space-between',
@@ -200,9 +239,13 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                 />
 
                 {
-                    data.map(item => {
+                    data.map((item, index) => {
                         return (
-                            <PostCard item={item} onDeletePost={(post) => deletePost(post.id, setIsDelete)} key={item.id} />
+                            <View key={item.id}>
+                                <PostCard item={item} onDeletePost={(post) => deletePost(post.id, setIsDelete)} key={item.id} />
+                                {index == data.length - 1 ? <></> : <Divider />}
+                            </View>
+
                         )
                     })
                 }
@@ -269,7 +312,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 30,
         alignSelf: 'center',
-        marginHorizontal: SIZES.padding
+        marginHorizontal: SIZES.padding,
+        width: '30%'
     },
 
     buttonText: {
@@ -283,5 +327,24 @@ const styles = StyleSheet.create({
     contentStyle: {
         paddingHorizontal: SIZES.padding,
         alignItems: 'flex-start'
+    },
+
+    wrapUserName: {
+        flexDirection: 'row',
+        alignSelf: 'center'
+    },
+
+    btnHeaderLeft: {
+        position: 'absolute',
+        backgroundColor: COLORS.darkBlack,
+        top: 20,
+        width: 32,
+        height: 32,
+        borderRadius: 20,
+        borderColor: COLORS.lightGrey,
+        borderWidth: 1,
+        marginHorizontal: SIZES.padding,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 })

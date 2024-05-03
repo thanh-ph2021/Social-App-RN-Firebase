@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Text, View, TouchableOpacity, Image } from 'react-native'
-import { MessageModel, UserModel } from '../models'
-import { styles } from '../styles'
-import { SIZES, FONTS, COLORS, images } from '../constants'
-import { getUser } from '../utils'
+import { View, TouchableOpacity, Image } from 'react-native'
 import moment from 'moment'
+import { SIZES, FONTS, COLORS, images } from '../constants'
+import { MessageModel, UserModel } from '../models'
+import { getUser } from '../utils'
+import { utilStyles } from '../styles'
+import TextComponent from './TextComponent'
+import Avatar from './Avatar'
 
 type MessageCardProps = {
     item: MessageModel,
-    navigation: any
+    navigation: any,
+    type?: 'default' | 'pinned'
 }
 
-const MessageCard = ({ item, navigation }: MessageCardProps) => {
+const MessageCard = ({ item, navigation, type }: MessageCardProps) => {
 
     const [userData, setUserData] = useState<UserModel>()
 
@@ -23,23 +26,36 @@ const MessageCard = ({ item, navigation }: MessageCardProps) => {
         getUser(item.userID, setUserData)
     }, [])
 
+    if (type && type == 'pinned') {
+        return (
+            <TouchableOpacity onPress={onPress}>
+                <View style={{ marginTop: SIZES.base, alignItems: 'center' }}>
+                    {userData?.userImg ? (
+                        <Avatar source={{ uri: userData?.userImg }} size={'xl'} />
+                    ) : (
+                        <Image source={images.defaultImage} style={utilStyles.avatar} />
+                    )}
+                    <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold', paddingTop: SIZES.base }} />
+                </View>
+            </TouchableOpacity>
+        )
+    }
+
     return (
         <TouchableOpacity onPress={onPress}>
             <View style={{ flexDirection: 'row', marginHorizontal: SIZES.base, marginTop: SIZES.base, alignItems: 'center' }}>
                 {userData?.userImg ? (
-                    <Image source={{ uri: userData?.userImg }} style={styles.avatar} />
+                    <Avatar source={{ uri: userData?.userImg }} size={'l'} />
                 ) : (
-                    <Image source={images.defaultImage} style={styles.avatar} />
+                    <Image source={images.defaultImage} style={utilStyles.avatar} />
                 )}
 
-                <View style={{ marginLeft: SIZES.padding, flex: 1, borderBottomColor: COLORS.lightGray, borderBottomWidth: 1, paddingVertical: SIZES.base }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ ...FONTS.body3, fontWeight: 'bold', color: COLORS.black }}>{userData?.fname} {userData?.lname}</Text>
-                        <Text style={{ ...FONTS.body4, }}>{moment(item.messageTime.toDate()).fromNow()}</Text>
+                <View style={{ marginLeft: SIZES.padding, flex: 1, paddingVertical: SIZES.base }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SIZES.base }}>
+                        <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold' }} />
+                        <TextComponent text={moment(item.messageTime.toDate()).fromNow()} style={{ ...FONTS.body5 }} color={COLORS.lightGrey} />
                     </View>
-
-                    <Text numberOfLines={1} style={{ ...FONTS.body3, }}>{item.messageText}</Text>
-
+                    <TextComponent text={item.messageText} numberOfLines={1} />
                 </View>
             </View>
         </TouchableOpacity>

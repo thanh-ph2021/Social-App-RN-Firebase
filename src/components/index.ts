@@ -10,5 +10,7 @@ import Divider from './Divider'
 import Avatar from './Avatar'
 import CommentCard from './CommentCard'
 import TextComponent from './TextComponent'
+import Header from './Header'
+import InputBar from './InputBar'
 
-export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider, Avatar, CommentCard, TextComponent }
+export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider, Avatar, CommentCard, TextComponent, Header, InputBar }

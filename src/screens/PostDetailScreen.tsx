@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { View, TextInput, StyleSheet, Image, Text, ListRenderItemInfo, FlatList, SafeAreaView } from "react-native"
+import { View, TextInput, StyleSheet, Image, Text, ListRenderItemInfo, FlatList, SafeAreaView, ScrollView } from "react-native"
 import { useRoute } from "@react-navigation/native"
 import moment from "moment"
-
-import { CommentCard, Icon, PostCard, TypeIcons } from "../components"
-import { SIZES, COLORS, images, FONTS } from "../constants"
 import { TouchableOpacity } from "react-native-gesture-handler"
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+
+import { CommentCard, Header, Icon, InputBar, PostCard, TextComponent, TypeIcons } from "../components"
+import { SIZES, COLORS, images, FONTS } from "../constants"
 import { useAuthContext, usePost } from "../hooks"
 import { getTimeNow, showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
@@ -17,23 +18,19 @@ const IconArray = [
     { type: TypeIcons.MaterialIcons, name: 'tag-faces', onPress: () => console.log('click') },
 ]
 
-const PostDetailScreen = () => {
+const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const { params } = useRoute<any>()
-    const [focusInput, setFocusInput] = useState(false)
+
     const [comment, setComment] = useState('')
-    const inputRef = useRef<any>()
+
 
     const { data } = params
-    console.log("🚀 ~ file: PostDetailScreen.tsx:28 ~ PostDetailScreen ~ data:", data.comments[0].likes)
     const { comments } = data
     const { updatePost } = usePost()
     const { user } = useAuthContext()
 
-    const handleBlur = () => {
-        inputRef.current.blur()
-        setFocusInput(false)
-    }
+
 
     // useEffect(() => {
     //     const subscriber = firestore()
@@ -66,7 +63,7 @@ const PostDetailScreen = () => {
                 showNotification('Your comment sent successful', UtilIcons.success)
                 setComment('')
             }
-            handleBlur()
+            // handleBlur()
         } catch (error) {
             console.log("🚀 ~ file: PostDetailScreen.tsx:27 ~ handleComment ~ error:", error)
         }
@@ -79,57 +76,66 @@ const PostDetailScreen = () => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-            <View style={{ flex: 1, paddingTop: SIZES.base, backgroundColor: COLORS.white }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.darkBlack }}>
+            <Header
+                title={'Post'}
+                leftComponent={
+                    <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => navigation.goBack()}>
+                        <UtilIcons.svgArrowLeft color={COLORS.socialWhite} />
+                    </TouchableOpacity>
+                }
+            />
+            <ScrollView>
+                {/* content post */}
                 <PostCard item={data} />
-                <TouchableOpacity style={{padding: SIZES.base, flexDirection: 'row', alignItems: 'center'}}>
-                    <Text style={{...FONTS.body3, color: COLORS.black, paddingRight: SIZES.base }}>All comments</Text>
-                    <Icon type={TypeIcons.AntDesign} name='down' color={COLORS.black} size={18}/>
-                </TouchableOpacity>
+
+                <View style={{ height: 2, backgroundColor: COLORS.darkGrey }} />
+
+                {/* comment data */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: SIZES.padding }}>
+                    <TextComponent text={`${'Comment'.toUpperCase()} (${50})`} style={{ paddingRight: SIZES.base }} color={COLORS.socialWhite} />
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                        <TextComponent text={'Recent'} style={{ paddingRight: SIZES.base, fontWeight: 'bold' }} color={COLORS.socialWhite} />
+                        <UtilIcons.svgChevronDown color={COLORS.socialWhite} />
+                    </TouchableOpacity>
+                </View>
+
                 <FlatList
+                    scrollEnabled={false}
                     data={comments}
                     keyExtractor={(item, index) => index + item.userID}
                     renderItem={renderItemComment}
+                    style={{ padding: SIZES.padding }}
+                    contentContainerStyle={{ gap: SIZES.padding }}
+                    ListFooterComponentStyle={{ height: 60 }}
                 />
-                <View style={styles.inputContainer}>
-                    <View style={styles.inputWrap}>
-                        <TextInput
-                            ref={inputRef}
-                            style={styles.inputText}
-                            placeholder="Write a comment..."
-                            onFocus={() => setFocusInput(true)}
-                            onChangeText={setComment}
-                            value={comment}
-                        />
-                        <View style={styles.iconWrap}>
-                            {focusInput ? (
-                                <TouchableOpacity onPress={handleComment}>
-
-                                    <Icon type={TypeIcons.Ionicons} name='send' color={COLORS.blue} size={SIZES.icon} />
-                                </TouchableOpacity>
-                            ) : (
-                                IconArray.map((item, index) => {
+                <View style={{ height: SIZES.padding * 7 }} />
+            </ScrollView>
+            {/* send comment */}
+            <View style={styles.inputContainer}>
+                <InputBar
+                    placeholder="Type your comment here..."
+                    options={() => {
+                        return (
+                            <View style={{
+                                flex: 1,
+                                flexDirection: 'row',
+                                justifyContent: 'space-around',
+                                borderTopWidth: 0.3,
+                                borderTopColor: COLORS.lightGrey,
+                                padding: SIZES.base,
+                            }}>
+                                {IconArray.map((item, index) => {
                                     return (
                                         <TouchableOpacity onPress={item.onPress} key={index}>
-                                            <Icon type={item.type} name={item.name} color={COLORS.gray} size={SIZES.icon} />
+                                            <Icon type={item.type} name={item.name} color={COLORS.socialWhite} size={SIZES.icon} />
                                         </TouchableOpacity>
                                     )
-                                })
-                            )}
-                        </View>
-                    </View>
-                    {focusInput ? (
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-around', borderTopWidth: 0.3, borderTopColor: COLORS.blue, padding: SIZES.base }}>
-                            {IconArray.map((item, index) => {
-                                return (
-                                    <TouchableOpacity onPress={item.onPress} key={index}>
-                                        <Icon type={item.type} name={item.name} color={COLORS.blue} size={SIZES.icon} />
-                                    </TouchableOpacity>
-                                )
-                            })}
-                        </View>
-                    ) : <></>}
-                </View>
+                                })}
+                            </View>
+                        )
+                    }}
+                />
             </View>
         </SafeAreaView>
 
@@ -144,17 +150,17 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: COLORS.white,
+        backgroundColor: COLORS.black,
     },
     inputWrap: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderRadius: 40,
-        borderColor: COLORS.gray,
-        borderWidth: 1,
-        margin: SIZES.base,
-        paddingHorizontal: SIZES.base
+        margin: SIZES.padding,
+        marginBottom: SIZES.padding * 2,
+        paddingHorizontal: SIZES.base,
+        backgroundColor: COLORS.darkGrey
     },
     inputText: {
         height: 45,
@@ -165,5 +171,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: SIZES.base,
         justifyContent: 'flex-end'
+    },
+    btnHeaderLeft: {
+        width: 32,
+        height: 32,
+        borderRadius: 20,
+        borderColor: COLORS.lightGrey,
+        borderWidth: 1,
+        marginHorizontal: SIZES.padding,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 }) 

@@ -11,8 +11,9 @@ import AddPostScreen from "./AddPostScreen"
 import PostDetailScreen from "./PostDetailScreen"
 import SearchScreen from "./SearchScreen"
 import StoryScreen from "./StoryScreen"
+import SettingsScreen from "./SettingsScreen"
 
 export {
     LoginScreen, OnBoardingScreen, SignupScreen, ChatScreen, ProfileScreen, MessagesScreen, UpdateProfileScreen,
-    NotificationScreen, ImageViewScreen, AddPostScreen, PostDetailScreen, SearchScreen, StoryScreen
+    NotificationScreen, ImageViewScreen, AddPostScreen, PostDetailScreen, SearchScreen, StoryScreen, SettingsScreen
 }
