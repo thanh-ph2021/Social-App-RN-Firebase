@@ -24,7 +24,7 @@ const usePost = () => {
                 .then((querySnapshot) => {
                     let postList: PostModel[] = []
                     querySnapshot.forEach((doc) => {
-                        const { post, media, postTime, likes, comments, userID } = doc.data()
+                        const { post, media, postTime, likes, comments, userID, location, giphyMedias, docs, checklistData } = doc.data()
                         postList.push({
                             id: doc.id,
                             post: post,
@@ -33,6 +33,10 @@ const usePost = () => {
                             likes: likes ?? 0,
                             comments: comments ?? 0,
                             postTime: postTime,
+                            location: location,
+                            giphyMedias: giphyMedias,
+                            docs: docs,
+                            checklistData: checklistData,
                         })
                     })
                     setData(postList)
@@ -56,7 +60,7 @@ const usePost = () => {
                     if (querySnapshot.size > 0) {
                         let postList: PostModel[] = []
                         querySnapshot.forEach((doc) => {
-                            const { post, media, postTime, likes, comments, userID } = doc.data()
+                            const { post, media, postTime, likes, comments, userID, location } = doc.data()
                             postList.push({
                                 id: doc.id,
                                 post: post,
@@ -65,6 +69,7 @@ const usePost = () => {
                                 likes: likes ?? 0,
                                 comments: comments ?? 0,
                                 postTime: postTime,
+                                location: location
                             })
                         })
                         setData([
@@ -88,7 +93,7 @@ const usePost = () => {
                 .then((querySnapshot) => {
                     let postList: PostModel[] = []
                     querySnapshot.forEach((doc) => {
-                        const { post, media, postTime, likes, comments, userID } = doc.data()
+                        const { post, media, postTime, likes, comments, userID, location, giphyMedias, docs } = doc.data()
                         postList.push({
                             id: doc.id,
                             post: post,
@@ -97,6 +102,9 @@ const usePost = () => {
                             likes: likes ?? 0,
                             comments: comments ?? 0,
                             postTime: postTime,
+                            location: location,
+                            giphyMedias: giphyMedias,
+                            docs: docs
                         })
                     })
                     setData(postList)

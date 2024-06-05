@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { View, FlatList, ListRenderItemInfo, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, FlatList, ListRenderItemInfo, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -46,34 +46,37 @@ const MessagesScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
             />
-            <InputBar
-                placeholder='Who do you want to chat with?'
-                mainButton={
-                    <View style={{ paddingRight: SIZES.base }}>
-                        <UtilIcons.svgSearch color={COLORS.lightGrey} />
-                    </View>
-                }
-            />
-            <Divider height={1} />
-            {/* list people have pinned */}
-            <View style={styles.listPinned}>
-                <TextComponent text='PINNED' color={COLORS.lightGrey} />
-                <FlatList
-                    horizontal
-                    data={data}
-                    renderItem={renderItemPinned}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={{ gap: SIZES.padding * 2 }}
+            <ScrollView>
+                <InputBar
+                    placeholder='Who do you want to chat with?'
+                    mainButton={
+                        <View style={{ paddingRight: SIZES.base }}>
+                            <UtilIcons.svgSearch color={COLORS.lightGrey} />
+                        </View>
+                    }
                 />
-            </View>
+                <Divider height={1} />
+                {/* list people have pinned */}
+                <View style={styles.listPinned}>
+                    <TextComponent text='PINNED' color={COLORS.lightGrey} />
+                    <FlatList
+                        horizontal
+                        data={data}
+                        renderItem={renderItemPinned}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={{ gap: SIZES.padding * 2 }}
+                    />
+                </View>
 
-            <Divider />
-            <FlatList
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                ItemSeparatorComponent={() => <Divider />}
-            />
+                <Divider />
+                <FlatList
+                    data={data}
+                    scrollEnabled={false}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                    ItemSeparatorComponent={() => <Divider />}
+                />
+            </ScrollView>
         </View>
     )
 }

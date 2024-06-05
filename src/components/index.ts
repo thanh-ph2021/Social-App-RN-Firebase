@@ -12,5 +12,8 @@ import CommentCard from './CommentCard'
 import TextComponent from './TextComponent'
 import Header from './Header'
 import InputBar from './InputBar'
+import SvgIcon from './SvgIcon'
+import ChecklistComponent from './ChecklistComponent'
+import AlertV1 from './Alert/AlertV1'
 
-export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider, Avatar, CommentCard, TextComponent, Header, InputBar }
+export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider, Avatar, CommentCard, TextComponent, Header, InputBar, SvgIcon, ChecklistComponent, AlertV1 }

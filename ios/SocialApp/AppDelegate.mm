@@ -11,6 +11,8 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
+  [SDImageCodersManager.sharedManager addCoder:SDImageWebPCoder.sharedCoder];
+
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

@@ -1,12 +1,13 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 import { Alert, Platform, View, Text } from 'react-native'
-import { UserModel } from '../models'
 import messaging from '@react-native-firebase/messaging'
 import { PermissionsAndroid } from 'react-native'
-import React from 'react'
+import React, { useRef } from 'react'
 import { Notifier } from 'react-native-notifier'
+
 import { COLORS, FONTS, SIZES } from '../constants'
+import { UserModel } from '../models'
 
 export const deletePost = async (postId: string, setIsDelete: any) => {
     firestore().collection('Posts')
@@ -101,3 +102,26 @@ export const showNotification = (title: string, Icon: () => React.ReactElement) 
 export const getTimeNow = () => {
     return firestore.Timestamp.fromDate(new Date())
 }
+
+export function useLatest<V>(value: V) {
+    const ref = useRef<V>(value)
+    ref.current = value
+    return ref
+}
+
+export function readableFileSize(attachmentSize?: number) {
+    const DEFAULT_SIZE = 0;
+    const fileSize = attachmentSize ?? DEFAULT_SIZE;
+  
+    if (!fileSize) {
+      return `${DEFAULT_SIZE} kb`;
+    }
+  
+    const sizeInKb = fileSize / 1024;
+  
+    if (sizeInKb > 1024) {
+      return `${(sizeInKb / 1024).toFixed(2)} mb`;
+    } else {
+      return `${sizeInKb.toFixed(2)} kb`;
+    }
+  }

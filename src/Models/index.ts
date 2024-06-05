@@ -5,5 +5,6 @@ import { MessageItemModel } from "./MessageItemModel"
 import { DeviceModel } from "./DeviceModel"
 import { NotificationRequest } from "./NotificationRequest"
 import { MediaItem } from "./MediaItem"
+import { ChecklistModel, TimeLimitModel, OptionDataModel } from "./ChecklistModel"
 
-export type { PostModel, UserModel, MessageModel, MessageItemModel, DeviceModel, NotificationRequest, MediaItem, LikeModel }
+export type { PostModel, UserModel, MessageModel, MessageItemModel, DeviceModel, NotificationRequest, MediaItem, LikeModel, ChecklistModel, TimeLimitModel, OptionDataModel }

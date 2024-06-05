@@ -1,34 +1,54 @@
 import React from 'react'
 import { View, FlatList, Image, StyleSheet, ListRenderItem, TouchableOpacity } from 'react-native'
-import Icon, { TypeIcons } from './Icon'
-import { COLORS, SIZES } from '../constants'
 import Video from 'react-native-video'
+import { GiphyMedia } from '@giphy/react-native-sdk'
+
+import { COLORS, SIZES } from '../constants'
+import Icon, { TypeIcons } from './Icon'
 import { MediaItem } from '../models'
+import { MediaViewSample } from './Giphy/MediaViewSample'
 
 interface MediaGridProps {
   mediaArray: MediaItem[]
+  giphyMedias: GiphyMedia[]
   delMedia?: (uri: string) => void
+  delGiphyMedia?: (mediaID: string) => void
 }
 
-const MediaGrid: React.FC<MediaGridProps> = ({ mediaArray, delMedia }) => {
+const MediaGrid: React.FC<MediaGridProps> = ({ mediaArray, giphyMedias, delMedia, delGiphyMedia }) => {
 
-  const renderItem: ListRenderItem<MediaItem> = ({ item }) => {
+  const data = mediaArray.length > 0 ? mediaArray : giphyMedias
+
+  const renderItem: ListRenderItem<any> = ({ item }) => {
     return (
       <View>
-        {item.type == 'image' ? (
-          <Image source={{ uri: item.uri }} resizeMode='cover' style={mediaArray.length > 1 ? styles.image : { ...styles.image, width: SIZES.width, marginLeft: 0 }} />
-        ) : (
-          <Video source={{ uri: item.uri }}   // Can be a URL or a local file.
-            // ref={(ref) => {
-            //   this.player = ref
-            // }}                                      // Store reference
-            // onBuffer={this.onBuffer}                // Callback when remote video is buffering
-            // onError={this.videoError}               // Callback when video cannot be loaded
-            resizeMode='cover'
-            style={mediaArray.length > 1 ? styles.image : { ...styles.image, width: SIZES.width, marginLeft: 0 }} />
-        )}
+        {!item.id
+          ?
+          (item.type == 'image' ? (
+            <Image source={{ uri: item.uri }} resizeMode='cover' style={mediaArray.length > 1 ? styles.image : { ...styles.image, width: SIZES.width, marginLeft: 0 }} />
+          ) : (
+            <Video source={{ uri: item.uri }}
+              resizeMode='cover'
+              style={data.length > 1 ? styles.image : { ...styles.image, width: SIZES.width, marginLeft: 0 }} />
+          ))
+          :
+          (
+            <View style={[data.length > 1 ? styles.image : { ...styles.image, width: '100%', marginLeft: 0 , alignSelf: 'center' }, { aspectRatio: item.aspectRatio }]}>
+              <MediaViewSample media={item} />
+            </View>
+          )
+        }
 
-        <TouchableOpacity style={styles.buttonDelImage} onPress={() => delMedia && delMedia(item.uri)}>
+        <TouchableOpacity
+          style={styles.buttonDelImage}
+          onPress={() => {
+            if (item.id) {
+              delGiphyMedia && delGiphyMedia(item.id)
+            } else {
+              delMedia && delMedia(item.uri)
+            }
+          }}
+        >
           <Icon type={TypeIcons.Feather} name='x' size={SIZES.icon} color={COLORS.black} />
         </TouchableOpacity>
       </View>
@@ -37,7 +57,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ mediaArray, delMedia }) => {
 
   return (
     <FlatList
-      data={mediaArray}
+      data={data}
       renderItem={renderItem}
       keyExtractor={(item, index) => index.toString()}
       snapToEnd
@@ -60,16 +80,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0
-  },
-
-  backgroundVideo: {
-    position: 'absolute',
-    width: '100%',
-    height: 250,
-    top: 20,
-    left: 0,
-    bottom: 0,
-    right: 0,
   },
 });
 

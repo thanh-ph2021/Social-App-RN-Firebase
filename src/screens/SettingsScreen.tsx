@@ -6,8 +6,9 @@ import { getUser } from '../utils'
 import { COLORS, SIZES } from '../constants'
 import { TextComponent } from '../components'
 import { useAuthContext } from '../hooks'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const { user, logout } = useAuthContext()
 

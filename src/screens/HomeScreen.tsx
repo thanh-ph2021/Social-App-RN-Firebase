@@ -185,7 +185,10 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
+            >
                 {/* Story */}
                 <View style={{ borderBottomColor: COLORS.darkGrey, borderBottomWidth: 1, paddingBottom: SIZES.padding }}>
                     <FlatList
@@ -210,10 +213,9 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     keyExtractor={(item, index) => `${item.id}_${index}`}
                     ListFooterComponent={() => <View style={{ height: 70 }} />}
                     showsVerticalScrollIndicator={false}
-                    refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
-                    onEndReached={onEndReachedHandle}
                     ItemSeparatorComponent={() => <Divider />}
                     style={{ paddingTop: SIZES.base }}
+                    onEndReached={onEndReachedHandle}
                 />
             </ScrollView>
         </SafeAreaView>

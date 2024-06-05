@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import LinearGradient from 'react-native-linear-gradient'
 import { TouchableOpacity } from 'react-native'
+
 import FeedStack from './FeedStack'
 import ProfileStack from './ProfileStack'
 import { AddPostScreen, NotificationScreen, SearchScreen } from '../screens'
@@ -11,27 +12,6 @@ import { UtilIcons } from '../utils/icons'
 const Tab = createBottomTabNavigator()
 
 const BottomTabsNavigation = () => {
-
-    const { user } = useAuthContext()
-
-    const TabButton = ({ children, onPress }: any) => {
-
-        return (
-            <TouchableOpacity
-                style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    elevation: 8,
-                }}
-                onPress={onPress}>
-                <LinearGradient
-                    colors={[COLORS.gradient[0], COLORS.gradient[1]]}
-                    style={{ width: 40, height: 40, borderRadius: 32 }}>
-                    {children}
-                </LinearGradient>
-            </TouchableOpacity>
-        )
-    }
 
     return (
         <Tab.Navigator
@@ -49,7 +29,6 @@ const BottomTabsNavigation = () => {
 
             }}
         >
-
             <Tab.Screen
                 name="HomeMain"
                 component={FeedStack}
@@ -87,10 +66,10 @@ const BottomTabsNavigation = () => {
                 options={{
                     tabBarIcon: ({ focused }) => (
                         <UtilIcons.svgAlert color={focused ? COLORS.socialWhite : COLORS.darkGrey} />
-                    )
+                    ), 
                 }}
             />
-            <Tab.Screen
+            <Tab.Screen 
                 name="ProfileMain"
                 component={ProfileStack}
                 options={{
@@ -99,7 +78,6 @@ const BottomTabsNavigation = () => {
                     )
                 }}
             />
-
         </Tab.Navigator>
     )
 }

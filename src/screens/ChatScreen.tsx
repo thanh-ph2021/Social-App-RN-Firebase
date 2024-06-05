@@ -1,15 +1,16 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useCallback, useEffect } from 'react'
-import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat'
+import { GiftedChat, Bubble, Send, Composer, InputToolbar, Avatar, SystemMessage } from 'react-native-gifted-chat'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import LinearGradient from 'react-native-linear-gradient'
 import { useRoute } from '@react-navigation/native'
 
-import { COLORS, SIZES } from '../constants'
+import { COLORS, FONTS, SIZES } from '../constants'
 import { useAuthContext, useChat } from '../hooks'
 import { MessageItemModel, UserModel } from '../models'
 import useNotification from '../hooks/useNotification'
-import { Avatar, Divider, Header, TextComponent } from '../components'
+import { Avatar as CustomAvatar, Divider, Header, TextComponent } from '../components'
 import { UtilIcons } from '../utils/icons'
 
 const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
@@ -50,11 +51,17 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 {...props}
                 wrapperStyle={{
                     right: {
-                        backgroundColor: COLORS.blue
+                        backgroundColor: COLORS.socialBlue
+                    },
+                    left: {
+                        backgroundColor: COLORS.darkGrey
                     }
                 }}
                 textStyle={{
                     right: {
+                        color: COLORS.white
+                    },
+                    left: {
                         color: COLORS.white
                     }
                 }}
@@ -64,10 +71,13 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const renderSend = (props: any) => {
         return (
-            <Send {...props}>
-                <View style={{ padding: SIZES.base }} >
-                    <Ionicons name='send' color={COLORS.blue} size={SIZES.icon} />
-                </View>
+            <Send {...props} containerStyle={{
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.buttonSend}>
+                    <UtilIcons.svgSend color={COLORS.socialWhite} />
+                </LinearGradient>
             </Send>
         )
     }
@@ -85,7 +95,7 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 containerStyle={{ marginBottom: SIZES.padding }}
                 centerComponent={
                     <View style={{ alignItems: 'center' }}>
-                        <Avatar source={{ uri: receiveUser.userImg }} size='m' />
+                        <CustomAvatar source={{ uri: receiveUser.userImg }} size='m' />
                         <TextComponent text={`${receiveUser.fname} ${receiveUser.lname}`} style={{ fontWeight: 'bold', marginTop: 4 }} />
                     </View>
                 }
@@ -115,6 +125,49 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     renderSend={renderSend}
                     scrollToBottom
                     scrollToBottomComponent={scrollToBottomComponent}
+                    placeholder='Type your message here...'
+                    renderInputToolbar={(props) => {
+                        return (
+                            <InputToolbar
+                                {...props}
+                                containerStyle={{
+                                    backgroundColor: COLORS.darkBlack,
+                                    padding: SIZES.padding,
+                                    margin: 0,
+                                }}
+                                primaryStyle={{ alignItems: 'center', backgroundColor: COLORS.darkGrey, borderRadius: 32 }}
+                                accessoryStyle={{ height: SIZES.base }}
+                            />
+                        )
+                    }}
+                    renderComposer={(props) => {
+                        return (
+                            <Composer
+                                {...props}
+                                textInputStyle={{ padding: SIZES.base, ...FONTS.body3, color: COLORS.socialWhite, marginBottom: 0 }}
+                                placeholderTextColor={COLORS.socialWhite}
+                            />
+                        )
+                    }}
+                    renderChatFooter={() => {
+                        return (
+                            <View style={{ height: 20 }} />
+                        )
+                    }}
+                    renderSystemMessage={(props) => (
+                        <SystemMessage
+                            {...props}
+                            containerStyle={{ backgroundColor: 'pink' }}
+                            wrapperStyle={{ borderWidth: 10, borderColor: 'white' }}
+                            textStyle={{ color: 'crimson', fontWeight: '900' }}
+                        />
+                    )}
+                    renderAvatar={(props) => (
+                        <Avatar
+                          {...props}
+                          imageStyle={{ left: { width: 28, height: 28 }, right: {} }}
+                        />
+                      )}
                 />
             </View>
 
@@ -135,5 +188,14 @@ const styles = StyleSheet.create({
         marginHorizontal: SIZES.padding,
         alignItems: 'center',
         justifyContent: 'center'
-    }
+    },
+
+    buttonSend: {
+        width: 32,
+        height: 32,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: SIZES.base
+    },
 })

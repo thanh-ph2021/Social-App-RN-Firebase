@@ -39,7 +39,6 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const { user, logout } = useAuthContext()
     const [isDelete, setIsDelete] = useState<boolean>(false)
     const params = route.params
-    console.log("🚀 ~ ProfileScreen ~ params:", params)
     const [userData, setUserData] = useState<UserModel>()
     const { data, getPostByUserID } = usePost()
     const { addChatData } = useChat()
