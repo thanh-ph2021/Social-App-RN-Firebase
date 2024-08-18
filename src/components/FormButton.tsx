@@ -1,4 +1,5 @@
 import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps } from "react-native"
+
 import { COLORS, SIZES, FONTS } from "../constants"
 
 interface Props {
@@ -20,7 +21,7 @@ export default FormButton
 const styles = StyleSheet.create({
     buttonContainer: {
         padding: SIZES.padding,
-        backgroundColor: COLORS.blue,
+        backgroundColor: COLORS.socialPink,
         marginTop: SIZES.padding,
         alignItems: 'center',
         borderRadius: SIZES.base

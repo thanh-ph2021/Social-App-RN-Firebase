@@ -10,7 +10,7 @@ import BottomTabsNavigation from './BottomTabsNavigator'
 
 import { requestUserPermission } from '../utils'
 import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
-import { AddPostScreen, ChatScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, SettingsScreen, StoryScreen } from '../screens'
+import { AddPostScreen, ChatScreen, CreatePageScreen, FollowScreen, FriendScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, ProfileScreen, SettingsScreen, StoryScreen, UpdateProfileScreen, VideoDetailScreen } from '../screens'
 
 const Stack = createNativeStackNavigator()
 
@@ -186,6 +186,31 @@ const AppStack = () => {
             <Stack.Screen
                 name='Settings'
                 component={SettingsScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='CreatePage'
+                component={CreatePageScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='UpdateProfile'
+                component={UpdateProfileScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Profile'
+                component={ProfileScreen}
+                options={{headerShown: false}}
+            /> 
+            <Stack.Screen
+                name='Friends'
+                component={FriendScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='VideoDetail'
+                component={VideoDetailScreen}
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

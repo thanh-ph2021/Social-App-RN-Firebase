@@ -1,4 +1,5 @@
-import { StyleProp, TextStyle, Text, Platform } from "react-native"
+import { memo, useState } from 'react'
+import { StyleProp, TextStyle, Text, Platform, TextLayoutEventData, NativeSyntheticEvent } from "react-native"
 
 import { utilStyles } from "../styles"
 import { COLORS } from "../constants"
@@ -10,30 +11,52 @@ interface Props {
     flex?: number,
     style?: StyleProp<TextStyle>,
     title?: boolean,
-    numberOfLines?: number
+    numberOfLines?: number,
+    showFullLine?: boolean
 }
 const TextComponent = (props: Props) => {
 
-    const { text, color, size, flex, style, title, numberOfLines } = props
+    const { text, color, size, flex, style, title, numberOfLines, showFullLine } = props
+    const [textShown, setTextShown] = useState(false)
+    const [lengthMore, setLengthMore] = useState(false)
 
     const fontSizeDefault = Platform.OS === 'ios' ? 16 : 14
 
+    const toggleNumberOfLines = () => {
+        setTextShown(!textShown)
+    }
+
+    const onTextLayout = (event: NativeSyntheticEvent<TextLayoutEventData>) => {
+        setLengthMore(event.nativeEvent.lines.length > (numberOfLines ?? 3))
+    }
+
     return (
-        <Text
-            numberOfLines={numberOfLines}
-            style={[
-                utilStyles.text,
-                {
-                    color: color ?? COLORS.text,
-                    flex: flex ?? 0,
-                    fontSize: size ? size : title ? 18 : fontSizeDefault
-                },
-                style,
-            ]}
-        >
-            {text}
-        </Text>
+        <>
+            <Text
+                numberOfLines={textShown || showFullLine ? undefined : (numberOfLines ?? 3)}
+                style={[
+                    utilStyles.text,
+                    {
+                        color: color ?? COLORS.text,
+                        flex: flex ?? 0,
+                        fontSize: size ? size : title ? 18 : fontSizeDefault,
+                        lineHeight: 21
+                    },
+                    style,
+                ]}
+                onTextLayout={onTextLayout}
+            >
+                {text}
+            </Text>
+
+            {lengthMore && !showFullLine ? <Text
+                onPress={toggleNumberOfLines}
+                style={{ lineHeight: 21, marginTop: 10, color: COLORS.socialBlue }}
+            >{textShown ? 'Read less' : 'Read more'}</Text> : <></>}
+        </>
+
+
     )
 }
 
-export default TextComponent
+export default memo(TextComponent)

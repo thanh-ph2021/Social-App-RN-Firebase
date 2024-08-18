@@ -1,6 +1,6 @@
+import { memo, forwardRef, useState } from 'react'
 import { StyleProp, StyleSheet, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import { useRef, useState } from 'react'
 
 import { COLORS, SIZES } from '../constants'
 import { UtilIcons } from '../utils/icons'
@@ -12,24 +12,19 @@ interface Props {
     mainButton?: any,
     options?: any,
     containerStyle?: StyleProp<ViewStyle>
+    onPressMainButton?: () => void,
 }
 
-const InputBar = (props: Props) => {
+const InputBar = (props: Props, ref: any) => {
 
-    const { placeholder, value, onChangeText, mainButton, options, containerStyle } = props
+    const { placeholder, value, onChangeText, mainButton, options, containerStyle, onPressMainButton } = props
     const [focusInput, setFocusInput] = useState(false)
-    const inputRef = useRef<any>()
-
-    const handleBlur = () => {
-        inputRef.current.blur()
-        setFocusInput(false)
-    }
 
     return (
         <View>
             <View style={[styles.inputContainer, containerStyle]}>
                 <TextInput
-                    ref={inputRef}
+                    ref={ref}
                     onFocus={() => setFocusInput(true)}
                     onBlur={() => setFocusInput(false)}
                     style={[styles.textInput, { width: options ? '79%' : '90%' }]}
@@ -46,7 +41,7 @@ const InputBar = (props: Props) => {
                 ) : <></>}
 
                 {mainButton ? mainButton : (
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={onPressMainButton}>
                         <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.buttonSend}>
                             <UtilIcons.svgSend color={COLORS.socialWhite} />
                         </LinearGradient>
@@ -63,7 +58,7 @@ const InputBar = (props: Props) => {
     )
 }
 
-export default InputBar
+export default memo(forwardRef(InputBar))
 
 const styles = StyleSheet.create({
     inputContainer: {

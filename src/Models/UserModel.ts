@@ -8,5 +8,9 @@ export interface UserModel {
     about?: string,
     phone?: string,
     country?: string,
-    city?: string
+    city?: string,
+    followers?: string[],
+    followings?: string[],
+    bannerImg?: string,
+    postTags?: string[]
 }

@@ -1,27 +1,36 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native'
+import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, Platform, Alert, Modal, ActivityIndicator } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { COLORS, SIZES, images, FONTS } from '../constants'
 import FormButton from '../components/FormButton'
 import FormInput from '../components/FormInput'
 import Feather from 'react-native-vector-icons/Feather'
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import firestore from '@react-native-firebase/firestore'
-import useAuthContext from '../hooks/useAuthContext'
 import ImagePicker from 'react-native-image-crop-picker'
 import storage from '@react-native-firebase/storage'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { UserModel } from '../models'
+import { fetchUsers, updateUser } from '../redux/actions/user'
+import { useAppDispatch, useAppSelector } from '../hooks'
+import { Header, TextComponent } from '../components'
+import { utilStyles } from '../styles'
+import { UtilIcons } from '../utils/icons'
+import LinearGradient from 'react-native-linear-gradient'
+import { showNotification } from '../utils'
 
 const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-    const { user, setUser } = useAuthContext()
-    const [userData, setUserData] = useState<UserModel>()
+
     const sheetRef = useRef<any>(null)
-    const [image, setImage] = useState<any>(null)
-    const [upLoading, setUpLoading] = useState<any>()
-    const [transferred, setTransferred] = useState<any>()
+    const dispatch = useAppDispatch()
+    const [avatar, setAvatar] = useState<any>(null)
+    const [banner, setBanner] = useState<any>(null)
+    const [upLoading, setUpLoading] = useState<any>(false)
     const bottomSheetRef = useRef<BottomSheet>(null)
+    const user = useAppSelector(state => state.userState.currentUser)
+    const [userData, setUserData] = useState<UserModel>(user)
+    const [typeImage, setTypeImage] = useState<'avatar' | 'banner'>('avatar')
 
     const snapPoints = useMemo(() => ['25%', '50%'], [])
 
@@ -37,78 +46,56 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         }
     }
 
-    const getUser = async () => {
-        const currentUser = await firestore()
-            .collection('users')
-            .doc(user!.uid)
-            .get()
-            .then((documentSnapshot) => {
-                if (documentSnapshot.exists) {
-                    setUserData(documentSnapshot.data())
-                }
-            })
-    }
-
-    useEffect(() => {
-        getUser()
-    }, [])
-
     const handleUpdate = async () => {
-        if (userData && user) {
-            let imageUrl = await uploadImage()
 
-            if (imageUrl == null && userData?.userImg) {
-                imageUrl = userData.userImg
-            }
+        try {
+            setUpLoading(true)
 
-            setUser({
-                ...user,
+            let avatarUrl = await uploadImage(avatar)
+            let bannerUrl = await uploadImage(banner)
+
+            const newUserCurrent = {
+                ...userData,
                 fname: userData.fname,
                 lname: userData.lname,
                 about: userData.about,
                 phone: userData.phone,
                 country: userData.country,
                 city: userData.city,
-                userImg: imageUrl ?? ''
-            })
+                userImg: avatarUrl ?? userData.userImg,
+                bannerImg: bannerUrl ?? userData.bannerImg ?? '',
+            }
 
-            firestore()
-                .collection('users')
-                .doc(user.uid)
-                .update({
-                    fname: userData.fname,
-                    lname: userData.lname,
-                    about: userData.about,
-                    phone: userData.phone,
-                    country: userData.country,
-                    city: userData.city,
-                    userImg: imageUrl
-                })
-                .then(() => {
-                    console.log('User Updated!')
-                    Alert.alert(
-                        'Profile Updated!',
-                        'Your profile has been updated successfully.'
-                    )
-                })
+            await dispatch(updateUser(newUserCurrent))
+
+            await dispatch(fetchUsers())
+
+            showNotification('Profile updated successfully.', UtilIcons.success)
+
+            setUpLoading(false)
+
+        } catch (error) {
+            console.log("🚀 ~ handleUpdate ~ error:", error)
+        } finally {
+            setUpLoading(false)
         }
     }
 
-    const uploadImage = async () => {
-        if (image == null) {
+    const uploadImage = async (urlImage: string) => {
+        if (urlImage == null) {
             return null
         }
 
-        const uploadUri = image
+        const uploadUri = urlImage
         let filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1)
 
         const storageRef = storage().ref(`photos/${filename}`)
         const task = storageRef.putFile(uploadUri)
 
-        // tiến trình đăng ảnh
-        task.on('state_changed', taskSnapshot => {
-            setTransferred(Math.floor(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes * 100))
-        });
+        // image processing
+        // task.on('state_changed', taskSnapshot => {
+        //     setTransferred(Math.floor(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes * 100))
+        // });
 
         try {
             setUpLoading(true)
@@ -118,7 +105,7 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             const url = await storageRef.getDownloadURL()
 
             setUpLoading(false)
-            return url;
+            return url
         } catch (error) {
             console.log('Upload image to firebase error', error)
             return null
@@ -126,26 +113,32 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     const handleTakePhoto = () => {
+        const width = typeImage === 'avatar' ? 300 : 1000
+        const height = typeImage === 'avatar' ? 400 : 300
+
         ImagePicker.openCamera({
-            width: 300,
-            height: 400,
+            width: width,
+            height: height,
             cropping: true,
         }).then(image => {
             const imageUri = Platform.OS == 'ios' ? image.sourceURL : image.path
-            setImage(imageUri)
-        });
+            typeImage === 'avatar' ? setAvatar(imageUri) : setBanner(imageUri)
+        })
         handleClosePress()
     }
 
     const handleChoosePhoto = () => {
+        const width = typeImage === 'avatar' ? 300 : 1000
+        const height = typeImage === 'avatar' ? 400 : 300
+
         ImagePicker.openPicker({
-            width: 300,
-            height: 400,
+            width: width,
+            height: height,
             cropping: true
         }).then(image => {
             const imageUri = Platform.OS == 'ios' ? image.sourceURL : image.path
-            setImage(imageUri)
-        });
+            typeImage === 'avatar' ? setAvatar(imageUri) : setBanner(imageUri)
+        })
         handleClosePress()
     }
 
@@ -173,74 +166,131 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     <FormButton buttonTitle={'Take Photo'} onPress={handleTakePhoto} />
                     <FormButton buttonTitle={'Choose From Library'} onPress={handleChoosePhoto} />
                     <TouchableOpacity style={{ marginTop: SIZES.base, alignSelf: 'center' }} onPress={handleClosePress}>
-                        <Ionicons name='close-circle-outline' size={50} color={COLORS.gray} />
+                        <Ionicons name='close-circle-outline' size={50} color={COLORS.darkGrey} />
                     </TouchableOpacity>
                 </View>
             </BottomSheet>
         )
     }
 
+    const renderModal = () => {
+        return (
+            <Modal visible={upLoading} transparent>
+                <View style={{ backgroundColor: 'rgba(0,0,0,0.5)', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ width: 200, height: 100, backgroundColor: COLORS.white, borderRadius: SIZES.base, alignItems: 'center', justifyContent: 'center' }}>
+                        <ActivityIndicator size='large' color={COLORS.blue} />
+                        <Text style={{ ...FONTS.body3, padding: SIZES.base }}>Processing ... </Text>
+                    </View>
+                </View>
+            </Modal>
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false} style={{ margin: SIZES.base }}>
-                <TouchableOpacity style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} onPress={handleOpenBottomSheet}>
-                    {image || userData?.userImg ? <Image source={{ uri: image ?? userData?.userImg }} style={styles.image} resizeMode='cover' /> : (
+            <Header
+                title={'Update Profile'}
+                leftComponent={
+                    <TouchableOpacity style={utilStyles.btnHeaderLeft} onPress={() => navigation.goBack()}>
+                        <UtilIcons.svgArrowLeft color={COLORS.socialWhite} />
+                    </TouchableOpacity>
+                }
+            />
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View>
+                    {banner || user.bannerImg ? <Image source={{ uri: banner ?? user.bannerImg }} resizeMode='cover' style={{ height: 160, width: '100%' }} /> :
+                        <Image source={images.defaultImage} resizeMode='cover' style={{ height: 160, width: '100%' }} />
+                    }
+                    <TouchableOpacity style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} onPress={() => {
+                        setTypeImage('avatar')
+                        handleOpenBottomSheet()
+                    }}>
+                        <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={utilStyles.avatarStyle}>
+                            {avatar || user.userImg ? <Image
+                                source={{ uri: avatar ?? user.userImg }}
+                                style={[utilStyles.image, { opacity: 0.5, backgroundColor: COLORS.socialWhite }]}
+                                resizeMode='cover'
+                            /> : (
+                                <Image
+                                    source={images.defaultImage}
+                                    style={[utilStyles.image, { opacity: 0.5, backgroundColor: COLORS.socialWhite }]}
+                                    resizeMode='cover'
+                                />
+                            )}
+                        </LinearGradient>
+                        <Feather name='camera' size={SIZES.icon} color={COLORS.socialWhite} style={{ position: 'absolute', top: 0 }} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            backgroundColor: COLORS.darkBlack,
+                            width: 30,
+                            height: 30,
+                            top: 5,
+                            right: 5,
+                            borderRadius: 40,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderWidth: 1,
+                            borderColor: COLORS.socialWhite
+                        }}
+                        onPress={() => {
+                            setTypeImage('banner')
+                            handleOpenBottomSheet()
+                        }}
+                    >
+                        <MaterialIcons name='edit' size={SIZES.icon} color={COLORS.socialWhite} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* <TouchableOpacity style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} onPress={handleOpenBottomSheet}>
+                    {image || userData.userImg ? <Image source={{ uri: image ?? userData?.userImg }} style={styles.image} resizeMode='cover' /> : (
                         <Image source={images.defaultImage} style={styles.image} resizeMode='cover' />
                     )}
-                    <Feather name='camera' size={SIZES.icon} color={COLORS.gray} style={{ position: 'absolute' }} />
-                </TouchableOpacity>
-                <Text style={styles.textTitle}>
-                    {userData?.fname} {userData?.lname}
-                </Text>
+                    <Feather name='camera' size={SIZES.icon} color={COLORS.darkGrey} style={{ position: 'absolute' }} />
+                </TouchableOpacity> */}
 
-                <Text style={styles.text}>
-                    {userData?.about}
-                </Text>
+                <TextComponent style={styles.textTitle} text={`${userData.fname} ${userData.lname}`} />
+                <TextComponent style={styles.text} text={`${userData.about}`} />
 
                 <View>
                     <FormInput
+                        title={'First Name'}
                         labelValue={userData?.fname ?? ''}
                         onChangeText={(text) => setUserData({ ...userData, fname: text })}
-                        placeholderText={'First name'}
-                        iconType={'user'}
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
+                        placeholderText={'Enter First name'}
                     />
                     <FormInput
+                        title={'Last Name'}
                         labelValue={userData?.lname ?? ''}
                         onChangeText={(text) => setUserData({ ...userData, lname: text })}
-                        placeholderText={'Last name'}
-                        iconType={'user'}
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
+                        placeholderText={'Enter Last name'}
                     />
                     <FormInput
+                        title={'About Me'}
                         labelValue={userData?.about ?? ''}
                         onChangeText={(text) => setUserData({ ...userData, about: text })}
-                        placeholderText={'About me'}
-                        iconType={'file-text'}
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
+                        placeholderText={'Enter About Me'}
+                        numberOfLines={5}
+                        multiline
                     />
-                    <FormInput labelValue={userData?.phone ?? ''}
+                    <FormInput
+                        title={'Phone Number'}
+                        labelValue={userData?.phone ?? ''}
                         onChangeText={(text) => setUserData({ ...userData, phone: text })}
-                        placeholderText={'Phone'}
-                        iconType={'phone'}
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
+                        placeholderText={'Enter Phone'}
                     />
-                    <FormInput labelValue={userData?.country ?? ''}
-                        onChangeText={(text) => setUserData({ ...userData, country: text })}
-                        placeholderText={'Country'}
-                        iconType={'globe'}
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
-                    />
-                    <FormInput labelValue={userData?.city ?? ''}
+                    <FormInput
+                        title={'City'}
+                        labelValue={userData?.city ?? ''}
                         onChangeText={(text) => setUserData({ ...userData, city: text })}
-                        placeholderText={'City'}
-                        iconType={'map'} containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
+                        placeholderText={'Enter City'}
+                    />
+                    <FormInput
+                        title={'Country'}
+                        labelValue={userData?.country ?? ''}
+                        onChangeText={(text) => setUserData({ ...userData, country: text })}
+                        placeholderText={'Enter Country'}
                     />
                 </View>
 
@@ -248,6 +298,7 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
             </ScrollView>
             {renderBottomSheet()}
+            {renderModal()}
         </SafeAreaView>
 
     )
@@ -258,6 +309,7 @@ export default UpdateProfileScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: COLORS.darkBlack
     },
 
     image: {
@@ -271,22 +323,11 @@ const styles = StyleSheet.create({
     textTitle: {
         ...FONTS.h2,
         textAlign: 'center',
-        color: COLORS.black,
         paddingTop: SIZES.base
     },
 
     text: {
         ...FONTS.body3,
         textAlign: 'center',
-        color: COLORS.black,
     },
-
-    inputContainer: {
-        borderWidth: 0,
-        borderBottomWidth: 1,
-    },
-    input: {
-        borderLeftWidth: 0,
-        padding: 0,
-    }
 })

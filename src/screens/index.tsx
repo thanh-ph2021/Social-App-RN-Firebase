@@ -12,8 +12,13 @@ import PostDetailScreen from "./PostDetailScreen"
 import SearchScreen from "./SearchScreen"
 import StoryScreen from "./StoryScreen"
 import SettingsScreen from "./SettingsScreen"
+import CreatePageScreen from "./CreatePageScreen"
+import FriendScreen from "./FriendScreen"
+import FollowScreen from "./FollowScreen"
+import VideoDetailScreen from "./VideoDetailScreen"
 
 export {
     LoginScreen, OnBoardingScreen, SignupScreen, ChatScreen, ProfileScreen, MessagesScreen, UpdateProfileScreen,
-    NotificationScreen, ImageViewScreen, AddPostScreen, PostDetailScreen, SearchScreen, StoryScreen, SettingsScreen
+    NotificationScreen, ImageViewScreen, AddPostScreen, PostDetailScreen, SearchScreen, StoryScreen, SettingsScreen,
+    CreatePageScreen, FriendScreen, FollowScreen, VideoDetailScreen
 }

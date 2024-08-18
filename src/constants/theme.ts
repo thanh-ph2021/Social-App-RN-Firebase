@@ -10,6 +10,7 @@ export const COLORS = {
     socialBlue: "#2E8AF6",
     socialPink: "#F62E8E",
     darkGrey: "#323436",
+    darkGrey2: "#2f2f30",
     lightGrey: "#727477",
 
 

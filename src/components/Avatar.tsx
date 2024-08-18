@@ -1,13 +1,14 @@
-import { Image, ImageSourcePropType } from "react-native"
+import { Image, ImageSourcePropType, TouchableOpacity } from "react-native"
 
 type AvatarProps = {
     source: ImageSourcePropType,
-    size: 'xl' | 'l' | 'm' | 's'
+    size: 'xl' | 'l' | 'm' | 's',
+    onPress?: () => void,
 }
 
 const Avatar = (props: AvatarProps) => {
 
-    const { source, size } = props
+    const { source, size, onPress } = props
     let wh = 24
 
     // l= 40, m= 30, s= 20
@@ -27,14 +28,16 @@ const Avatar = (props: AvatarProps) => {
     }
 
     return (
-        <Image
-            source={source}
-            style={{
-                width: wh,
-                height: wh,
-                borderRadius: wh - 5
-            }}
-        />
+        <TouchableOpacity onPress={onPress && onPress}>
+            <Image
+                source={source}
+                style={{
+                    width: wh,
+                    height: wh,
+                    borderRadius: wh - 5
+                }}
+            />
+        </TouchableOpacity>
     )
 }
 

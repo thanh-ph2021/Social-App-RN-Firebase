@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Image } from 'react-native'
 import { type GiphyMedia, GiphyMediaView, GiphyVideoView } from '@giphy/react-native-sdk'
 
@@ -6,7 +6,7 @@ type MediaViewSampleProps = {
   media: GiphyMedia
 }
 
-export function MediaViewSample(props: MediaViewSampleProps) {
+function MediaViewSample(props: MediaViewSampleProps) {
   const { media } = props
 
   if (media.isVideo) {
@@ -35,3 +35,5 @@ export function MediaViewSample(props: MediaViewSampleProps) {
     <GiphyMediaView media={media} style={{ aspectRatio: media.aspectRatio }} />
   )
 }
+
+export default memo(MediaViewSample)

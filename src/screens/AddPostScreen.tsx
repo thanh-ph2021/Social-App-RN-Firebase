@@ -23,6 +23,8 @@ import { UtilIcons } from '../utils/icons'
 import { GoongAPI } from '../apis'
 import DocumentGrid from '../components/DocumentGrid'
 import { DocumentItem } from '../models/DocumentItem'
+import { useAppDispatch } from '../hooks'
+import { addPost } from '../redux/actions'
 
 
 enum IconName {
@@ -93,6 +95,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const [text, setText] = useState('')
     const inputRef = useRef<any>()
+    const dispatch = useAppDispatch()
 
     const bottomSheetRef = useRef<BottomSheet>(null)
     const [typeSheet, setTypeSheet] = useState<'scope' | 'camera' | 'location' | undefined>()
@@ -123,7 +126,6 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     // 1 - Post; 2 - Story
     const [typeCreate, setTypeCreate] = useState<number>(1)
-
 
     useEffect(() => {
         inputRef.current.focus()
@@ -157,44 +159,46 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const submitPost = async () => {
         try {
             setUpLoading(true)
-            const tasks = arrayMedia.map(item => uploadMedia('photos', item))
-            const urls = await Promise.all(tasks)
+            const medias = arrayMedia.map(item => uploadMedia('photos', item))
+            const mediaDatas = await Promise.all(medias)
+
             const docs = arrayDocs.map(item => uploadMedia('documents', undefined, item))
             const docDatas = await Promise.all(docs)
-            await firestore()
-                .collection('Posts')
-                .add({
-                    userID: user!.uid,
-                    post: text,
-                    media: urls.length > 0 ? urls : null,
-                    docs: docDatas.length > 0 ? docDatas : null,
-                    giphyMedias: giphyMedias.length > 0 ? giphyMedias : null,
-                    checklistData: checkListData,
-                    location: location ? location : null,
-                    scope: scope,
-                    postTime: firestore.Timestamp.fromDate(new Date()),
-                    likes: null,
-                    comments: null
-                })
 
-                .then(() => {
-                    setUpLoading(false)
-                    setArrayMedia([])
-                    setGiphyMedias([])
-                    setArrayDocs([])
-                    setText('')
-                    setShowChecklist(false)
-                    setCheckListData(null)
-                    showNotification('Your post was sent.', UtilIcons.success)
-                })
-                .catch((error) => {
-                    console.log('Something went wrong with added post to firestore.', error)
-                })
+
+            const data = {
+                userID: user!.uid!,
+                post: text,
+                media: mediaDatas.length > 0 ? mediaDatas : [],
+                docs: docDatas.length > 0 ? docDatas : [],
+                giphyMedias: giphyMedias.length > 0 ? giphyMedias : [],
+                checklistData: checkListData,
+                location: location ? location : null,
+                scope: scope,
+                postTime: firestore.Timestamp.fromDate(new Date()),
+                likes: [],
+                comments: [],
+                commentCount: 0
+            }
+
+
+            await dispatch(addPost(data))
+
+            setUpLoading(false)
+            setArrayMedia([])
+            setGiphyMedias([])
+            setArrayDocs([])
+            setText('')
+            setShowChecklist(false)
+            setCheckListData(null)
+            showNotification('Your post was sent.', UtilIcons.success)
 
         } catch (error) {
+            console.log("🚀 ~ submitPost ~ error:", error)
             setUpLoading(false)
         }
     }
+
     const uploadMedia = async (nameFolder: string, media?: MediaItem, doc?: DocumentItem) => {
         try {
             if (media) {
@@ -579,7 +583,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
             />
-            <KeyboardAvoidingView behavior='height' style={{ flex: 1 }}>
+     
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ paddingHorizontal: SIZES.padding }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -670,7 +674,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                         </View>}
                     </View>
                 </ScrollView>
-            </KeyboardAvoidingView>
+           
             <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={() => setTypeCreate(1)}>

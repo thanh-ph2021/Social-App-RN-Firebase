@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react"
+import { useState, useEffect, memo, useCallback } from "react"
 import { View, Text, Image, StyleSheet } from "react-native"
 import { Alert } from "react-native"
 import moment from 'moment'
@@ -8,16 +8,17 @@ import { TouchableOpacity } from "@gorhom/bottom-sheet"
 
 import { SIZES, images, FONTS, COLORS, SECOND_TO_MILISECOND, DAY_TO_SECOND, HOUR_TO_SECOND, MINUTE_TO_SECOND } from '../../constants'
 import { LikeModel, OptionDataModel, PostModel, UserModel } from "../../models"
-import useAuthContext from "../../hooks/useAuthContext"
-import { getUser } from "../../utils"
 import MediaGridCollapse from "../MediaGridCollapse"
-import { usePost } from "../../hooks"
+import { useAppDispatch, useAppSelector } from "../../hooks"
 import LikeButton from "./LikeButton"
 import { UtilIcons } from "../../utils/icons"
 import Icon, { TypeIcons } from "../Icon"
 import TextComponent from "../TextComponent"
-import { MediaViewSample } from "../Giphy/MediaViewSample"
 import DocumentGrid from "../DocumentGrid"
+import MediaViewSample from "../Giphy/MediaViewSample"
+import { updatePost } from "../../redux/actions/post"
+import { selectUserByUID } from "../../redux/selectors"
+import { updateUser } from "../../redux/actions/user"
 
 type PostCardProps = {
     item: PostModel,
@@ -25,27 +26,25 @@ type PostCardProps = {
     onPressUserName?: (userID: string) => void,
 }
 
-
 const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
 
     const [data, setData] = useState<PostModel>(item)
     const [voteResult, setVoteResult] = useState<{ total: number, checked: boolean, expired: boolean }>({ total: 0, checked: false, expired: false })
-    const [likes, setLikes] = useState<LikeModel[]>(item.likes ?? [])
-    const [userData, setUserData] = useState<UserModel>()
-    const { user } = useAuthContext()
+    const currentUser = useAppSelector(state => state.userState.currentUser)
+    const userData: UserModel = useAppSelector(state => selectUserByUID(state, item.userID))
     const navigation = useNavigation<any>()
-
-    const { updatePost, deletePost } = usePost()
+    const dispatch = useAppDispatch()
+    const [tag, setTag] = useState(currentUser.postTags ? currentUser.postTags.includes(item.id!) : false)
 
     useEffect(() => {
-        getUser(item.userID, setUserData)
-    }, [])
+        setData(item)
+    }, [item, currentUser.postTags])
 
     useEffect(() => {
         if (data.checklistData) {
             const voteUsers = data.checklistData.optionDatas.map(option => option.voteUsers).flat()
             // know: user voted
-            const checked = voteUsers.includes(user!.uid!)
+            const checked = voteUsers.includes(currentUser.uid)
 
             // expired handle
             const now = Date.now().valueOf()  // miliseconds
@@ -65,6 +64,10 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
             }
         }
     }, [data.checklistData])
+
+    useEffect(() => {
+        setTag(currentUser.postTags ? currentUser.postTags.includes(item.id!) : false)
+    }, [currentUser.postTags])
 
     const handleDelete = () => {
         Alert.alert(
@@ -86,13 +89,13 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     }
 
     const gotoPostDetail = () => {
-        navigation && navigation.navigate('PostDetailScreen', { data: item })
+        navigation && navigation.navigate('PostDetailScreen', { data: data })
     }
 
-    const handleLike = async (typeEmotion: string, isModal?: boolean) => {
+    const handleLike = useCallback(async (typeEmotion: string, isModal?: boolean) => {
         try {
-            const copyLikes = likes ? [...likes] : []
-            const userID = user?.uid!
+            const copyLikes = data.likes ? [...data.likes] : []
+            const userID = currentUser.uid
             const index = copyLikes.find(item => item.userID == userID)
             let newLikes: LikeModel[] = []
 
@@ -105,7 +108,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                         ...oldLikes,
                         {
                             type: typeEmotion,
-                            userID: user?.uid ?? 'unknow'
+                            userID: userID
                         }
                     ]
                 } else {
@@ -120,24 +123,30 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                     ...copyLikes,
                     {
                         type: typeEmotion,
-                        userID: user?.uid ?? 'unknow'
+                        userID: userID
                     }
                 ]
             }
 
-            setLikes(newLikes)
-            await updatePost({
+            setData({
                 ...item,
                 likes: newLikes
             })
+
+            dispatch(updatePost({
+                ...item,
+                likes: newLikes
+            }))
         } catch (error) {
+            console.log("🚀 ~ handleLike ~ error:", error)
         }
-    }
+
+    }, [data.likes])
 
     const handleVote = async (option: OptionDataModel) => {
         try {
             const newState = { ...data }
-            const uid = user!.uid!
+            const uid = currentUser.uid
 
             if (newState.checklistData) {
                 newState.checklistData = { ...newState.checklistData }
@@ -156,7 +165,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                         return {
                             ...item,
                             voteNumbers: item.voteNumbers + 1,
-                            voteUsers: [...item.voteUsers, user!.uid!]
+                            voteUsers: [...item.voteUsers, userData.uid!]
                         }
                     }
                     return item
@@ -171,13 +180,23 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
         }
     }
 
+    const onPressAvatar = () => {
+        if (data.userID !== currentUser.uid && onPressUserName) {
+            onPressUserName(data.userID)
+        }
+    }
+
+    const onPressOptionPost = () => {
+
+    }
+
     const renderChecklistData = () => {
         if (data.checklistData) {
             return (
                 <View style={{ paddingHorizontal: SIZES.padding, gap: SIZES.base }}>
                     {data.checklistData.optionDatas.map(option => {
                         // know: vote position user
-                        const checked = option.voteUsers?.includes(user!.uid!)
+                        const checked = option.voteUsers?.includes(currentUser.uid)
                         const percent = voteResult.total > 0 ? option.voteUsers.length / voteResult.total * 100 : 0
                         return (
                             <View key={option.id}>
@@ -207,39 +226,54 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                     {voteResult.checked || voteResult.expired ? <TextComponent text={`${voteResult.total} votes`} /> : <></>}
                 </View>
             )
-                    
         }
+    }
+
+    const onTag = () => {
+        setTag(!tag)
+
+        const postTags = currentUser.postTags
+
+        if (postTags && postTags.includes(item.id!)) {
+            dispatch(updateUser({
+                ...currentUser,
+                postTags: postTags.filter((elem: string) => elem !== item.id!)
+            }))
+        } else {
+            dispatch(updateUser({
+                ...currentUser,
+                postTags: postTags ? [...postTags, item.id!] : [item.id!]
+            }))
+        }
+
     }
 
     return (
         <View>
             {/* header */}
-            <TouchableWithoutFeedback onPress={() => onPressUserName && onPressUserName(data.userID)}>
-                <View style={styles.titleContainer}>
-                    {userData ? (
-                        <Image source={{ uri: userData?.userImg }} style={styles.avatar} />
-                    ) : (
-                        <Image source={images.defaultImage} style={styles.avatar} />
-                    )}
+            <View>
+                {userData ? <View style={styles.titleContainer}>
+                    <TouchableWithoutFeedback onPress={onPressAvatar}>
+                        {userData ? (
+                            <Image source={{ uri: userData.userImg }} style={styles.avatar} />
+                        ) : (
+                            <Image source={images.defaultImage} style={styles.avatar} />
+                        )}
+                    </TouchableWithoutFeedback>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
                         <View style={styles.textWrap}>
                             {/* <TouchableOpacity onPress={() => onPressUserName && onPressUserName(item.userID)}> */}
-                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{userData?.fname} {userData?.lname}</Text>
+                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{userData.fname} {userData.lname}</Text>
                             {/* </TouchableOpacity> */}
                             <Text style={[styles.text, { ...FONTS.body4, color: COLORS.lightGrey }]}>{moment(data.postTime.toDate()).fromNow()}</Text>
                         </View>
-                        {/* delete button */}
-                        {/* {user && user.uid == item.userID
-                            ? (
-                                <TouchableOpacity style={{ flexDirection: 'row' }} onPress={handleDelete}>
-                                    <Icon type={TypeIcons.Feather} name='x' color={COLORS.black} size={SIZES.icon} />
-                                </TouchableOpacity>
-                            )
-                            : <></>} */}
                     </View>
-                    <UtilIcons.svgDotsVertical />
-                </View>
-            </TouchableWithoutFeedback>
+                    <TouchableOpacity onPress={onPressOptionPost}>
+                        <UtilIcons.svgDotsVertical />
+                    </TouchableOpacity>
+
+                </View> : <></>}
+            </View>
 
             {/* location */}
             {data.location && (
@@ -249,54 +283,46 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                 </View>
             )}
 
-
             {/* title */}
             <View style={{ marginHorizontal: SIZES.padding, marginVertical: SIZES.padding }}>
-                {data.post && <Text style={[styles.text]}>{data.post}</Text>}
+                {data.post && <TextComponent style={[styles.text]} text={data.post} />}
             </View>
-
 
             {/* image post */}
             {data.media && <MediaGridCollapse media={data.media} onPressImage={(media) => gotoPostDetail()} />}
-            {data.giphyMedias && (
+            {data.giphyMedias && data.giphyMedias.length > 0 && (
                 <View style={[{ height: 250, width: SIZES.width, alignSelf: 'center' }, { aspectRatio: data.giphyMedias[0].aspectRatio }]}>
                     <MediaViewSample media={data.giphyMedias[0]} />
                 </View>
             )}
 
+            {/* documents */}
             {data.docs && (
                 <View style={{ paddingHorizontal: SIZES.padding }}>
                     <DocumentGrid documentArray={data.docs} />
                 </View>
             )}
 
+            {/* checklist */}
             {renderChecklistData()}
-
-            {/* Like number */}
-            {/* {likes.length > 0 ? (
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: SIZES.padding, paddingTop: SIZES.base }}>
-                    <IconEmotionGroup emotionData={likes.map(item => item.type)} />
-                    <Text style={{ ...FONTS.body3, marginLeft: SIZES.base, color: COLORS.socialWhite }}>{likes.length}</Text>
-                </TouchableOpacity>
-            ) : <></>} */}
 
             {/* button */}
             <View style={styles.buttonContainer}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1, alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '45%' }}>
                     {/* likes button */}
                     <LikeButton
-                        data={likes && likes.filter(item => item.userID == user?.uid).map(item => item.type)}
+                        data={data.likes ?? []}
                         handleLike={handleLike}
                     />
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => gotoPostDetail()}>
                         <UtilIcons.svgComment />
-                        <Text style={[styles.text, { paddingLeft: SIZES.base }]}>1</Text>
-                    </View>
+                        <TextComponent text={`${item.commentCount ? item.commentCount : item.comments ? item.comments.length : 0}`} style={{ paddingLeft: SIZES.base }} />
+                    </TouchableOpacity>
                     <UtilIcons.svgShare />
                 </View>
-                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <UtilIcons.svgBookmark />
-                </View>
+                <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onTag}>
+                    <UtilIcons.svgBookmark fill={tag ? COLORS.socialBlue : undefined} />
+                </TouchableOpacity>
             </View>
         </View>
     )

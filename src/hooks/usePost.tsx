@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore'
+import firestore from '@react-native-firebase/firestore'
 import { PostModel } from '../models'
 import useMedia from './useMedia'
-import { deleteFirestoreData } from '../utils'
-
-// number size every load
-const LIMIT = 25
+import { LIMIT } from '../constants'
 
 const usePost = () => {
     const collection = firestore().collection('Posts')
@@ -29,14 +26,15 @@ const usePost = () => {
                             id: doc.id,
                             post: post,
                             userID: userID,
-                            media: media,
+                            media: media ?? null,
                             likes: likes ?? 0,
                             comments: comments ?? 0,
                             postTime: postTime,
-                            location: location,
-                            giphyMedias: giphyMedias,
-                            docs: docs,
-                            checklistData: checklistData,
+                            location: location ?? null,
+                            giphyMedias: giphyMedias ?? null,
+                            docs: docs ?? null,
+                            checklistData: checklistData ?? null,
+                            commentCount: 0
                         })
                     })
                     setData(postList)
@@ -60,16 +58,20 @@ const usePost = () => {
                     if (querySnapshot.size > 0) {
                         let postList: PostModel[] = []
                         querySnapshot.forEach((doc) => {
-                            const { post, media, postTime, likes, comments, userID, location } = doc.data()
+                            const { post, media, postTime, likes, comments, userID, location, giphyMedias, docs, checklistData } = doc.data()
                             postList.push({
                                 id: doc.id,
                                 post: post,
                                 userID: userID,
-                                media: media,
+                                media: media ?? null,
                                 likes: likes ?? 0,
                                 comments: comments ?? 0,
                                 postTime: postTime,
-                                location: location
+                                location: location ?? null,
+                                giphyMedias: giphyMedias ?? null,
+                                docs: docs ?? null,
+                                checklistData: checklistData ?? null,
+                                commentCount: 0
                             })
                         })
                         setData([
@@ -93,18 +95,20 @@ const usePost = () => {
                 .then((querySnapshot) => {
                     let postList: PostModel[] = []
                     querySnapshot.forEach((doc) => {
-                        const { post, media, postTime, likes, comments, userID, location, giphyMedias, docs } = doc.data()
+                        const { post, media, postTime, likes, comments, userID, location, giphyMedias, docs, checklistData } = doc.data()
                         postList.push({
                             id: doc.id,
                             post: post,
                             userID: userID,
-                            media: media,
+                            media: media ?? null,
                             likes: likes ?? 0,
                             comments: comments ?? 0,
                             postTime: postTime,
-                            location: location,
-                            giphyMedias: giphyMedias,
-                            docs: docs
+                            location: location ?? null,
+                            giphyMedias: giphyMedias ?? null,
+                            docs: docs ?? null,
+                            checklistData: checklistData ?? null,
+                            commentCount: 0
                         })
                     })
                     setData(postList)

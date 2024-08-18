@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity } from 'react-native'
+import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
@@ -7,11 +7,13 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import PostCard from '../components/Post/PostCard'
 import { PostModel } from '../models'
 import { COLORS, SIZES, images } from '../constants'
-import { usePost } from '../hooks'
+import { useAppDispatch, useAppSelector, usePost } from '../hooks'
 import { showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { Divider, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
+import { reload } from '../redux/actions'
+import { fetchNextPosts } from '../redux/actions/post'
 
 export const LoadScreen = () => {
     return (
@@ -81,10 +83,19 @@ export const storyData = [
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const [isloadNext, setIsLoadNext] = useState<boolean>(false)
-    const { data, isLoading, getPost, getPostNext, deletePost } = usePost()
+    const dispatch = useAppDispatch()
+    const posts = useAppSelector(state => state.userState.posts)
+    const scrollY = new Animated.Value(0)
+    const currentUser = useAppSelector(state => state.userState.currentUser)
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: any) => {
+        const paddingToBottom = 100
+        return layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom
+    }
 
     useEffect(() => {
-        getPost()
+        dispatch(reload())
         // testLocalNotification()
         // testScheduleNotification()
     }, [])
@@ -116,11 +127,11 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const onEndReachedHandle = async () => {
         setIsLoadNext(true)
-        if (!isloadNext) {
-            await getPostNext().then(() => {
-                setIsLoadNext(false)
-            })
-        }
+
+        await dispatch(fetchNextPosts()).then(() => {
+            setIsLoadNext(false)
+        })
+
     }
 
     const onPressHandle = useCallback((userID: string) => {
@@ -134,7 +145,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }, [])
 
     const onDeletePost = useCallback((item: PostModel) => {
-        deletePost(item)
+        // deletePost(item)
         showNotification('Post deleted successfully', UtilIcons.success)
     }, [])
 
@@ -149,13 +160,13 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     return (
-        <SafeAreaView style={{ backgroundColor: COLORS.darkBlack }}>
+        <SafeAreaView style={{ backgroundColor: COLORS.darkBlack, flex: 1 }}>
 
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SIZES.padding }}>
                 <TextComponent
                     title={true}
-                    text='Good Morning, Alex.'
+                    text={`Good Morning${currentUser && currentUser.lname ? ', '+currentUser.lname : ''} `}
                     style={{ fontWeight: 'bold' }}
                 />
 
@@ -187,7 +198,19 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl onRefresh={() => getPost()} refreshing={false} />}
+                refreshControl={<RefreshControl onRefresh={() => dispatch(reload())} refreshing={false} />}
+                scrollEventThrottle={16}
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    {
+                        useNativeDriver: false,
+                        listener: (event: any) => {
+                            if (isCloseToBottom(event.nativeEvent)) {
+                                onEndReachedHandle()
+                            }
+                        }
+                    }
+                )}
             >
                 {/* Story */}
                 <View style={{ borderBottomColor: COLORS.darkGrey, borderBottomWidth: 1, paddingBottom: SIZES.padding }}>
@@ -205,17 +228,15 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     />
                 </View>
 
-                {/* <FlatList /> */}
                 <FlatList
-                    data={data}
+                    data={posts}
                     scrollEnabled={false}
                     renderItem={renderItem}
                     keyExtractor={(item, index) => `${item.id}_${index}`}
-                    ListFooterComponent={() => <View style={{ height: 70 }} />}
+                    ListFooterComponent={() => isloadNext ? <ActivityIndicator style={{ marginBottom: 70 }} color={COLORS.lightGrey} /> : <View style={{ height: 70 }} />}
                     showsVerticalScrollIndicator={false}
                     ItemSeparatorComponent={() => <Divider />}
                     style={{ paddingTop: SIZES.base }}
-                    onEndReached={onEndReachedHandle}
                 />
             </ScrollView>
         </SafeAreaView>
@@ -223,3 +244,4 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 }
 
 export default HomeScreen
+

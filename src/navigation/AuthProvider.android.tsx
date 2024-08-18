@@ -83,7 +83,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             lname: '',
                             email: email,
                             createAt: firestore.Timestamp.fromDate(new Date()),
-                            userImg: null
+                            userImg: null,
+                            followers: [],
+                            followings: []
                         })
                     })
                     .catch((error) => {

@@ -8,12 +8,18 @@ interface Props {
     centerComponent?: any,
     leftComponent?: any,
     rightComponent?: any,
-    containerStyle?: ViewStyle
+    containerStyle?: ViewStyle,
+    visible?: boolean
 }
 
 const Header = (props: Props) => {
 
-    const { title, leftComponent, rightComponent, centerComponent, containerStyle } = props
+    const { title, leftComponent, rightComponent, centerComponent, containerStyle, visible } = props
+
+    if (visible == true) {
+        return <></>
+    }
+    
     return (
         <View style={[styles.container, containerStyle]}>
             <View style={styles.btnLeftRightStyle} >

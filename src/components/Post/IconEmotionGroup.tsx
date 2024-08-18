@@ -1,16 +1,34 @@
+import { useEffect, useState } from 'react'
 import { View, Image } from 'react-native'
 
 import { TypeEmotion, images } from '../../constants'
 import { utilStyles } from '../../styles'
+import { LikeModel } from '../../models'
 
 type IconEmotionGroupProps = {
-    emotionData: string[]
+    emotionData: LikeModel[]
 }
 
 const IconEmotionGroup = ({ emotionData }: IconEmotionGroupProps) => {
 
-    const data = emotionData.slice(0, 3)
-    
+    const [data, setData] = useState<string[]>(emotionData.map(item => item.type))
+
+    useEffect(() => {
+        selectTop3Emotion()
+    }, [emotionData])
+
+    const selectTop3Emotion = () => {
+        const countOccurrences = emotionData.map(item => item.type).reduce((acc: Record<string, number>, item: string) => {
+            acc[item] = (acc[item] || 0) + 1
+            return acc
+        }, {});
+
+        const sortedOccurrences = Object.entries(countOccurrences).sort((a, b) => b[1] - a[1])
+
+        const topThree = sortedOccurrences.slice(0, 3).map(item => item[0])
+        setData(topThree)
+    }
+
     return (
         <View style={{ flexDirection: 'row-reverse', alignItems: 'flex-end', }}>
             {data.includes(TypeEmotion.Sad) && <Image source={images.sad} style={utilStyles.iconEmotion} />}

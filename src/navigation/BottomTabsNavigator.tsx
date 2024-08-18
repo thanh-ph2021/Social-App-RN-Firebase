@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import LinearGradient from 'react-native-linear-gradient'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import FeedStack from './FeedStack'
 import ProfileStack from './ProfileStack'
@@ -66,10 +66,10 @@ const BottomTabsNavigation = () => {
                 options={{
                     tabBarIcon: ({ focused }) => (
                         <UtilIcons.svgAlert color={focused ? COLORS.socialWhite : COLORS.darkGrey} />
-                    ), 
+                    ),
                 }}
             />
-            <Tab.Screen 
+            <Tab.Screen
                 name="ProfileMain"
                 component={ProfileStack}
                 options={{

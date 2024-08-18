@@ -1,7 +1,8 @@
-import { View, Image, ViewStyle, ImageStyle, StyleProp, ImageBackground, Text, TouchableWithoutFeedback } from 'react-native'
-import { SIZES, COLORS, FONTS, images } from '../constants'
-import { MediaItem } from '../models'
+import { View, Image, Text, TouchableWithoutFeedback } from 'react-native'
 import Video from 'react-native-video'
+
+import { SIZES, COLORS, FONTS } from '../constants'
+import { MediaItem } from '../models'
 
 type MediaGridCollapseProps = {
     media: MediaItem[],

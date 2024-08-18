@@ -1,19 +1,18 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, ListRenderItemInfo, FlatList } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import useAuthContext from '../hooks/useAuthContext'
-import firestore from '@react-native-firebase/firestore'
-import { useFocusEffect } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { COLORS, SIZES, images, FONTS } from '../constants'
-import { UserModel } from '../models'
-import { deletePost } from '../utils'
+import { PostModel, UserModel } from '../models'
 import PostCard from '../components/Post/PostCard'
-import { useChat, usePost } from '../hooks'
+import { useAppDispatch, useAppSelector, useChat } from '../hooks'
 import { utilStyles } from '../styles'
 import { Divider } from '../components'
 import { UtilIcons } from '../utils/icons'
+import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectUserByUID } from '../redux/selectors'
+import { updateUser } from '../redux/actions/user'
 
 const tagDatas = [
     {
@@ -36,46 +35,23 @@ const tagDatas = [
 
 const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
-    const { user, logout } = useAuthContext()
+    const { logout } = useAuthContext()
     const [isDelete, setIsDelete] = useState<boolean>(false)
     const params = route.params
-    const [userData, setUserData] = useState<UserModel>()
-    const { data, getPostByUserID } = usePost()
     const { addChatData } = useChat()
     const [tag, setTag] = useState<number>(1)
-
-    useFocusEffect(
-        useCallback(() => {
-            getUser()
-            getPostByUserID(params ? params.userID : user!.uid)
-            return () => {
-                // Cleanup function if needed
-            };
-        }, [])
-    );
+    const user = useAppSelector(state => state.userState.currentUser)
+    const userParam = params ? useAppSelector(state => selectUserByUID(state, params.userID)) : null
+    const [userData, setUserData] = useState<UserModel>(params ? userParam : user)
+    const posts = useAppSelector(state => selectPostByUserId(state, params ? params.userID : user!.uid))
+    const dispatch = useAppDispatch()
+    const [follow, setFollow] = useState(params ? user.followings?.includes(params!.userID) : false)
+    const postUserLiked = useAppSelector(state => selectPostUserLiked(state, user.uid))
+    const postTags = user.postTags ? useAppSelector(state => selectPostTagged(state, user.postTags)) : []
 
     useEffect(() => {
-        getUser()
-    }, [])
-
-    useEffect(() => {
-        getPostByUserID(params ? params.userID : user!.uid)
-    }, [isDelete])
-
-    const getUser = async () => {
-        await firestore()
-            .collection('users')
-            .doc(params ? params.userID : user!.uid)
-            .get()
-            .then((documentSnapshot) => {
-                if (documentSnapshot.exists) {
-                    setUserData({
-                        ...documentSnapshot.data(),
-                        uid: documentSnapshot.id
-                    })
-                }
-            })
-    }
+        setUserData(params ? userParam : user)
+    }, [user, userParam])
 
     const navigateChatScreen = (chatID: string) => {
         navigation.navigate('Chat', { userData: userData, chatID: chatID })
@@ -85,6 +61,10 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
         const onPress = () => {
             setTag(item.id)
+        }
+
+        if (params && (item.name === 'Liked' || item.name === 'Tagged')) {
+            return <></>
         }
 
         return (
@@ -110,18 +90,48 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                 }} />
             </TouchableOpacity>
         )
+    }
 
+    const onFollow = async () => {
+        try {
+            setFollow(!follow)
+            let followings: string[] = user.followings ?? []
+            let followers: string[] = userParam.followers ?? []
+
+            if (followings.includes(params!.userID)) {
+                followings = followings.filter(item => item !== params!.userID)
+                followers = followers.filter(item => item !== user.uid)
+            } else {
+                followings = [...followings, params!.userID]
+                followers = [...followers, user.uid]
+            }
+
+            await dispatch(updateUser({
+                ...user,
+                followers: user.followers ?? [],
+                followings: followings
+            }))
+
+            await dispatch(updateUser({
+                ...userParam,
+                followings: userParam.followings ?? [],
+                followers: followers
+            }))
+        } catch (error) {
+            console.log("🚀 ~ onFollow ~ error:", error)
+        }
     }
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
-
                 {/* banner */}
                 <View>
-                    <Image source={images.OnBoarding02} resizeMode='cover' style={{ height: 160, width: '100%' }} />
+                    {userData.bannerImg ? <Image source={{ uri: userData.bannerImg }} resizeMode='cover' style={{ height: 160, width: '100%' }} /> :
+                        <Image source={images.defaultImage} resizeMode='cover' style={{ height: 160, width: '100%' }} />
+                    }
                     <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.avatarStyle}>
-                        {userData?.userImg ? <Image source={{ uri: userData?.userImg }} style={styles.image} resizeMode='cover' /> : (
+                        {userData.userImg ? <Image source={{ uri: userData.userImg }} style={styles.image} resizeMode='cover' /> : (
                             <Image source={images.defaultImage} style={styles.image} resizeMode='cover' />
                         )}
                     </LinearGradient>
@@ -132,13 +142,13 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     <UtilIcons.svgArrowLeft color={COLORS.socialWhite} />
                 </TouchableOpacity>}
 
-                {!params && <TouchableOpacity style={[styles.btnHeaderLeft, {right: 0}]} onPress={() => navigation.navigate('Settings')}>
+                {!params && <TouchableOpacity style={[styles.btnHeaderLeft, { right: 0 }]} onPress={() => navigation.navigate('Settings')}>
                     <UtilIcons.svgSettings color={COLORS.socialWhite} />
                 </TouchableOpacity>}
 
                 <View style={styles.wrapUserName}>
                     <Text style={styles.textTitle}>
-                        {userData?.fname} {userData?.lname}
+                        {userData.fname} {userData.lname}
                     </Text>
                     <TouchableOpacity
                         onPress={() => addChatData(params?.userID, navigateChatScreen)}
@@ -158,59 +168,31 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 </View>
 
-
-
                 {/* address */}
                 <Text style={styles.textAddress}>
-                    {/* {userData?.about} */}
-                    Brooklyn, NY
+                    {userData.city} {userData.country}
                 </Text>
 
                 {/* bio */}
-
                 <Text style={styles.text}>
-                    {/* {userData?.about} */}
-                    Writer by Profession. Artist by Passion!
+                    {userData.about}
                 </Text>
-
-                {/* button */}
-                {/* <View style={styles.buttonWrap}>
-                    {params && params.userID && user!.uid != params.userID ? (
-                        <>
-                            <TouchableOpacity style={styles.button} onPress={() => addChatData(params?.userID, navigateChatScreen)}>
-                                <Text style={styles.buttonText}>Message</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.button} onPress={() => logout()}>
-                                <Text style={styles.buttonText}>Follow</Text>
-                            </TouchableOpacity>
-                        </>
-                    ) : (
-                        <>
-                            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UpdateProfile')}>
-                                <Text style={styles.buttonText}>Edit</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.button} onPress={() => logout()}>
-                                <Text style={styles.buttonText}>Logout</Text>
-                            </TouchableOpacity>
-                        </>
-                    )}
-                </View> */}
 
                 {/* information */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', marginVertical: SIZES.padding }}>
 
-                    <View style={styles.contentStyle}>
-                        <Text style={styles.text}>2,467</Text>
+                    <TouchableOpacity style={styles.contentStyle} onPress={() => navigation.push('Friends', { routeName: 'Follower', uid: userData.uid })}>
+                        <Text style={styles.text}>{userData.followers ? userData.followers.length : 0}</Text>
                         <Text style={[styles.text, { color: COLORS.lightGrey }]}>Followers</Text>
-                    </View>
-                    <View style={styles.contentStyle}>
-                        <Text style={styles.text}>1,589</Text>
-                        <Text style={[styles.text, { color: COLORS.lightGrey }]}>Following</Text>
-                    </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.contentStyle} onPress={() => navigation.push('Friends', { routeName: 'Following', uid: userData.uid })}>
+                        <Text style={styles.text}>{userData.followings ? userData.followings.length : 0}</Text>
+                        <Text style={[styles.text, { color: COLORS.lightGrey }]}>Followings</Text>
+                    </TouchableOpacity>
 
                     {params ? (
-                        <TouchableOpacity style={[styles.button, { backgroundColor: COLORS.socialPink, borderWidth: 0 }]} onPress={() => console.log('follow')}>
-                            <Text style={styles.buttonText}>Follow</Text>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: COLORS.socialPink, borderWidth: 0 }]} onPress={onFollow}>
+                            <Text style={styles.buttonText}>{follow ? `Unfollow` : `Follow`}</Text>
                         </TouchableOpacity>
                     ) : (
                         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UpdateProfile')}>
@@ -238,11 +220,45 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                 />
 
                 {
-                    data.map((item, index) => {
+                    tag === 1 && posts.map((item: PostModel, index: number) => {
                         return (
                             <View key={item.id}>
-                                <PostCard item={item} onDeletePost={(post) => deletePost(post.id, setIsDelete)} key={item.id} />
-                                {index == data.length - 1 ? <></> : <Divider />}
+                                <PostCard
+                                    item={item}
+                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
+                                    key={item.id}
+                                />
+                                {index == posts.length - 1 ? <></> : <Divider />}
+                            </View>
+                        )
+                    })
+                }
+                {
+                    tag === 3 && postUserLiked.map((item: PostModel, index: number) => {
+                        return (
+                            <View key={item.id}>
+                                <PostCard
+                                    item={item}
+                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
+                                    key={item.id}
+                                />
+                                {index == postUserLiked.length - 1 ? <></> : <Divider />}
+                            </View>
+
+                        )
+                    })
+                }
+
+                {
+                    tag === 4 && postTags.map((item: PostModel, index: number) => {
+                        return (
+                            <View key={item.id}>
+                                <PostCard
+                                    item={item}
+                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
+                                    key={item.id}
+                                />
+                                {index == postTags.length - 1 ? <></> : <Divider />}
                             </View>
 
                         )

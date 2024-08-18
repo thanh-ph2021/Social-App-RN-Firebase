@@ -1,17 +1,17 @@
 import { memo, useState, useRef } from 'react'
-import { TouchableOpacity, Text, View, Image, StyleSheet, Modal } from "react-native"
+import { TouchableOpacity, Text, View, Image, StyleSheet, Modal, ViewStyle } from "react-native"
 
 import IconEmotionGroup from "./IconEmotionGroup"
-import Icon, { TypeIcons } from "../Icon"
 import { utilStyles } from "../../styles"
 import { COLORS, TypeEmotion, SIZES, images } from "../../constants"
-import { LikeModel } from '../../models'
-import { useAuthContext } from '../../hooks'
 import { UtilIcons } from '../../utils/icons'
+import TextComponent from '../TextComponent'
+import { LikeModel } from '../../models'
 
 type LikeButtonProps = {
-    data: string[],
-    handleLike: (typeEmotion: string, isModal?: boolean) => Promise<void>
+    data: LikeModel[],
+    handleLike: (typeEmotion: string, isModal?: boolean) => Promise<void>,
+    containerStyle?: ViewStyle
 }
 
 const EmotionIcons: { typeEmotion: string, image: any }[] = [
@@ -45,12 +45,9 @@ const EmotionIcons: { typeEmotion: string, image: any }[] = [
     },
 ]
 
-const LikeButton = ({ data, handleLike }: LikeButtonProps) => {
-
-    // console.log('abc')
+const LikeButton = ({ data, handleLike, containerStyle }: LikeButtonProps) => {
 
     const [showModal, setShowModal] = useState<boolean>(false)
-    const [positionModal, setPositionModal] = useState<number>(0)
     const likeRef = useRef<any>(null)
 
     const renderModal = () => {
@@ -72,7 +69,7 @@ const LikeButton = ({ data, handleLike }: LikeButtonProps) => {
         return (
             <Modal visible={showModal} transparent={true}>
                 <TouchableOpacity style={styles.modalContainer} activeOpacity={1} onPress={() => setShowModal(false)}>
-                    <View style={[styles.modalContent, { position: 'absolute', top: positionModal }]}>
+                    <View style={[styles.modalContent]}>
                         {renderRow(EmotionIcons.slice(0, 3), [styles.iconRow, { marginBottom: SIZES.padding, width: '80%' }])}
                         {renderRow(EmotionIcons.slice(3), styles.iconRow)}
                     </View>
@@ -81,23 +78,14 @@ const LikeButton = ({ data, handleLike }: LikeButtonProps) => {
         )
     }
 
-    const handleLongPressLike = () => {
-        if (likeRef.current) {
-            likeRef.current.measure((x: any, y: any, width: any, height: any, pageX: any, pageY: number) => {
-                setPositionModal(pageY < 230 ? pageY + 30 : pageY - 180)
-            });
-        }
-        setShowModal(true)
-    }
-
     return (
-        <TouchableOpacity ref={likeRef} style={utilStyles.button} onPress={() => handleLike(TypeEmotion.Like)} onLongPress={handleLongPressLike}>
+        <TouchableOpacity ref={likeRef} style={[utilStyles.button, containerStyle]} onPress={() => handleLike(TypeEmotion.Like)} onLongPress={() => setShowModal(true)}>
             {data && data.length > 0 ? (
                 <IconEmotionGroup emotionData={data} />
             ) : (
                 <UtilIcons.svgLike />
             )}
-            <Text style={[utilStyles.buttonText, { color: COLORS.socialWhite, paddingLeft: SIZES.base }]}>{data.length > 0 ? data.length : ''}</Text>
+            <TextComponent text={`${data.length > 0 ? data.length : ''}`} style={{ paddingLeft: SIZES.padding }} />
             {renderModal()}
         </TouchableOpacity>
     )
@@ -123,11 +111,10 @@ const styles = StyleSheet.create({
     modalContent: {
         justifyContent: 'center',
         alignItems: 'center',
-        width: 300,
-        height: 150,
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
+        width: '90%',
+        backgroundColor: COLORS.darkGrey,
+        padding: SIZES.padding * 2,
+        borderRadius: SIZES.base,
     },
     iconRow: {
         flexDirection: 'row',

@@ -1,15 +1,17 @@
 import { View } from "react-native"
+
 import { COLORS, SIZES } from "../constants"
 
 interface Props {
-    height?: number
+    height?: number,
+    color?: string
 }
 
 const Divider = (props: Props) => {
 
-    const { height } = props
+    const { height, color } = props
     return (
-        <View style={{ height: height ? height : 2, backgroundColor: COLORS.darkGrey, alignItems: 'center', marginVertical: SIZES.base }} />
+        <View style={{ height: height ? height : 2, backgroundColor: color ? color : COLORS.darkGrey, alignItems: 'center', marginVertical: SIZES.base }} />
     )
 }
 

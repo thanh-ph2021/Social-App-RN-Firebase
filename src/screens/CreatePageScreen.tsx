@@ -1,38 +1,37 @@
 import { StyleSheet, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import { getUser } from '../utils'
 import { COLORS, SIZES } from '../constants'
 import { TextComponent } from '../components'
 import { useAuthContext } from '../hooks'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 
-const SettingsScreen = ({ navigation }: NativeStackScreenProps<any>) => {
+const CreatePageScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const { user, logout } = useAuthContext()
 
     useEffect(() => {
         // getUser()
     }, [])
-    
+
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => logout()}>
-                <TextComponent text='Log out' color={COLORS.socialPink}/>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CreatePage')}>
-                <TextComponent text='Create Page' color={COLORS.socialPink}/>
-            </TouchableOpacity>
+            <View style={{ width: SIZES.width, height: 50, backgroundColor: 'blue' }} />
+            <TextComponent text={'hellofjldasjfldjalkfjdklasjfld'} />
         </View>
     )
 }
 
-export default SettingsScreen
+export default CreatePageScreen
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.darkBlack
+        backgroundColor: COLORS.darkBlack,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     button: {

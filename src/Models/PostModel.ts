@@ -5,18 +5,20 @@ import { DocumentItem } from "./DocumentItem"
 import { ChecklistModel } from "./ChecklistModel"
 
 export interface PostModel {
-    id: string,
+    id?: string,
     userID: string,
     // title post
     post: string,
     postTime: any,
     likes: LikeModel[],
     comments: CommentModel[],
-    media?: MediaItem[],
-    location: string,
+    commentCount: number,
+    // media image - video | gyphic
+    media?: MediaItem[] | any[],
+    location: string | null,
     giphyMedias?: GiphyMedia[],
-    docs?: DocumentItem[],
-    checklistData?: ChecklistModel,
+    docs?: DocumentItem[] | any[],
+    checklistData: ChecklistModel | null,
 }
 
 export interface LikeModel {
@@ -25,6 +27,7 @@ export interface LikeModel {
 }
 
 export interface CommentModel {
+    id?: string,
     text: string,
     userID: string,
     createAt: any,
