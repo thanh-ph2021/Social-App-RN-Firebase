@@ -9,10 +9,10 @@ const useAuthContext = () => {
         throw new Error("useAuthContext must be used within an AuthProvider")
     }
 
-    const { user, setUser, register, login, googleLogin, facebookLogin, logout }: AuthContextType = value
+    const { user, setUser, register, login, googleLogin, facebookLogin, logout, sendPasswordResetEmail }: AuthContextType = value
 
     return {
-        user, setUser, register, login, googleLogin, facebookLogin, logout
+        user, setUser, register, login, googleLogin, facebookLogin, logout, sendPasswordResetEmail
     }
 }
 

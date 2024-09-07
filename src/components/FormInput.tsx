@@ -1,25 +1,25 @@
-import { View, TextInput, StyleSheet, TextInputProps } from "react-native"
+import { View, TextInput, StyleSheet, TextInputProps, StyleProp, ViewStyle } from "react-native"
 
 import { COLORS, SIZES, FONTS } from "../constants"
-import Feather from 'react-native-vector-icons/Feather'
 import TextComponent from "./TextComponent";
 
 interface Props {
     labelValue: string,
     placeholderText: string,
     iconType?: string,
-    containerStyle?: any,
+    containerStyle?: StyleProp<ViewStyle>,
+    inputContainerStyle?: StyleProp<ViewStyle>,
     inputStyle?: any,
     title?: string
 }
 
 type FormInputProps = TextInputProps & Props;
 
-const FormInput = ({ labelValue, placeholderText, iconType, containerStyle, inputStyle, title, ...rest }: FormInputProps) => {
+const FormInput = ({ labelValue, placeholderText, iconType, containerStyle, inputContainerStyle, inputStyle, title, ...rest }: FormInputProps) => {
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerStyle]}>
             {title && <TextComponent text={title} color={COLORS.lightGrey} style={{ paddingBottom: SIZES.base }} />}
-            <View style={[styles.inputContainer, { ...containerStyle }]}>
+            <View style={[styles.inputContainer, inputContainerStyle]}>
                 <TextInput
                     style={[styles.inputField, { ...inputStyle }]}
                     value={labelValue}
@@ -29,7 +29,6 @@ const FormInput = ({ labelValue, placeholderText, iconType, containerStyle, inpu
                 />
             </View>
         </View>
-
     )
 }
 
@@ -37,7 +36,7 @@ export default FormInput
 
 const styles = StyleSheet.create({
     container: {
-        padding: SIZES.base
+        padding: SIZES.base,
     },
 
     inputContainer: {
@@ -45,7 +44,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: SIZES.base,
         borderWidth: 1,
-        borderColor: COLORS.lightGrey,
     },
 
     inputField: {

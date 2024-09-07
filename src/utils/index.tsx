@@ -84,15 +84,35 @@ export async function requestUserPermission() {
 
 }
 
-export const showNotification = (title: string, Icon: () => React.ReactElement) => {
+export const showNotification = (title: string, Icon: () => React.ReactElement, typeNoti?: 'error' | 'success' | 'warning') => {
     Notifier.showNotification({
         duration: 5000,
         title: title,
         Component: (props) => {
+            let color = COLORS.black
+            switch (typeNoti) {
+                case 'error':
+                    color = COLORS.red
+                    break
+                case 'success':
+                    color = COLORS.green
+                    break
+                case 'warning':
+                    color = COLORS.yellow
+                    break
+            }
             return (
-                <View style={{ flexDirection: 'row', backgroundColor: COLORS.white, padding: SIZES.base, margin: SIZES.base, borderRadius: SIZES.base, elevation: 5 }}>
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: COLORS.white,
+                    padding: SIZES.base,
+                    margin: SIZES.base,
+                    borderRadius: SIZES.base,
+                    elevation: 5
+                }}>
                     <Icon />
-                    <Text style={{ ...FONTS.body3, color: COLORS.black, paddingLeft: SIZES.padding }}>{props.title}</Text>
+                    <Text style={{ ...FONTS.body3, color: color, paddingLeft: SIZES.padding, flexShrink: 1 }}>{props.title}</Text>
                 </View>
             )
         }

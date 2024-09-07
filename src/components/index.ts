@@ -18,5 +18,10 @@ import AlertV1 from './Alert/AlertV1'
 import UserComponent from './UserComponent'
 import Loader from './Loader'
 import EmptyComponent from './EmptyComponent'
+import CustomButton from './Button/CustomButton'
+import Indicator from './Indicator'
+import Checkbox from './CheckboxAnimation/Checkbox'
 
-export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider, Avatar, CommentCard, TextComponent, Header, InputBar, SvgIcon, ChecklistComponent, AlertV1, UserComponent, Loader, EmptyComponent }
+export { Button, ProgressiveImage, MessageCard, Icon, TypeIcons, MediaGrid, MediaGridCollapse, PostCard, Divider
+    , Avatar, CommentCard, TextComponent, Header, InputBar, SvgIcon, ChecklistComponent, AlertV1, UserComponent
+    , Loader, EmptyComponent, CustomButton, Indicator, Checkbox }

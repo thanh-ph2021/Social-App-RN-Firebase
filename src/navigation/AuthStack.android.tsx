@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { OnBoardingScreen, LoginScreen, SignupScreen } from '../screens'
+import { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { TouchableOpacity } from 'react-native'
-import Feather from 'react-native-vector-icons/Feather'
-import { COLORS, SIZES } from '../constants'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
+ 
+import {  ForgotPasswordScreen, LoginScreen, OnBoardingScreen, SignupScreen } from '../screens'
 
 const Stack = createNativeStackNavigator()
 
@@ -14,35 +12,47 @@ function AuthStack() {
     const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null)
 
     useEffect(() => {
-        AsyncStorage.getItem('alreadyLaunched').then(value => {
-            if (value == null) {
-                AsyncStorage.setItem('alreadyLaunched', 'true')
-                setIsFirstLaunch(true)
-            } else {
-                setIsFirstLaunch(false)
+
+        const checkFirstLaunch = () => {
+            try {
+                AsyncStorage.getItem('alreadyLaunched').then(value => {
+                    if (value == null) {
+                        AsyncStorage.setItem('alreadyLaunched', 'true')
+                        setIsFirstLaunch(true)
+                    } else {
+                        setIsFirstLaunch(false)
+                    }
+                })
+            } catch (error) {
+                console.log("🚀 ~ checkFirstLaunch ~ error:", error)
             }
-        })
+        }
+
+        checkFirstLaunch()
 
         GoogleSignin.configure({
             webClientId: '974440527830-9qo5oana9fm9uelss2l62e6ekq3fd1k2.apps.googleusercontent.com',
         });
     }, [])
 
-    if(isFirstLaunch == null){
-        return null
-    }
-
     return (
         <Stack.Navigator
             initialRouteName={isFirstLaunch ? 'OnBoarding' : 'Login'}
         >
-            {isFirstLaunch && <Stack.Screen
+            <Stack.Screen
+                name="ForgotPassword"
+                component={ForgotPasswordScreen}
+                options={{
+                    headerShown: false
+                }}
+            />
+            <Stack.Screen
                 name="OnBoarding"
                 component={OnBoardingScreen}
                 options={{
                     headerShown: false
                 }}
-            />}
+            />
             <Stack.Screen
                 name="Login"
                 component={LoginScreen}
@@ -53,19 +63,9 @@ function AuthStack() {
             <Stack.Screen
                 name="Signup"
                 component={SignupScreen}
-                options={({ navigation }) => ({
-                    title: '',
-                    headerShadowVisible: false,
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Feather
-                                name='arrow-left'
-                                size={SIZES.icon}
-                                color={COLORS.black}
-                            />
-                        </TouchableOpacity>
-                    )
-                })}
+                options={{
+                    headerShown: false
+                }}
             />
         </Stack.Navigator>
     );

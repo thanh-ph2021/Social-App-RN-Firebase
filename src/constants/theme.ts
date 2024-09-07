@@ -19,7 +19,9 @@ export const COLORS = {
     black: "#000000",
     green: "#32a852",
     text: "#FFFFFF",
-    blue: "blue"
+    blue: "blue",
+    yellow: '#ad9613',
+    red: '#7d0606'
 }
 
 export const SIZES = {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ScrollView, Text, View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Modal, ActivityIndicator } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+
 import { FONTS, COLORS, SIZES } from '../constants'
 import FormInput from '../components/FormInput'
 import FormButton from '../components/FormButton'
@@ -10,47 +11,22 @@ import { UtilIcons } from '../utils/icons'
 import { utilStyles } from '../styles'
 import { showNotification } from '../utils'
 
-const SignUpScreen = ({ navigation }: NativeStackScreenProps<any>) => {
+const ForgotPasswordScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
     const [upLoading, setUpLoading] = useState<boolean>(false)
-    const { register } = useAuthContext()
+    const { sendPasswordResetEmail } = useAuthContext()
 
     const handleRegister = async () => {
-        let isValid = true
+        console.log(email)
         if (email === '') {
-            isValid = false
             showNotification("Email isn't empty!", UtilIcons.warning, 'warning')
             return
         }
 
-        if (password === '') {
-            isValid = false
-            showNotification("Password isn't empty!", UtilIcons.warning, 'warning')
-            return
-        }
-
-        if (confirmPassword === '') {
-            isValid = false
-            showNotification("Confirm Password isn't empty!", UtilIcons.warning, 'warning')
-            return
-        }
-
-        if (password !== confirmPassword) {
-            isValid = false
-            showNotification("Password doesn't match!", UtilIcons.warning, 'warning')
-            return
-        }
-
-        if (isValid) {
-            setUpLoading(true)
-
-            await register(email.trim(), password.trim())
-
-            setUpLoading(false)
-        }
+        setUpLoading(true)
+        await sendPasswordResetEmail(email.trim())
+        setUpLoading(false)
     }
 
     const renderModal = () => {
@@ -95,8 +71,8 @@ const SignUpScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 }} />
 
                 <View style={{ alignItems: 'center', padding: SIZES.padding * 2 }}>
-                    <TextComponent text={'Sign Up'} style={{ ...FONTS.h1 }} />
-                    <TextComponent text={'Create an account to continue!'} style={{ ...FONTS.body4, marginVertical: SIZES.padding }} />
+                    <TextComponent text={'Forgot password'} style={{ ...FONTS.h1 }} />
+                    <TextComponent text={'Please enter your email to reset the password'} style={{ ...FONTS.body4, marginVertical: SIZES.padding, textAlign: 'center' }} />
                 </View>
 
                 <FormInput
@@ -111,28 +87,8 @@ const SignUpScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     inputContainerStyle={{ backgroundColor: COLORS.darkBlack }}
                 />
 
-                <FormInput
-                    labelValue={password}
-                    onChangeText={setPassword}
-                    placeholderText={'Password'}
-                    secureTextEntry={true}
-                    containerStyle={{ paddingHorizontal: SIZES.padding }}
-                    inputStyle={{ width: '100%' }}
-                    inputContainerStyle={{ backgroundColor: COLORS.darkBlack }}
-                />
-
-                <FormInput
-                    labelValue={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholderText={'Confirm Password'}
-                    secureTextEntry={true}
-                    containerStyle={{ paddingHorizontal: SIZES.padding }}
-                    inputStyle={{ width: '100%' }}
-                    inputContainerStyle={{ backgroundColor: COLORS.darkBlack }}
-                />
-
                 <FormButton
-                    buttonTitle={'Register'}
+                    buttonTitle={'Send password reset link'}
                     onPress={handleRegister}
                     style={{
                         backgroundColor: COLORS.socialPink,
@@ -145,10 +101,10 @@ const SignUpScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 />
 
                 <View style={{ flexDirection: 'row', justifyContent: 'center', padding: SIZES.padding }}>
-                    <TextComponent text="Already have an account?" style={{ ...FONTS.body4, paddingRight: SIZES.base }} />
-                    <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                        <TextComponent text="Login" style={{ ...FONTS.body4, fontWeight: 'bold' }} color={COLORS.socialPink} />
-                    </TouchableOpacity>
+                    <TextComponent
+                        text="If you don’t see the email in your inbox, please check your spam folder"
+                        style={{ ...FONTS.body4, paddingRight: SIZES.base, textAlign: 'center' }}
+                    />
                 </View>
             </KeyboardAvoidingView>
             {renderModal()}
@@ -156,7 +112,7 @@ const SignUpScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     )
 }
 
-export default SignUpScreen
+export default ForgotPasswordScreen
 
 const styles = StyleSheet.create({
     container: {
@@ -165,26 +121,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center'
     },
-    logo: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: SIZES.padding * 2
-    },
-    button: {
-        marginVertical: SIZES.padding * 3,
-        alignItems: 'center'
-    },
-    textButton: {
-        color: COLORS.blue,
-        ...FONTS.body3
-    },
-    textWrap: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        marginVertical: SIZES.padding * 2
-    },
-    text: {
-        ...FONTS.body3
-    }
 })

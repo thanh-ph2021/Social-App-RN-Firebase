@@ -3,14 +3,14 @@ import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps } from "react
 import { COLORS, SIZES, FONTS } from "../constants"
 
 interface Props {
-    buttonTitle: string
+    buttonTitle: string,
 }
 
 type FormButtonProps = TouchableOpacityProps & Props
 
-const FormButton = ({buttonTitle, ...rest}: FormButtonProps) => {
+const FormButton = ({ buttonTitle, ...rest }: FormButtonProps) => {
     return (
-        <TouchableOpacity style={styles.buttonContainer} {...rest} >
+        <TouchableOpacity style={[styles.buttonContainer]} {...rest} >
             <Text style={styles.textButton}>{buttonTitle}</Text>
         </TouchableOpacity>
     )
@@ -27,8 +27,8 @@ const styles = StyleSheet.create({
         borderRadius: SIZES.base
     },
     textButton: {
-        color: COLORS.white, 
-        fontWeight: 'bold', 
+        color: COLORS.white,
+        fontWeight: 'bold',
         ...FONTS.body3
     }
 })

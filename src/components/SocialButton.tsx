@@ -1,20 +1,21 @@
 import React from 'react'
-import { Text, TouchableOpacity, View, StyleSheet, TouchableOpacityProps } from 'react-native'
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
+import { Text, TouchableOpacity, View, StyleSheet, TouchableOpacityProps, Image } from 'react-native'
 import { FONTS, SIZES } from '../constants'
 
 interface Props {
-    buttonTitle: string,
-    btnType: string,
-    color: string,
-    backgroundColor: string
+    buttonTitle?: string,
+    image: any,
+    imageSize: number,
+    color?: string,
+    backgroundColor?: string
 }
 
 type SocialButtonProps = TouchableOpacityProps & Props
 
 const SocialButton = ({
     buttonTitle,
-    btnType,
+    image,
+    imageSize,
     color,
     backgroundColor,
     ...rest
@@ -27,11 +28,14 @@ const SocialButton = ({
             style={[styles.buttonContainer, { backgroundColor: bgColor }]}
             {...rest}>
             <View style={styles.iconWrapper}>
-                <FontAwesome name={btnType} style={styles.icon} size={SIZES.icon} color={color} />
+                <Image
+                    source={image}
+                    style={{ width: imageSize, height: imageSize }}
+                />
             </View>
-            <View style={styles.btnTxtWrapper}>
+            {buttonTitle ? <View style={styles.btnTxtWrapper}>
                 <Text style={[styles.buttonText, { color: color }]}>{buttonTitle}</Text>
-            </View>
+            </View> : <></>}
         </TouchableOpacity>
     );
 };
@@ -42,16 +46,15 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: SIZES.padding,
+        padding: SIZES.base,
         marginTop: SIZES.padding,
-        borderRadius: SIZES.base
+        borderRadius: SIZES.base,
+        width: 50,
+        height: 40
     },
     iconWrapper: {
         flex: 1,
         alignItems: 'center'
-    },
-    icon: {
-        
     },
     btnTxtWrapper: {
         flex: 8,

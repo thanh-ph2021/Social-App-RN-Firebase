@@ -3,7 +3,10 @@ import auth from '@react-native-firebase/auth'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next'
 import firestore from '@react-native-firebase/firestore'
+
 import { UserModel } from "../models"
+import { showNotification } from "../utils"
+import { UtilIcons } from "../utils/icons"
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -15,6 +18,7 @@ export interface AuthContextType {
     facebookLogin: () => Promise<void>
     register: (email: string, password: string) => Promise<void>
     logout: () => Promise<void>
+    sendPasswordResetEmail: (email: string) => Promise<void>
 }
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -28,7 +32,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             login: async (email: string, password: string) => {
                 try {
                     await auth().signInWithEmailAndPassword(email, password)
-                } catch (error) {
+                        .then(() => {
+                            showNotification('Login success!', UtilIcons.success, 'success')
+                        })
+                } catch (error: any) {
+                    showNotification(error.toString().split('] ')[1], UtilIcons.error, 'error')
                     console.log('Error Login', error)
                 }
             },
@@ -76,30 +84,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             register: async (email: string, password: string) => {
                 try {
                     await auth().createUserWithEmailAndPassword(email, password)
-                    .then(() => {
-                        firestore().collection('users').doc(auth().currentUser!.uid)
-                        .set({
-                            fname: '',
-                            lname: '',
-                            email: email,
-                            createAt: firestore.Timestamp.fromDate(new Date()),
-                            userImg: null,
-                            followers: [],
-                            followings: []
+                        .then(() => {
+                            firestore().collection('users').doc(auth().currentUser!.uid)
+                                .set({
+                                    fname: '',
+                                    lname: '',
+                                    email: email,
+                                    createAt: firestore.Timestamp.fromDate(new Date()),
+                                    userImg: null,
+                                    followers: [],
+                                    followings: []
+                                })
+
+                            showNotification('Account created successfully!', UtilIcons.success, 'success')
                         })
-                    })
-                    .catch((error) => {
-                        console.log('Something went wrong with added user to firestore', error)
-                    })
-                } catch (error) {
+                        .catch((error) => {
+                            showNotification(error.toString().split('] ')[1], UtilIcons.error, 'error')
+                            console.log('Something went wrong with added user to firestore', error)
+                        })
+                } catch (error: any) {
                     console.log('Error Register', error)
                 }
             },
             logout: async () => {
                 try {
-                    await auth().signOut()
+                    await auth().signOut().then(() => {
+                        showNotification('Logout success!', UtilIcons.success, 'success')
+                    })
                 } catch (error) {
                     console.log('Error Logout', error)
+                }
+            },
+            sendPasswordResetEmail: async (email: string) => {
+                try {
+                    await auth().sendPasswordResetEmail(email).then(() => {
+                        showNotification('Password reset email link sent.\nPlease check your email.', UtilIcons.success, 'success')
+                    })
+                } catch (error: any) {
+                    showNotification(error.toString().split('] ')[1], UtilIcons.error, 'error')
+                    console.log("🚀 ~ sendPasswordResetEmail: ~ error:", error)
                 }
             }
         }}>

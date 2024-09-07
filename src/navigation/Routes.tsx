@@ -3,14 +3,14 @@ import { NavigationContainer } from '@react-navigation/native'
 import auth from '@react-native-firebase/auth'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { NotifierWrapper } from 'react-native-notifier'
-import { SafeAreaView, StatusBar } from 'react-native'
+import { StatusBar } from 'react-native'
 import { Provider } from 'react-redux'
 
 import AuthStack from './AuthStack.android'
 import AppStack from './AppStack'
-import useAuthContext from '../hooks/useAuthContext'
-import { COLORS, SIZES } from '../constants'
 import store from '../redux/store'
+import useAuthContext from '../hooks/useAuthContext'
+import { COLORS } from '../constants'
 
 
 const Routes = () => {
@@ -24,6 +24,7 @@ const Routes = () => {
     }
 
     useEffect(() => {
+
         const subscriber = auth().onAuthStateChanged(onAuthStateChanged)
 
         return () => {
