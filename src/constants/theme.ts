@@ -9,9 +9,11 @@ export const COLORS = {
     gradient: ["#F62E8E", "#AC1AF0"],
     socialBlue: "#2E8AF6",
     socialPink: "#F62E8E",
+    socialPink2: "#f598c4",
     darkGrey: "#323436",
     darkGrey2: "#2f2f30",
     lightGrey: "#727477",
+    lightGrey2: "#606263",
 
 
     //colors
