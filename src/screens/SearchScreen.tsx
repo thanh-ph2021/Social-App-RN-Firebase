@@ -82,7 +82,6 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     text={item.post}
                 />
             </TouchableOpacity>
-
         )
     }
 
@@ -228,7 +227,6 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                     numColumns={3}
                                     keyExtractor={(item, index) => `${item.id}_${index}`}
                                     showsVerticalScrollIndicator={false}
-                                    columnWrapperStyle={{ justifyContent: 'space-between' }}
                                     ListFooterComponent={<View style={{ height: 100 }} />}
                                 />
                             </>

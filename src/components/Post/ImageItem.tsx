@@ -20,7 +20,7 @@ const ImageItem = (props: Props) => {
                 style={{ width: size, height: size }}
                 resizeMode='cover'
             />
-            <TextComponent text={text} style={{ position: 'absolute', bottom: 0 }} numberOfLines={1} showFullLine />
+            <TextComponent text={text} style={{ position: 'absolute', bottom: 0 }} numberOfLines={1} isShowTextRead />
         </View>
     )
 }

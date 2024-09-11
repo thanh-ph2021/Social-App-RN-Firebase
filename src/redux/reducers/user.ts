@@ -1,5 +1,5 @@
 import { ActionType } from "../types"
-import { ADD_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_USERS, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
+import { ADD_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_USERS, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_POST, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
 import { MessageModel, PostModel, UserModel } from "../../models"
 
 export interface UserState {
@@ -32,6 +32,19 @@ export const user = (state: UserState = initialState, action: ActionType) => {
             return {
                 ...state,
                 posts: action.payload
+            }
+        case UPDATE_POST:
+            console.log('oldPosts')
+            return {
+                ...state,
+                posts: oldPosts.map(post => {
+                    if (post.id === action.payload.id) {
+                        console.log("🚀 ~ user ~ action.payload:", action.payload.checklistData?.optionDatas)
+                        return action.payload
+                    }
+
+                    return post
+                })
             }
         case LIKE_POST_STATE_CHANGE:
             let newPosts = oldPosts.map(post => {

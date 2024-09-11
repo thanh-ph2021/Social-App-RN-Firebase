@@ -1,7 +1,7 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 
-import { ADD_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, UPDATE_COMMENT_POST, USER_POSTS_STATE_CHANGE } from '../constants'
+import { ADD_COMMENT_POST, LOAD_COMMENTS_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
 import { LIMIT } from '../../constants'
 import { CommentModel, PostModel } from '../../models'
 import { AppThunk } from '../types'
@@ -76,7 +76,7 @@ export const updatePost = (postData: PostModel): AppThunk => async (dispatch) =>
             .doc(postData.id)
             .update(removeCommentPost)
 
-        dispatch({ type: LIKE_POST_STATE_CHANGE, payload: postData })
+        dispatch({ type: UPDATE_POST, payload: postData })
     } catch (error) {
         console.log("🚀 ~ updatePost ~ error:", error)
     }

@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
 
 import { SIZES, images, FONTS, COLORS, SECOND_TO_MILISECOND, DAY_TO_SECOND, HOUR_TO_SECOND, MINUTE_TO_SECOND } from '../../constants'
-import { LikeModel, OptionDataModel, PostModel, UserModel } from "../../models"
+import { ChecklistModel, LikeModel, OptionDataModel, PostModel, TimeLimitModel, UserModel } from "../../models"
 import MediaGridCollapse from "../MediaGridCollapse"
 import { useAppDispatch, useAppSelector } from "../../hooks"
 import LikeButton from "./LikeButton"
@@ -19,6 +19,7 @@ import MediaViewSample from "../Giphy/MediaViewSample"
 import { updatePost } from "../../redux/actions/post"
 import { selectUserByUID } from "../../redux/selectors"
 import { updateUser } from "../../redux/actions/user"
+import { shallowEqual } from "react-redux"
 
 type PostCardProps = {
     item: PostModel,
@@ -28,131 +29,88 @@ type PostCardProps = {
 
 const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
 
+
     const [data, setData] = useState<PostModel>(item)
-    const [voteResult, setVoteResult] = useState<{ total: number, checked: boolean, expired: boolean }>({ total: 0, checked: false, expired: false })
-    const currentUser = useAppSelector(state => state.userState.currentUser)
-    const userData: UserModel = useAppSelector(state => selectUserByUID(state, item.userID))
+    const [voteResult, setVoteResult] = useState({ total: 0, checked: false, expired: false })
+    const currentUser = useAppSelector(state => state.userState.currentUser, shallowEqual)
+    const userCreatePost: UserModel = useAppSelector(state => selectUserByUID(state, item.userID), shallowEqual)
     const navigation = useNavigation<any>()
     const dispatch = useAppDispatch()
-    const [tag, setTag] = useState(currentUser.postTags ? currentUser.postTags.includes(item.id!) : false)
+    const [tag, setTag] = useState(currentUser.postTags?.includes(item.id!) ?? false)
 
     useEffect(() => {
-        setData(item)
+        if (data !== item) {
+            setData(item)
+        }
+        setTag(currentUser.postTags?.includes(item.id!) ?? false)
     }, [item, currentUser.postTags])
 
     useEffect(() => {
         if (data.checklistData) {
-            const voteUsers = data.checklistData.optionDatas.map(option => option.voteUsers).flat()
-            // know: user voted
-            const checked = voteUsers.includes(currentUser.uid)
-
-            // expired handle
-            const now = Date.now().valueOf()  // miliseconds
-            const limit = data.checklistData.timeLimit
-            const convertLimitToSecond = Number(limit.day) * DAY_TO_SECOND + Number(limit.hour) * HOUR_TO_SECOND + Number(limit.minute) * MINUTE_TO_SECOND
-            const postTimeLimitVote = (data.postTime.seconds + convertLimitToSecond) * SECOND_TO_MILISECOND // seconds * 1000 to miliseconds
-            const timeRemain = postTimeLimitVote - now
-
-            setVoteResult({ total: voteUsers.length, checked: checked, expired: timeRemain < 0 })
-
-            if (timeRemain > 0) {
-                const timeoutID = setTimeout(() => {
-                    setVoteResult({ ...voteResult, expired: true })
-                }, timeRemain)
-
-                return () => clearTimeout(timeoutID)
-            }
+            handleVoteResult(data.checklistData, data.postTime.seconds)
         }
     }, [data.checklistData])
 
-    useEffect(() => {
-        setTag(currentUser.postTags ? currentUser.postTags.includes(item.id!) : false)
-    }, [currentUser.postTags])
+    const handleVoteResult = (checkListData: ChecklistModel, postTimeSeconds: number) => {
+        const voteUsers = checkListData.optionDatas.flatMap(option => option.voteUsers)
+        const checked = voteUsers.includes(currentUser.uid)
+        const timeRemain = calculateTimeRemain(checkListData.timeLimit, postTimeSeconds)
+
+        setVoteResult({ total: voteUsers.length, checked, expired: timeRemain < 0 })
+
+        if (timeRemain > 0) {
+            const timeoutID = setTimeout(() => {
+                setVoteResult(prev => ({ ...prev, expired: true }))
+            }, timeRemain)
+
+            return () => clearTimeout(timeoutID)
+        }
+    }
+
+    const calculateTimeRemain = (limit: TimeLimitModel, postTimeSeconds: number) => {
+        const convertLimitToSecond = Number(limit.day) * DAY_TO_SECOND + Number(limit.hour) * HOUR_TO_SECOND + Number(limit.minute) * MINUTE_TO_SECOND
+        const postTimeLimitVote = (postTimeSeconds + convertLimitToSecond) * SECOND_TO_MILISECOND // seconds * 1000 to miliseconds
+        return postTimeLimitVote - Date.now().valueOf()
+    }
 
     const handleDelete = () => {
-        Alert.alert(
-            'Delete post',
-            'Are you sure',
-            [
-                {
-                    text: 'Cancel',
-                    onPress: () => { },
-                    style: 'cancel'
-                },
-                {
-                    text: 'Confirm',
-                    onPress: () => onDeletePost && onDeletePost(item),
-                }
-            ],
-            { cancelable: false }
-        )
+        Alert.alert('Delete post', 'Are you sure', [
+            { text: 'Cancel', onPress: () => { }, style: 'cancel' },
+            { text: 'Confirm', onPress: () => onDeletePost && onDeletePost(item) }
+        ])
     }
 
     const gotoPostDetail = () => {
-        navigation && navigation.navigate('PostDetailScreen', { data: data })
+        navigation && navigation.navigate('PostDetailScreen', { data })
     }
 
     const handleLike = useCallback(async (typeEmotion: string, isModal?: boolean) => {
-        try {
-            const copyLikes = data.likes ? [...data.likes] : []
-            const userID = currentUser.uid
-            const index = copyLikes.find(item => item.userID == userID)
-            let newLikes: LikeModel[] = []
-
-            if (index) {
-                // liked
-                if (isModal) {
-                    // change like
-                    const oldLikes = copyLikes.filter(item => item.userID != userID)
-                    newLikes = [
-                        ...oldLikes,
-                        {
-                            type: typeEmotion,
-                            userID: userID
-                        }
-                    ]
-                } else {
-                    // dislike
-                    newLikes = copyLikes.filter(item => item.userID != userID)
-                }
-
-            } else {
-                // no like
-                // add like
-                newLikes = [
-                    ...copyLikes,
-                    {
-                        type: typeEmotion,
-                        userID: userID
-                    }
-                ]
-            }
-
-            setData({
-                ...item,
-                likes: newLikes
-            })
-
-            dispatch(updatePost({
-                ...item,
-                likes: newLikes
-            }))
-        } catch (error) {
-            console.log("🚀 ~ handleLike ~ error:", error)
-        }
-
+        const newLikes = updateLike(data.likes, typeEmotion, currentUser.uid, isModal)
+        setData({ ...data, likes: newLikes })
+        dispatch(updatePost({ ...item, likes: newLikes }))
     }, [data.likes])
 
-    const handleVote = async (option: OptionDataModel) => {
+    const updateLike = (likes: LikeModel[] = [], typeEmotion: string, userID: string, isModal?: boolean) => {
+        const likeIndex = likes.find(item => item.userID === userID)
+        if (likeIndex) {
+            return isModal
+                ? likes.map(item => item.userID === userID ? { ...item, type: typeEmotion } : item) // change like
+                : likes.filter(item => item.userID !== userID) // dislike
+        }
+
+        return [...likes, { type: typeEmotion, userID }]
+    }
+
+    const handleVote = useCallback(async (option: OptionDataModel) => {
         try {
             const newState = { ...data }
             const uid = currentUser.uid
 
             if (newState.checklistData) {
                 newState.checklistData = { ...newState.checklistData }
-
+                
                 newState.checklistData.optionDatas = newState.checklistData.optionDatas.map((item: OptionDataModel) => {
-                    // voted
+                    // unvoted option end-user chose
                     if (item.voteUsers.includes(uid)) {
                         return {
                             ...item,
@@ -160,25 +118,22 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                             voteUsers: item.voteUsers.filter(item => item !== uid)
                         }
                     }
-                    // unvoted
+                    // voted option end-user
                     if (item.id === option.id) {
                         return {
                             ...item,
                             voteNumbers: item.voteNumbers + 1,
-                            voteUsers: [...item.voteUsers, userData.uid!]
+                            voteUsers: [...item.voteUsers, uid]
                         }
                     }
                     return item
                 })
-
-                setData(newState)
-
-                await updatePost(newState)
+                await dispatch(updatePost(newState))
             }
         } catch (error) {
             console.log("🚀 ~ handleVote ~ error:", error)
         }
-    }
+    }, [data])
 
     const onPressAvatar = () => {
         if (data.userID !== currentUser.uid && onPressUserName) {
@@ -191,89 +146,80 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     }
 
     const renderChecklistData = () => {
-        if (data.checklistData) {
-            return (
-                <View style={{ paddingHorizontal: SIZES.padding, gap: SIZES.base }}>
-                    {data.checklistData.optionDatas.map(option => {
-                        // know: vote position user
-                        const checked = option.voteUsers?.includes(currentUser.uid)
-                        const percent = voteResult.total > 0 ? option.voteUsers.length / voteResult.total * 100 : 0
-                        return (
-                            <View key={option.id}>
-                                {voteResult.checked || voteResult.expired ? <View style={[
-                                    styles.voteItem,
-                                    {
-                                        position: 'absolute',
-                                        backgroundColor: checked ? COLORS.socialBlue : COLORS.lightGrey,
-                                        height: '100%',
-                                        width: `${percent}%`,
-                                        opacity: 0.3
-                                    }
-                                ]} /> : <></>}
-                                <TouchableOpacity
-                                    style={[styles.voteItem, { borderColor: checked ? COLORS.socialBlue : COLORS.lightGrey, padding: SIZES.padding, }]}
-                                    onPress={() => handleVote(option)}
-                                    disabled={voteResult.expired}
-                                >
-                                    <TextComponent text={option.title} />
-                                    {voteResult.checked || voteResult.expired ? <TextComponent text={`${percent}%`} /> : <></>}
-                                </TouchableOpacity>
+        return data.checklistData ? (
+            <View style={{ paddingHorizontal: SIZES.padding, gap: SIZES.base }}>
+                {data.checklistData.optionDatas.map(option => renderOption(option))}
+                {voteResult.checked || voteResult.expired ? <TextComponent text={`${voteResult.total} votes`} /> : <></>}
+            </View>
+        ) : <></>
+    }
 
-                            </View>
-
-                        )
-                    })}
-                    {voteResult.checked || voteResult.expired ? <TextComponent text={`${voteResult.total} votes`} /> : <></>}
-                </View>
-            )
-        }
+    const renderOption = (option: OptionDataModel) => {
+        const checked = option.voteUsers?.includes(currentUser.uid)
+        const percent = voteResult.total > 0 ? (option.voteUsers.length / voteResult.total) * 100 : 0
+        return (
+            <View key={option.id}>
+                {voteResult.checked || voteResult.expired ? (
+                    <View
+                        style={[
+                            styles.voteItem,
+                            {
+                                height: '100%',
+                                position: 'absolute',
+                                backgroundColor: checked ? COLORS.socialBlue : COLORS.lightGrey,
+                                width: `${percent}%`,
+                                opacity: 0.3,
+                            }
+                        ]}
+                    />
+                ) : <></>}
+                <TouchableOpacity
+                    style={[styles.voteItem, { borderColor: checked ? COLORS.socialBlue : COLORS.lightGrey, padding: SIZES.padding }]}
+                    onPress={() => handleVote(option)}
+                    disabled={voteResult.expired}
+                >
+                    <TextComponent text={option.title} />
+                    {voteResult.checked || voteResult.expired ? <TextComponent text={`${percent}%`} /> : <></>}
+                </TouchableOpacity>
+            </View>
+        )
     }
 
     const onTag = () => {
+        const newTag = toggleTag(currentUser.postTags, item.id!)
+        dispatch(updateUser({ ...currentUser, postTags: newTag }))
         setTag(!tag)
+    }
 
-        const postTags = currentUser.postTags
-
-        if (postTags && postTags.includes(item.id!)) {
-            dispatch(updateUser({
-                ...currentUser,
-                postTags: postTags.filter((elem: string) => elem !== item.id!)
-            }))
-        } else {
-            dispatch(updateUser({
-                ...currentUser,
-                postTags: postTags ? [...postTags, item.id!] : [item.id!]
-            }))
-        }
-
+    const toggleTag = (postTags: string[] = [], postID: string) => {
+        return postTags.includes(postID) ? postTags.filter(tag => tag !== postID) : [...postTags, postID]
     }
 
     return (
         <View>
             {/* header */}
-            <View>
-                {userData ? <View style={styles.titleContainer}>
+            {userCreatePost
+                ? <View style={styles.titleContainer}>
                     <TouchableWithoutFeedback onPress={onPressAvatar}>
-                        {userData ? (
-                            <Image source={{ uri: userData.userImg }} style={styles.avatar} />
+                        {userCreatePost.userImg ? (
+                            <Image source={{ uri: userCreatePost.userImg }} style={styles.avatar} />
                         ) : (
                             <Image source={images.defaultImage} style={styles.avatar} />
                         )}
                     </TouchableWithoutFeedback>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
                         <View style={styles.textWrap}>
-                            {/* <TouchableOpacity onPress={() => onPressUserName && onPressUserName(item.userID)}> */}
-                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{userData.fname} {userData.lname}</Text>
-                            {/* </TouchableOpacity> */}
+                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{userCreatePost.fname} {userCreatePost.lname}</Text>
                             <Text style={[styles.text, { ...FONTS.body4, color: COLORS.lightGrey }]}>{moment(data.postTime.toDate()).fromNow()}</Text>
                         </View>
                     </View>
                     <TouchableOpacity onPress={onPressOptionPost}>
                         <UtilIcons.svgDotsVertical />
                     </TouchableOpacity>
+                </View>
+                : <></>
+            }
 
-                </View> : <></>}
-            </View>
 
             {/* location */}
             {data.location && (
