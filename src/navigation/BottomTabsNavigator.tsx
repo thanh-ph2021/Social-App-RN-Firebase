@@ -1,17 +1,21 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import LinearGradient from 'react-native-linear-gradient'
-import { TouchableOpacity, View } from 'react-native'
+import { View } from 'react-native'
 
 import FeedStack from './FeedStack'
 import ProfileStack from './ProfileStack'
 import { AddPostScreen, NotificationScreen, SearchScreen } from '../screens'
-import { COLORS } from '../constants'
-import { useAuthContext } from '../hooks'
+import { COLORS, SIZES } from '../constants'
+import { useAppSelector } from '../hooks'
 import { UtilIcons } from '../utils/icons'
+import { memo } from 'react'
+import Badges from '../components/Badges'
 
 const Tab = createBottomTabNavigator()
 
 const BottomTabsNavigation = () => {
+
+    const { unreadCount } = useAppSelector(state => state.notificationState)
 
     return (
         <Tab.Navigator
@@ -25,8 +29,7 @@ const BottomTabsNavigation = () => {
                 tabBarShowLabel: false,
                 tabBarHideOnKeyboard: true,
                 header: () => null,
-                lazy: true,
-
+                lazy: true
             }}
         >
             <Tab.Screen
@@ -65,7 +68,10 @@ const BottomTabsNavigation = () => {
                 component={NotificationScreen}
                 options={{
                     tabBarIcon: ({ focused }) => (
-                        <UtilIcons.svgAlert color={focused ? COLORS.socialWhite : COLORS.darkGrey} />
+                        <View style={{ padding: SIZES.padding }}>
+                            <UtilIcons.svgAlert color={focused ? COLORS.socialWhite : COLORS.darkGrey} />
+                            <Badges unreadCount={unreadCount} />
+                        </View>
                     ),
                 }}
             />
@@ -82,4 +88,4 @@ const BottomTabsNavigation = () => {
     )
 }
 
-export default BottomTabsNavigation
+export default memo(BottomTabsNavigation)

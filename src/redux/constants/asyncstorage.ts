@@ -1,0 +1,4 @@
+export const LOAD_ASYNCSTORAGE = 'LOAD_ASYNCSTORAGE'
+export const FOLLOW_NOTI = 'FOLLOW_NOTI'
+export const COMMENT_NOTI = 'COMMENT_NOTI'
+export const LIKE_NOTI = 'LIKE_NOTI'

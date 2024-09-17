@@ -7,3 +7,15 @@ export enum TypeEmotion {
     Wow = 'Wow',
     Angry = 'Angry',
 }
+
+export enum TypeNotification {
+    Like = 'like',
+    Love = 'love',
+    Care = 'care',
+    Haha = 'haha',
+    Sad = 'sad',
+    Wow = 'wow',
+    Angry = 'angry',
+    Comment = 'comment',
+    Follow = 'follow'
+}

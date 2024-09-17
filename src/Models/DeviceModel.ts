@@ -4,7 +4,6 @@ export interface DeviceModel {
     deviceBrand: string,
     deviceOS: string,
     deviceOSVersion: string,
-    createAt?: any,
+    lastLogin?: any,
     notifyToken: string,
-    userID: string,
 } 

@@ -23,7 +23,8 @@ export const COLORS = {
     text: "#FFFFFF",
     blue: "blue",
     yellow: '#ad9613',
-    red: '#7d0606'
+    red: '#7d0606',
+    redLight: '#d92c23'
 }
 
 export const SIZES = {
@@ -64,7 +65,7 @@ export const FONTS = {
     body5: { fontFamily: "Roboto-Regular", fontSize: SIZES.body5, lineHeight: 18},
 }
 
-export const URL_HOSTING = 'http://192.168.0.13:8086/api/notification/send'
+export const URL_HOSTING = 'http://192.168.0.11:8086/api/notification/send'
 
 const appTheme = {COLORS, SIZES, FONTS, URL_HOSTING}
 

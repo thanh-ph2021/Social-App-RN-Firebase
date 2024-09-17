@@ -31,7 +31,7 @@ function AuthStack() {
 
         GoogleSignin.configure({
             webClientId: '974440527830-9qo5oana9fm9uelss2l62e6ekq3fd1k2.apps.googleusercontent.com',
-        });
+        })
     }, [])
 
     if (isFirstLaunch === null) {

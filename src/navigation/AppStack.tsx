@@ -9,21 +9,29 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import BottomTabsNavigation from './BottomTabsNavigator'
 
 import { requestUserPermission } from '../utils'
-import { useAuthContext, useChat, useDevice, useUser } from '../hooks'
+import { useAppDispatch, useAuthContext, useChat, useUser } from '../hooks'
 import { AddPostScreen, ChatScreen, CreatePageScreen, FriendScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, ProfileScreen, SettingsNotificationScreen, SettingsScreen, StoryScreen, UpdateProfileScreen, VideoDetailScreen } from '../screens'
+import { addDevice } from '../redux/actions/device'
+import { reload } from '../redux/actions'
+import { fetchNotifications } from '../redux/actions/notification'
+import { loadStorage } from '../redux/actions/asyncstorage'
 
 const Stack = createNativeStackNavigator()
 
 const AppStack = () => {
-    const [isLoading, collection, addDevice] = useDevice()
     const navigation = useNavigation<any>()
     const { getChatCondition } = useChat()
     const { getUserFromHook } = useUser()
     const { user, setUser } = useAuthContext()
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        
         // configureNotification()
+
+        dispatch(fetchNotifications())
+        dispatch(loadStorage())
+        dispatch(reload())
+        
         createChannelNoti()
 
         requestUserPermission()
@@ -37,7 +45,8 @@ const AppStack = () => {
                 });
             } else {
                 if (user) {
-                    await addDevice(token, user.uid!)
+                    await dispatch(addDevice(token))
+                    // await addDevice(token, user.uid!)
                     !user.about && await getUserFromHook(user!.uid!)
                         .then((data) => {
                             if (data) {

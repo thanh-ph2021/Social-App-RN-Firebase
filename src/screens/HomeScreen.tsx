@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
@@ -7,7 +7,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import PostCard from '../components/Post/PostCard'
 import { PostModel } from '../models'
 import { COLORS, SIZES, images } from '../constants'
-import { useAppDispatch, useAppSelector, usePost } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../hooks'
 import { showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { Divider, TextComponent } from '../components'
@@ -93,12 +93,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         return layoutMeasurement.height + contentOffset.y >=
             contentSize.height - paddingToBottom
     }
-
-    useEffect(() => {
-        dispatch(reload())
-        // testLocalNotification()
-        // testScheduleNotification()
-    }, [])
 
     const testLocalNotification = () => {
         PushNotification.localNotification({

@@ -3,8 +3,9 @@ import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpaci
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import useAuthContext from '../hooks/useAuthContext'
 import LinearGradient from 'react-native-linear-gradient'
+import firestore from '@react-native-firebase/firestore'
 
-import { COLORS, SIZES, images, FONTS } from '../constants'
+import { COLORS, SIZES, images, FONTS, TypeNotification } from '../constants'
 import { PostModel, UserModel } from '../models'
 import PostCard from '../components/Post/PostCard'
 import { useAppDispatch, useAppSelector, useChat } from '../hooks'
@@ -13,6 +14,7 @@ import { Divider } from '../components'
 import { UtilIcons } from '../utils/icons'
 import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
+import { addNotification } from '../redux/actions/notification'
 
 const tagDatas = [
     {
@@ -40,18 +42,19 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const params = route.params
     const { addChatData } = useChat()
     const [tag, setTag] = useState<number>(1)
-    const user = useAppSelector(state => state.userState.currentUser)
+    const currentUser = useAppSelector(state => state.userState.currentUser)
     const userParam = params ? useAppSelector(state => selectUserByUID(state, params.userID)) : null
-    const [userData, setUserData] = useState<UserModel>(params ? userParam : user)
-    const posts = useAppSelector(state => selectPostByUserId(state, params ? params.userID : user!.uid))
+    const [userData, setUserData] = useState<UserModel>(params ? userParam : currentUser)
+    const posts = useAppSelector(state => selectPostByUserId(state, params ? params.userID : currentUser!.uid))
     const dispatch = useAppDispatch()
-    const [follow, setFollow] = useState(params ? user.followings?.includes(params!.userID) : false)
-    const postUserLiked = useAppSelector(state => selectPostUserLiked(state, user.uid))
-    const postTags = user.postTags ? useAppSelector(state => selectPostTagged(state, user.postTags)) : []
+    const [follow, setFollow] = useState(params ? currentUser.followings?.includes(params!.userID) : false)
+    const postUserLiked = useAppSelector(state => selectPostUserLiked(state, currentUser.uid))
+    const postTags = currentUser.postTags ? useAppSelector(state => selectPostTagged(state, currentUser.postTags)) : []
+    const followNoti = useAppSelector(state => state.asyncstorageState.followNoti)
 
     useEffect(() => {
-        setUserData(params ? userParam : user)
-    }, [user, userParam])
+        setUserData(params ? userParam : currentUser)
+    }, [currentUser, userParam])
 
     const navigateChatScreen = (chatID: string) => {
         navigation.navigate('Chat', { userData: userData, chatID: chatID })
@@ -95,20 +98,32 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const onFollow = async () => {
         try {
             setFollow(!follow)
-            let followings: string[] = user.followings ?? []
+            let followings: string[] = currentUser.followings ?? []
             let followers: string[] = userParam.followers ?? []
 
             if (followings.includes(params!.userID)) {
                 followings = followings.filter(item => item !== params!.userID)
-                followers = followers.filter(item => item !== user.uid)
+                followers = followers.filter(item => item !== currentUser.uid)
             } else {
                 followings = [...followings, params!.userID]
-                followers = [...followers, user.uid]
+                followers = [...followers, currentUser.uid]
+                
+                if (userParam.uid != currentUser.uid && followNoti) {
+                    await dispatch(addNotification({
+                        createdAt: firestore.Timestamp.fromDate(new Date()),
+                        isRead: false,
+                        message: `${currentUser.fname} ${currentUser.lname} followed you`,
+                        postId: '',
+                        receiverId: userParam.uid!,
+                        senderId: currentUser.uid,
+                        type: TypeNotification.Follow,
+                    }))
+                }
             }
 
             await dispatch(updateUser({
-                ...user,
-                followers: user.followers ?? [],
+                ...currentUser,
+                followers: currentUser.followers ?? [],
                 followings: followings
             }))
 
@@ -117,6 +132,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                 followings: userParam.followings ?? [],
                 followers: followers
             }))
+
+
         } catch (error) {
             console.log("🚀 ~ onFollow ~ error:", error)
         }

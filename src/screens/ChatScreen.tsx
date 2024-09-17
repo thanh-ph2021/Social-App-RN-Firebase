@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useCallback, useEffect } from 'react'
 import { GiftedChat, Bubble, Send, Composer, InputToolbar, Avatar, SystemMessage } from 'react-native-gifted-chat'
@@ -42,7 +42,7 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 id: user!.uid!,
                 type: 'message'
             },
-        }, receiveUser?.uid!)
+        }, [receiveUser?.uid!])
     }, [])
 
     const renderBubble = (props: any) => {
@@ -164,10 +164,10 @@ const ChatScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     )}
                     renderAvatar={(props) => (
                         <Avatar
-                          {...props}
-                          imageStyle={{ left: { width: 28, height: 28 }, right: {} }}
+                            {...props}
+                            imageStyle={{ left: { width: 28, height: 28 }, right: {} }}
                         />
-                      )}
+                    )}
                 />
             </View>
 

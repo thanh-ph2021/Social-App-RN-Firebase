@@ -1,7 +1,7 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 
-import { ADD_COMMENT_POST, LOAD_COMMENTS_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
+import { ADD_COMMENT_POST, ADD_POST, LOAD_COMMENTS_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
 import { LIMIT } from '../../constants'
 import { CommentModel, PostModel } from '../../models'
 import { AppThunk } from '../types'
@@ -23,6 +23,20 @@ export const fetchPosts = (): AppThunk => async (dispatch, getState) => {
                     return { id, ...data }
                 })
                 dispatch({ type: USER_POSTS_STATE_CHANGE, payload: posts })
+            })
+    } catch (error) {
+        console.log("🚀 ~ fetchPost ~ error:", error)
+    }
+}
+
+export const fetchPostById = (postId: string): AppThunk => async (dispatch, getState) => {
+    try {
+        await postCollection
+            .doc(postId)
+            .get()
+            .then((snapshot) => {
+                const post = { ...snapshot.data(), id: snapshot.id }
+                dispatch({ type: ADD_POST, payload: post })
             })
     } catch (error) {
         console.log("🚀 ~ fetchPost ~ error:", error)

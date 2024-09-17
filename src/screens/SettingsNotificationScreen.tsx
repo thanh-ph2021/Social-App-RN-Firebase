@@ -1,18 +1,19 @@
 import { StyleSheet, Switch, View } from 'react-native'
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler'
-import { useEffect, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 
 import { COLORS, FONTS, SIZES } from '../constants'
 import { Header, TextComponent } from '../components'
 import { UtilIcons } from '../utils/icons'
 import { utilStyles } from '../styles'
+import { useAppDispatch, useAppSelector } from '../hooks'
+import { COMMENT_NOTI, FOLLOW_NOTI, LIKE_NOTI } from '../redux/constants/asyncstorage'
+import { updateStorage } from '../redux/actions/asyncstorage'
 
 const SettingsNotificationScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-    const [isFollowersEnabled, setIsFollowersEnabled] = useState(false)
-    const [isCommentsEnabled, setIsCommentsEnabled] = useState(false)
-    const [isLikesEnabled, setIsLikesEnabled] = useState(false)
+    const { commentNoti, followNoti, likeNoti } = useAppSelector(state => state.asyncstorageState)
+    const dispatch = useAppDispatch()
 
     return (
         <View style={styles.container}>
@@ -29,7 +30,7 @@ const SettingsNotificationScreen = ({ navigation }: NativeStackScreenProps<any>)
 
                 <TouchableWithoutFeedback
                     style={styles.row}
-                    onPress={() => setIsFollowersEnabled(prev => !prev)}
+                    onPress={() => dispatch(updateStorage(FOLLOW_NOTI, !followNoti))}
                 >
                     <View>
                         <TextComponent text={'Followers'} color={COLORS.socialWhite} style={{ ...FONTS.body3 }} />
@@ -37,16 +38,16 @@ const SettingsNotificationScreen = ({ navigation }: NativeStackScreenProps<any>)
                     </View>
                     <Switch
                         trackColor={{ false: COLORS.lightGrey, true: COLORS.socialPink2 }}
-                        thumbColor={isFollowersEnabled ? COLORS.socialPink : COLORS.lightGrey2}
+                        thumbColor={followNoti ? COLORS.socialPink : COLORS.lightGrey2}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => setIsFollowersEnabled(prev => !prev)}
-                        value={isFollowersEnabled}
+                        onValueChange={() => dispatch(updateStorage(FOLLOW_NOTI, !followNoti))}
+                        value={followNoti}
                     />
                 </TouchableWithoutFeedback>
 
                 <TouchableWithoutFeedback
                     style={styles.row}
-                    onPress={() => setIsCommentsEnabled(prev => !prev)}
+                    onPress={() => dispatch(updateStorage(COMMENT_NOTI, !commentNoti))}
                 >
                     <View>
                         <TextComponent text={'Comment'} color={COLORS.socialWhite} style={{ ...FONTS.body3 }} />
@@ -54,16 +55,16 @@ const SettingsNotificationScreen = ({ navigation }: NativeStackScreenProps<any>)
                     </View>
                     <Switch
                         trackColor={{ false: COLORS.lightGrey, true: COLORS.socialPink2 }}
-                        thumbColor={isCommentsEnabled ? COLORS.socialPink : COLORS.lightGrey2}
+                        thumbColor={commentNoti ? COLORS.socialPink : COLORS.lightGrey2}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => setIsCommentsEnabled(prev => !prev)}
-                        value={isCommentsEnabled}
+                        onValueChange={() => dispatch(updateStorage(COMMENT_NOTI, !commentNoti))}
+                        value={commentNoti}
                     />
                 </TouchableWithoutFeedback>
 
                 <TouchableWithoutFeedback
                     style={styles.row}
-                    onPress={() => setIsLikesEnabled(prev => !prev)}
+                    onPress={() => dispatch(updateStorage(LIKE_NOTI, !likeNoti))}
                 >
                     <View>
                         <TextComponent text={'Likes'} color={COLORS.socialWhite} style={{ ...FONTS.body3 }} />
@@ -71,10 +72,10 @@ const SettingsNotificationScreen = ({ navigation }: NativeStackScreenProps<any>)
                     </View>
                     <Switch
                         trackColor={{ false: COLORS.lightGrey, true: COLORS.socialPink2 }}
-                        thumbColor={isLikesEnabled ? COLORS.socialPink : COLORS.lightGrey2}
+                        thumbColor={likeNoti ? COLORS.socialPink : COLORS.lightGrey2}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => setIsLikesEnabled(prev => !prev)}
-                        value={isLikesEnabled}
+                        onValueChange={() => dispatch(updateStorage(LIKE_NOTI, !likeNoti))}
+                        value={likeNoti}
                     />
                 </TouchableWithoutFeedback>
             </View>

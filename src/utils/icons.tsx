@@ -38,7 +38,7 @@ export const UtilIcons = {
     svgClose: ({ color, size }: Props) => <Svg width={size ? size : "20"} height={size ? size : "20"} viewBox="0 0 24 24" fill="none">
         <Path d="M6 6L18 18M6 18L18 6L6 18Z" stroke={color ? color : "#181A1C"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>,
-    svgComment: ({ color }: Props) => <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    svgComment: ({ color, size }: Props) => <Svg width={size ? size : "20"} height={size ? size : "20"} viewBox="0 0 24 24" fill="none">
         <Path d="M8 12H8.01M12 12H12.01M16 12H16.01M21 12C21 16.418 16.97 20 12 20C10.5286 20.005 9.07479 19.6808 7.745 19.051L3 20L4.395 16.28C3.512 15.042 3 13.574 3 12C3 7.582 7.03 4 12 4C16.97 4 21 7.582 21 12Z" stroke={color ? color : COLORS.socialWhite} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>,
     svgDotsVertical: ({ color, size }: Props) => <Svg width={size ? size : 30} height={size ? size : 30} viewBox="0 0 24 24" fill={COLORS.lightGrey}>
@@ -163,5 +163,11 @@ export const UtilIcons = {
     </Svg>,
     svgLogo: ({ size, color }: Props) => <Svg width={size ? size * 439 / 465 : 439} height={size ? size * 465 / 439 : 465} viewBox="0 0 439 465" fill="none">
         <Path d="M25 177.247L425 19M25 177.247C25 177.247 184.568 197.882 287.667 213.667M25 177.247L386.111 441.901M425 19C425 19 340.778 136.082 287.667 213.667M425 19L386.111 441.901M287.667 213.667C325.591 301.236 386.111 441.901 386.111 441.901" stroke={color ? color : 'white'} strokeWidth="24" />
-    </Svg>
+    </Svg>,
+    svgUser: ({ size, color }: Props) => <Svg width={size ? size : 24} height={size ? size : 24} viewBox="0 0 24 24" fill="none">
+        <Path d="M5.30769 7.88571C5.30769 5.73969 7.06411 4 9.23077 4C11.3974 4 13.1538 5.73969 13.1538 7.88571C13.1538 10.0317 11.3974 11.7714 9.23077 11.7714C7.06411 11.7714 5.30769 10.0317 5.30769 7.88571Z" fill={color ? color : 'black'} />
+        <Path d="M6.75123 13.5261L6.91563 13.5001C8.44935 13.2577 10.0122 13.2577 11.5459 13.5001L11.7103 13.5261C13.8714 13.8677 15.4615 15.714 15.4615 17.8816C15.4615 19.0516 14.504 20 13.3228 20H5.13874C3.95755 20 3 19.0516 3 17.8816C3 15.714 4.59016 13.8677 6.75123 13.5261Z" fill={color ? color : 'black'} />
+        <Path d="M14.7692 4C14.3869 4 14.0769 4.307 14.0769 4.68571C14.0769 5.06442 14.3869 5.37143 14.7692 5.37143C16.1712 5.37143 17.3077 6.49711 17.3077 7.88571C17.3077 9.27432 16.1712 10.4 14.7692 10.4C14.3869 10.4 14.0769 10.707 14.0769 11.0857C14.0769 11.4644 14.3869 11.7714 14.7692 11.7714C16.9359 11.7714 18.6923 10.0317 18.6923 7.88571C18.6923 5.73969 16.9359 4 14.7692 4Z" fill={color ? color : 'black'} />
+        <Path d="M15.9149 13.4916C15.5326 13.4916 15.2226 13.7986 15.2226 14.1773C15.2226 14.556 15.5326 14.863 15.9149 14.863H16.8086C16.8829 14.863 16.9573 14.8688 17.0306 14.8804C18.5197 15.1158 19.6154 16.388 19.6154 17.8816C19.6154 18.2942 19.2778 18.6286 18.8613 18.6286H16.9753C16.5929 18.6286 16.283 18.9356 16.283 19.3143C16.283 19.693 16.5929 20 16.9753 20H18.8613C20.0425 20 21 19.0516 21 17.8816C21 15.714 19.4098 13.8677 17.2488 13.5261C17.1032 13.5031 16.9559 13.4916 16.8086 13.4916H15.9149Z" fill={color ? color : 'black'} />
+    </Svg>,
 }

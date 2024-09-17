@@ -5,6 +5,7 @@ import moment from 'moment'
 import { TouchableWithoutFeedback } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
+import firestore from '@react-native-firebase/firestore'
 
 import { SIZES, images, FONTS, COLORS, SECOND_TO_MILISECOND, DAY_TO_SECOND, HOUR_TO_SECOND, MINUTE_TO_SECOND } from '../../constants'
 import { ChecklistModel, LikeModel, OptionDataModel, PostModel, TimeLimitModel, UserModel } from "../../models"
@@ -20,6 +21,7 @@ import { updatePost } from "../../redux/actions/post"
 import { selectUserByUID } from "../../redux/selectors"
 import { updateUser } from "../../redux/actions/user"
 import { shallowEqual } from "react-redux"
+import { addNotification } from "../../redux/actions/notification"
 
 type PostCardProps = {
     item: PostModel,
@@ -37,6 +39,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     const navigation = useNavigation<any>()
     const dispatch = useAppDispatch()
     const [tag, setTag] = useState(currentUser.postTags?.includes(item.id!) ?? false)
+    const likeNoti = useAppSelector(state => state.asyncstorageState.likeNoti)
 
     useEffect(() => {
         if (data !== item) {
@@ -93,12 +96,38 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     const updateLike = (likes: LikeModel[] = [], typeEmotion: string, userID: string, isModal?: boolean) => {
         const likeIndex = likes.find(item => item.userID === userID)
         if (likeIndex) {
-            return isModal
-                ? likes.map(item => item.userID === userID ? { ...item, type: typeEmotion } : item) // change like
-                : likes.filter(item => item.userID !== userID) // dislike
+            if (isModal) {
+                // change like
+                addNoti(typeEmotion)
+
+                return likes.map(item => item.userID === userID ? { ...item, type: typeEmotion } : item)
+            } else {
+                // dislike
+                return likes.filter(item => item.userID !== userID)
+            }
         }
+        addNoti(typeEmotion)
+
 
         return [...likes, { type: typeEmotion, userID }]
+    }
+
+    const addNoti = (typeEmotion: string) => {
+        if (userCreatePost.uid != currentUser.uid && likeNoti) {
+            const message = typeEmotion.toLowerCase() == 'like'
+                ? `${currentUser.fname} ${currentUser.lname} liked your post`
+                : `${currentUser.fname} ${currentUser.lname} reacted to your post`
+                
+            dispatch(addNotification({
+                createdAt: firestore.Timestamp.fromDate(new Date()),
+                isRead: false,
+                message: message,
+                postId: item.id!,
+                receiverId: userCreatePost.uid!,
+                senderId: currentUser.uid,
+                type: typeEmotion.toLowerCase(),
+            }))
+        }
     }
 
     const handleVote = useCallback(async (option: OptionDataModel) => {
@@ -108,7 +137,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
 
             if (newState.checklistData) {
                 newState.checklistData = { ...newState.checklistData }
-                
+
                 newState.checklistData.optionDatas = newState.checklistData.optionDatas.map((item: OptionDataModel) => {
                     // unvoted option end-user chose
                     if (item.voteUsers.includes(uid)) {

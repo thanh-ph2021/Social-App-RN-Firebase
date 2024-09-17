@@ -1,79 +1,99 @@
 import { useEffect, useState } from "react"
-import { FlatList, SectionList, Text, View, TouchableOpacity } from "react-native"
+import { FlatList, SectionList, Text, View, TouchableOpacity, RefreshControl, ListRenderItemInfo, ActivityIndicator } from "react-native"
 import moment from "moment"
+import { shallowEqual } from "react-redux"
+import { NativeStackScreenProps } from "@react-navigation/native-stack"
+import LottieView from "lottie-react-native"
 
 import { COLORS, SIZES } from "../constants"
-import { Divider, TextComponent } from "../components"
-import { UtilIcons } from "../utils/icons"
+import { TextComponent } from "../components"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import { fetchNextNotifications, fetchNotifications, markAllReadNoti } from "../redux/actions/notification"
+import NotificationCard from "../components/NotificationCard"
+import { utilStyles } from "../styles"
 
 const date = new Date()
 const yesterday = date.setDate(date.getDate() - 1)
 
-const notiDatas = [
+const tagDatas = [
     {
         id: 1,
-        title: 'Sofia, John and +19 others liked your post.',
-        date: new Date(),
-        type: 'like',
-        isRead: 0
+        name: 'All'
     },
     {
         id: 2,
-        title: 'Rebecca, Daisy and +11 others liked your post.',
-        date: new Date(),
-        type: 'like',
-        isRead: 0
+        name: 'Unread'
     },
-    {
-        id: 3,
-        title: 'Katrina, Denver and +2 others commented on your post.',
-        date: yesterday,
-        type: 'comment',
-        isRead: 1
-    },
-    {
-        id: 4,
-        title: 'Savannah Wilson is celebrating birthday today. Drop a wish! 🎉',
-        date: yesterday,
-        type: 'birthday',
-        isRead: 1
-    },
-    {
-        id: 5,
-        title: 'Ralph Edwards mentioned you in a post.',
-        date: date.setDate(date.getDate() - 2),
-        type: 'mention',
-        isRead: 1
-    },
-
 ]
 
-const NotificationScreen = () => {
+const NotificationScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const [datas, setDatas] = useState<any>([])
+    const { notifications, hashMore } = useAppSelector(state => state.notificationState, shallowEqual)
+    const dispatch = useAppDispatch()
+    const [refreshing, setRefreshing] = useState(false)
+    const [tag, setTag] = useState<number>(1)
 
     useEffect(() => {
-        const groups = notiDatas.reduce((groups: any, data: any) => {
-            const date = moment(data.date).format('DD/MM/YYYY')
+        const groups = notifications.reduce((groups: any, data: any) => {
+            const date = moment(data.createdAt.seconds * 1000).format('DD/MM/YYYY')
             if (!groups[date]) {
-                groups[date] = [];
+                groups[date] = []
             }
-            groups[date].push(data);
-            return groups;
+            if (tag == 1) {
+                groups[date].push(data)
+            } else {
+                // get unread notification
+                data.isRead == false && groups[date].push(data)
+            }
+            return groups
         }, {})
-
 
         // Edit: to add it in the array format instead
         const groupArrays = Object.keys(groups).map((date) => {
             return {
                 date,
                 data: groups[date]
-            };
+            }
         })
 
-        setDatas(groupArrays)
-    }, [])
+        // remove data = []
+        setDatas(groupArrays.filter(item => item.data.length > 0))
 
+    }, [notifications, tag])
+
+    const onRefresh = async () => {
+        setRefreshing(true)
+        await dispatch(fetchNotifications())
+        setRefreshing(false)
+    }
+
+    const handleAllRead = async () => {
+        await dispatch(markAllReadNoti())
+    }
+
+    const onEndReached = async () => {
+        await dispatch(fetchNextNotifications())
+    }
+
+    const renderTag = ({ item }: ListRenderItemInfo<{ id: number, name: string }>) => {
+
+        const onPress = () => {
+            setTag(item.id)
+        }
+
+        return (
+            <TouchableOpacity style={{
+                borderWidth: 1,
+                padding: SIZES.base,
+                borderRadius: 18,
+                borderColor: item.id == tag ? 'transparent' : COLORS.lightGrey,
+                backgroundColor: item.id == tag ? COLORS.socialBlue : 'transparent'
+            }} onPress={onPress}>
+                <Text style={utilStyles.text}>{item.name}</Text>
+            </TouchableOpacity>
+        )
+    }
 
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.darkBlack }}>
@@ -84,7 +104,7 @@ const NotificationScreen = () => {
                     text='Notifications'
                     style={{ fontWeight: 'bold' }}
                 />
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleAllRead}>
                     <TextComponent
                         text='Mark all as read'
                         style={{ fontWeight: 'bold' }}
@@ -93,42 +113,51 @@ const NotificationScreen = () => {
                 </TouchableOpacity>
             </View>
 
+            <View style={{ marginLeft: SIZES.padding, marginBottom: SIZES.padding }}>
+                {/* tags */}
+                <FlatList
+                    horizontal
+                    data={tagDatas}
+                    contentContainerStyle={{ columnGap: SIZES.padding, paddingVertical: SIZES.base }}
+                    renderItem={renderTag}
+                    keyExtractor={(item, index) => item.name + index}
+                />
+            </View>
+
+            {refreshing && (
+                <View style={{
+                    justifyContent: 'center',
+                    alignItems: "center",
+                    backgroundColor: COLORS.darkBlack,
+                    position: 'absolute',
+                    zIndex: 99,
+                    width: '100%',
+                    height: '100%'
+                }}>
+                    <LottieView
+                        source={require("../assets/animations/loader.json")}
+                        style={{ width: 300, height: 300 }}
+                        autoPlay
+                        loop
+                    />
+                </View>
+            )}
+
             {datas && (
                 <SectionList
                     sections={datas}
                     keyExtractor={(item, index) => index.toString()}
                     contentContainerStyle={{ rowGap: SIZES.padding }}
+                    refreshControl={<RefreshControl onRefresh={onRefresh} refreshing={false} />}
+                    refreshing={refreshing}
                     renderItem={({ item }) => {
                         return (
-                            <TouchableOpacity>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', padding: SIZES.padding }}>
-                                    <View style={{
-                                        width: 50,
-                                        height: 50,
-                                        borderRadius: 30,
-                                        backgroundColor: COLORS.darkGrey,
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        {
-                                            item.type == 'like' ? <UtilIcons.svgLike color={COLORS.socialBlue} /> :
-                                                item.type == 'comment' ? <UtilIcons.svgComment color={COLORS.socialPink} /> :
-                                                    item.type == 'birthday' ? <TextComponent color={COLORS.socialBlue} text={'S'} /> :
-                                                        item.type == 'mention' ? <TextComponent text={'@'} /> : <></>
-                                        }
-                                    </View>
-                                    <View style={{ width: '86%', paddingLeft: SIZES.padding }}>
-                                        <TextComponent
-                                            text={item.title}
-                                            color={item.isRead ? COLORS.lightGrey : COLORS.socialWhite}
-                                        />
-                                        <TextComponent color={COLORS.lightGrey} text={moment(item.date).startOf('day').fromNow()} />
-                                    </View>
-                                </View>
-                                <Divider height={1} />
-                            </TouchableOpacity>
+                            <NotificationCard data={item} navigation={navigation} />
                         )
                     }}
+                    onEndReached={onEndReached}
+                    onEndReachedThreshold={0.1}
+                    ListFooterComponent={() => hashMore ? <ActivityIndicator style={{ marginBottom: 60 }} color={COLORS.lightGrey} /> : <></>}
                     renderSectionHeader={({ section: { date } }) => {
                         return (
                             <View style={{ paddingHorizontal: SIZES.padding }}>
@@ -143,8 +172,7 @@ const NotificationScreen = () => {
                         )
                     }}
                 />
-            )
-            }
+            )}
 
         </View>
     )

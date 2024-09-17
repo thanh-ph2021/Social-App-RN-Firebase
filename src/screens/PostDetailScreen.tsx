@@ -3,17 +3,21 @@ import { View, StyleSheet, ListRenderItemInfo, FlatList, SafeAreaView, ScrollVie
 import { useRoute } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-
-import { CommentCard, EmptyComponent, Header, Icon, InputBar, PostCard, TextComponent, TypeIcons } from "../components"
-import { SIZES, COLORS, FONTS } from "../constants"
-import { useAppDispatch, useAppSelector, useAuthContext } from "../hooks"
-import { getTimeNow, showNotification } from '../utils'
-import { UtilIcons } from '../utils/icons'
-import { CommentModel } from '../models'
-import { selectPostById } from '../redux/selectors'
-import { addComment, loadComments, updateComment } from '../redux/actions/post'
+import firestore from '@react-native-firebase/firestore'
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
+import { shallowEqual } from 'react-redux'
+
+import { CommentCard, EmptyComponent, Header, Icon, InputBar, PostCard, TextComponent, TypeIcons } from "../components"
+import { SIZES, COLORS, FONTS, TypeNotification } from "../constants"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import { getTimeNow, showNotification } from '../utils'
+import { UtilIcons } from '../utils/icons'
+import { CommentModel, UserModel } from '../models'
+import { selectPostById, selectUserByUID } from '../redux/selectors'
+import { addComment, loadComments, updateComment } from '../redux/actions/post'
+import { addNotification } from '../redux/actions/notification'
+
 
 const IconArray = [
     { type: TypeIcons.Entypo, name: 'images', onPress: () => console.log('click') },
@@ -26,13 +30,15 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const { params } = useRoute<any>()
     const [comment, setComment] = useState('')
     const [processing, setProcessing] = useState(false)
-    const { user } = useAuthContext()
-    const dispatch = useAppDispatch()
+    const currentUser = useAppSelector(state => state.userState.currentUser, shallowEqual)
     const post = useAppSelector(state => selectPostById(state, params.data.id)) ?? params.data
+    const userCreatePost: UserModel = useAppSelector(state => selectUserByUID(state, post.userID), shallowEqual)
+    const dispatch = useAppDispatch()
     const inputRef = useRef<any>()
     const bottomSheetRef = useRef<BottomSheet>(null)
     const snapPoints = useMemo(() => ['80%'], [])
     const [bottomData, setBottomData] = useState<string>()
+    const commentNoti = useAppSelector(state => state.asyncstorageState.commentNoti)
 
     useEffect(() => {
         dispatch(loadComments(post.id))
@@ -49,12 +55,12 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                         {
                             ...commnetData,
                             reply: [...commnetData.reply, {
-                                userID: user!.uid!,
+                                userID: currentUser!.uid!,
                                 text: comment.trim(),
                                 createAt: getTimeNow(),
                                 likes: [],
                                 reply: [],
-                                id: Date.now().toString()+user!.uid!
+                                id: Date.now().toString() + currentUser!.uid!
                             }]
                         },
                         post.id
@@ -63,7 +69,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 } else {
                     await dispatch(addComment(
                         {
-                            userID: user!.uid!,
+                            userID: currentUser!.uid!,
                             text: comment.trim(),
                             createAt: getTimeNow(),
                             likes: [],
@@ -71,6 +77,18 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                         },
                         post.id
                     ))
+
+                    if (post.userID != currentUser.uid && commentNoti) {
+                        await dispatch(addNotification({
+                            createdAt: firestore.Timestamp.fromDate(new Date()),
+                            isRead: false,
+                            message: `${currentUser.fname} ${currentUser.lname} commented to your post`,
+                            postId: post.id!,
+                            receiverId: userCreatePost.uid!,
+                            senderId: currentUser.uid,
+                            type: TypeNotification.Comment,
+                        }))
+                    }
                 }
 
 
@@ -111,7 +129,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     const renderNoComment = () => {
         return (
-            <EmptyComponent title={'No comments yet'} subTitle={'Say something to start the conversation'}/>
+            <EmptyComponent title={'No comments yet'} subTitle={'Say something to start the conversation'} />
         )
     }
 
@@ -178,7 +196,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     data={commentData.reply}
                     renderItem={({ item }) => {
                         return (
-                            <CommentCard commentData={item} postId={post.id} handleReply={forcusReply} parentData={commentData}/>
+                            <CommentCard commentData={item} postId={post.id} handleReply={forcusReply} parentData={commentData} />
                         )
                     }}
                     keyExtractor={(item, index) => item.createAt.toString() + index}

@@ -1,9 +1,9 @@
 import images  from './images'
 import theme, {COLORS, SIZES, FONTS, URL_HOSTING } from './theme'
-import { TypeEmotion } from './enums'
+import { TypeEmotion, TypeNotification } from './enums'
 import { appInfos } from './appInfos'
 
-export { images, COLORS, FONTS, SIZES, theme, URL_HOSTING, TypeEmotion, appInfos }
+export { images, COLORS, FONTS, SIZES, theme, URL_HOSTING, TypeEmotion, appInfos, TypeNotification }
 
 export const DAY_TO_SECOND = 86400
 export const HOUR_TO_SECOND = 3600
