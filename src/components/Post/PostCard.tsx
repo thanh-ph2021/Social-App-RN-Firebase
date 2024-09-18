@@ -31,7 +31,6 @@ type PostCardProps = {
 
 const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
 
-
     const [data, setData] = useState<PostModel>(item)
     const [voteResult, setVoteResult] = useState({ total: 0, checked: false, expired: false })
     const currentUser = useAppSelector(state => state.userState.currentUser, shallowEqual)
@@ -90,8 +89,9 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     const handleLike = useCallback(async (typeEmotion: string, isModal?: boolean) => {
         const newLikes = updateLike(data.likes, typeEmotion, currentUser.uid, isModal)
         setData({ ...data, likes: newLikes })
+    
         dispatch(updatePost({ ...item, likes: newLikes }))
-    }, [data.likes])
+    }, [data])
 
     const updateLike = (likes: LikeModel[] = [], typeEmotion: string, userID: string, isModal?: boolean) => {
         const likeIndex = likes.find(item => item.userID === userID)
@@ -117,7 +117,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
             const message = typeEmotion.toLowerCase() == 'like'
                 ? `${currentUser.fname} ${currentUser.lname} liked your post`
                 : `${currentUser.fname} ${currentUser.lname} reacted to your post`
-                
+
             dispatch(addNotification({
                 createdAt: firestore.Timestamp.fromDate(new Date()),
                 isRead: false,
