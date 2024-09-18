@@ -31,6 +31,11 @@ export const fetchPosts = (): AppThunk => async (dispatch, getState) => {
 
 export const fetchPostById = (postId: string): AppThunk => async (dispatch, getState) => {
     try {
+        const postIds = getState().userState.posts.map((post: PostModel) => post.id)
+        if (postIds.includes(postId)) {
+            return
+        }
+        
         await postCollection
             .doc(postId)
             .get()

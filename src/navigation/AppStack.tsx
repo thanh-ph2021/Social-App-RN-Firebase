@@ -15,6 +15,8 @@ import { addDevice } from '../redux/actions/device'
 import { reload } from '../redux/actions'
 import { fetchNotifications } from '../redux/actions/notification'
 import { loadStorage } from '../redux/actions/asyncstorage'
+import { TypeNotification } from '../constants'
+import { fetchPostById } from '../redux/actions/post'
 
 const Stack = createNativeStackNavigator()
 
@@ -31,7 +33,7 @@ const AppStack = () => {
         dispatch(fetchNotifications())
         dispatch(loadStorage())
         dispatch(reload())
-        
+
         createChannelNoti()
 
         requestUserPermission()
@@ -65,26 +67,20 @@ const AppStack = () => {
             navigate(remoteMessage)
         });
 
-        // messageHelper.onNotificationOpenedApp(remoteMessage => {
-        //     navigate(remoteMessage)
-        // });
-
-        // messageHelper
-        //     .getInitialNotification()
-        //     .then(remoteMessage => {
-        //         navigate(remoteMessage)
-        //     });
-
         const unsubscribe = messageHelper.onMessage(async message => {
+            await dispatch(fetchNotifications())
             Notifier.showNotification({
                 title: message.notification?.title,
                 description: message.notification?.body,
-                duration: 3000,
+                duration: 5000,
                 showAnimationDuration: 800,
                 showEasing: Easing.bounce,
                 swipeEnabled: true,
+                onPress() {
+                    navigate(message)
+                },
             })
-        });
+        })
 
         return () => {
             unsubscribe()
@@ -109,6 +105,16 @@ const AppStack = () => {
                             navigation.navigate('Chat', { userData: userData, chatID: chatID })
                         }
                     })
+                    break
+                case TypeNotification.Like: case TypeNotification.Comment:
+                case TypeNotification.Angry: case TypeNotification.Care:
+                case TypeNotification.Haha: case TypeNotification.Love:
+                case TypeNotification.Sad: case TypeNotification.Wow:
+                    await dispatch(fetchPostById(message.data!.id.toString()))
+                    navigation.navigate('PostDetailScreen', { data: { id: message.data!.id } })
+                    break
+                case TypeNotification.Follow:
+                    navigation.navigate('Profile', { userID: message.data!.id })
                     break
             }
         }

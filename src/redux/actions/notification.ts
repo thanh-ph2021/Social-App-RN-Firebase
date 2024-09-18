@@ -103,10 +103,10 @@ export const addNotification = (notification: NotificationModel): AppThunk => as
             .add(notification)
 
         const notificationRequest: NotificationRequest = {
-            title: notification.message,
-            body: '',
+            title: 'Notification',
+            body: notification.message,
             data: {
-                id: notification.postId,
+                id: notification.postId ?? notification.senderId,
                 type: notification.type
             },
         }
@@ -159,7 +159,7 @@ export const getNotifyToken: (uid: string) => Promise<string[] | undefined> = as
             .doc(uid)
             .get()
             .then((queryData) => {
-                if (queryData.exists) {
+                if (queryData.exists && queryData.data()?.devices) {
                     token = queryData.data()?.devices.flatMap((device: DeviceModel) => device.notifyToken)
                 }
             })
@@ -180,7 +180,7 @@ export const sendNotification = async (contentNotification: NotificationRequest,
             .map(result => (result as PromiseFulfilledResult<any>).value)
             .flat()
 
-        if (tokens.length != 0) {
+        if (tokens && tokens.length != 0) {
             contentNotification = {
                 ...contentNotification,
                 notifyTokens: tokens
