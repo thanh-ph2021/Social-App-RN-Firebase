@@ -14,6 +14,8 @@ import { Divider, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
 import { reload } from '../redux/actions'
 import { fetchNextPosts } from '../redux/actions/post'
+import Badges from '../components/Badges'
+import { calculateUnreadCount } from '../redux/selectors'
 
 export const LoadScreen = () => {
     return (
@@ -81,12 +83,12 @@ export const storyData = [
 ]
 
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
-
     const [isloadNext, setIsLoadNext] = useState<boolean>(false)
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.userState.posts)
     const scrollY = new Animated.Value(0)
     const currentUser = useAppSelector(state => state.userState.currentUser)
+    const unreadCount = useAppSelector(state => currentUser ? calculateUnreadCount(state, currentUser.uid) : 0)
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: any) => {
         const paddingToBottom = 100
@@ -160,33 +162,26 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SIZES.padding }}>
                 <TextComponent
                     title={true}
-                    text={`Good Morning${currentUser && currentUser.lname ? ', '+currentUser.lname : ''} `}
+                    text={`Good Morning${currentUser && currentUser.lname ? ', ' + currentUser.lname : ''} `}
                     style={{ fontWeight: 'bold' }}
                 />
 
                 <TouchableOpacity
                     onPress={() => navigation.navigate('Messages')}
                     style={{
-                        width: 35,
-                        height: 35,
+                        width: 30,
+                        height: 30,
                         borderColor: COLORS.lightGrey,
                         borderWidth: 1,
                         borderRadius: 20,
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        marginRight: unreadCount > 0 ? SIZES.base : 0,
                     }}>
+
                     <UtilIcons.svgMessage />
-                    <View style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        borderWidth: 1,
-                        borderColor: COLORS.socialWhite,
-                        position: 'absolute',
-                        backgroundColor: 'red',
-                        top: 5,
-                        right: 5
-                    }} />
+
+                    <Badges unreadCount={unreadCount} containerStyle={{ top: -10, right: -15 }} />
                 </TouchableOpacity>
             </View>
 

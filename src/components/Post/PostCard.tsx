@@ -208,7 +208,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                     disabled={voteResult.expired}
                 >
                     <TextComponent text={option.title} />
-                    {voteResult.checked || voteResult.expired ? <TextComponent text={`${percent}%`} /> : <></>}
+                    {voteResult.checked || voteResult.expired ? <TextComponent text={`${percent.toFixed(0)}%`} /> : <></>}
                 </TouchableOpacity>
             </View>
         )

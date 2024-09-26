@@ -1,23 +1,26 @@
-import { useCallback } from 'react'
 import { View, FlatList, ListRenderItemInfo, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { useFocusEffect } from '@react-navigation/native'
 
-import { Divider, Header, InputBar, MessageCard, TextComponent } from '../components'
+import { Divider, EmptyComponent, Header, InputBar, MessageCard, TextComponent } from '../components'
 import { COLORS, SIZES } from '../constants'
 import { MessageModel } from '../models'
-import { useChat } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../hooks'
 import { UtilIcons } from '../utils/icons'
+import { useState } from 'react'
+import { searchChat } from '../redux/actions/chat'
+import { selectConversationPinned } from '../redux/selectors'
 
 const MessagesScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-    const { data, getChat } = useChat()
+    const { conversations, searchConversations } = useAppSelector(state => state.chatState)
+    const pinnedConversations = useAppSelector(state => selectConversationPinned(state))
+    const dispatch = useAppDispatch()
+    const [searchText, setSearchText] = useState<string>('')
 
-    useFocusEffect(
-        useCallback(() => {
-            getChat()
-        }, [])
-    )
+    const onChangeText = async (text: string) => {
+        setSearchText(text)
+        await dispatch(searchChat(searchText))
+    }
 
     const renderItem = ({ item }: ListRenderItemInfo<MessageModel>) => {
         return (
@@ -51,31 +54,62 @@ const MessagesScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     placeholder='Who do you want to chat with?'
                     mainButton={
                         <View style={{ paddingRight: SIZES.base }}>
-                            <UtilIcons.svgSearch color={COLORS.lightGrey} />
+                            {searchText ? (
+                                <TouchableOpacity
+                                    onPress={() => setSearchText('')}
+                                    style={{ backgroundColor: COLORS.lightGrey, borderRadius: SIZES.radius, padding: 2 }}
+                                >
+                                    <UtilIcons.svgClose color={COLORS.socialWhite} />
+                                </TouchableOpacity>
+                            ) : (<UtilIcons.svgSearch color={COLORS.lightGrey} />)}
                         </View>
                     }
+                    onChangeText={onChangeText}
+                    value={searchText}
+                    multiline={false}
                 />
-                <Divider height={1} />
-                {/* list people have pinned */}
-                <View style={styles.listPinned}>
-                    <TextComponent text='PINNED' color={COLORS.lightGrey} />
-                    <FlatList
-                        horizontal
-                        data={data}
-                        renderItem={renderItemPinned}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={{ gap: SIZES.padding * 2 }}
-                    />
-                </View>
 
-                <Divider />
-                <FlatList
-                    data={data}
-                    scrollEnabled={false}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    ItemSeparatorComponent={() => <Divider />}
-                />
+                {/* list people have pinned */}
+                {
+                    searchText ? (
+                        <FlatList
+                            data={searchConversations}
+                            scrollEnabled={false}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id!}
+                            ItemSeparatorComponent={() => <Divider />}
+                        />
+                    ) : (
+                        conversations && conversations.length > 0 ? (
+                            <>
+                                {pinnedConversations.length > 0
+                                    ? <View style={styles.listPinned}>
+                                        <TextComponent text='PINNED' color={COLORS.lightGrey} />
+                                        <FlatList
+                                            horizontal
+                                            data={pinnedConversations}
+                                            renderItem={renderItemPinned}
+                                            keyExtractor={(item, index) => `${item.id!}_${index}`}
+                                            contentContainerStyle={{ gap: SIZES.padding * 2 }}
+                                        />
+                                    </View>
+                                    : <></>
+                                }
+
+                                <Divider />
+                                <FlatList
+                                    data={conversations}
+                                    scrollEnabled={false}
+                                    renderItem={renderItem}
+                                    keyExtractor={(item, index) => `${item.id!}_${index}`}
+                                    ItemSeparatorComponent={() => <Divider />}
+                                />
+                            </>
+                        ) : (
+                            <EmptyComponent title='No conversation' subTitle="Let's create a conversation, connect with friends." />
+                        )
+                    )
+                }
             </ScrollView>
         </View>
     )

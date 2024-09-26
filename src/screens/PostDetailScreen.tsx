@@ -19,7 +19,7 @@ import { addComment, loadComments, updateComment } from '../redux/actions/post'
 import { addNotification } from '../redux/actions/notification'
 
 
-const IconArray = [
+export const IconArray = [
     { type: TypeIcons.Entypo, name: 'images', onPress: () => console.log('click') },
     { type: TypeIcons.MaterialIcons, name: 'gif-box', onPress: () => console.log('click') },
     { type: TypeIcons.MaterialIcons, name: 'tag-faces', onPress: () => console.log('click') },

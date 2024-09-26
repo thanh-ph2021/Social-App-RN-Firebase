@@ -1,0 +1,6 @@
+export const FETCH_CHATS = 'FETCH_CHATS'
+export const ADD_CHAT = 'ADD_CHAT'
+export const UPDATE_CHAT = 'UPDATE_CHAT'
+export const SEARCH_CHAT = 'SEARCH_CHAT'
+export const MARK_CHAT_AS_READ = 'MARK_CHAT_AS_READ'
+export const PIN_CONVERSATION = 'PIN_CONVERSATION'

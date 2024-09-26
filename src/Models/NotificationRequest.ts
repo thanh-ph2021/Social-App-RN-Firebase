@@ -9,4 +9,7 @@ interface NotificationDataRequest {
     // userID
     id: string,
     type: string,
+    id01?: string,
+    id02?: string,
+    imageUrl?: string,
 }

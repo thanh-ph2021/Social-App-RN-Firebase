@@ -3,26 +3,27 @@ import { Notifier, Easing } from 'react-native-notifier'
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import PushNotification, { Importance } from 'react-native-push-notification'
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging'
-import { Platform } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import BottomTabsNavigation from './BottomTabsNavigator'
 
 import { requestUserPermission } from '../utils'
-import { useAppDispatch, useAuthContext, useChat, useUser } from '../hooks'
+import { useAppDispatch, useAuthContext, useUser } from '../hooks'
 import { AddPostScreen, ChatScreen, CreatePageScreen, FriendScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, ProfileScreen, SettingsNotificationScreen, SettingsScreen, StoryScreen, UpdateProfileScreen, VideoDetailScreen } from '../screens'
 import { addDevice } from '../redux/actions/device'
 import { reload } from '../redux/actions'
 import { fetchNotifications } from '../redux/actions/notification'
 import { loadStorage } from '../redux/actions/asyncstorage'
-import { TypeNotification } from '../constants'
+import { COLORS, FONTS, SIZES, TypeNotification } from '../constants'
 import { fetchPostById } from '../redux/actions/post'
+import { fetchChats } from '../redux/actions/chat'
+import { Avatar, TextComponent } from '../components'
 
 const Stack = createNativeStackNavigator()
 
 const AppStack = () => {
     const navigation = useNavigation<any>()
-    const { getChatCondition } = useChat()
     const { getUserFromHook } = useUser()
     const { user, setUser } = useAuthContext()
     const dispatch = useAppDispatch()
@@ -33,6 +34,7 @@ const AppStack = () => {
         dispatch(fetchNotifications())
         dispatch(loadStorage())
         dispatch(reload())
+        dispatch(fetchChats())
 
         createChannelNoti()
 
@@ -79,8 +81,28 @@ const AppStack = () => {
                 onPress() {
                     navigate(message)
                 },
+                Component: (props) => {
+                    return (
+                        <View style={{
+                            flexDirection: 'row',
+                            backgroundColor: COLORS.white,
+                            padding: SIZES.padding,
+                            margin: SIZES.base,
+                            borderRadius: SIZES.base,
+                            elevation: 5,
+                            gap: SIZES.base
+                        }}>
+                            {message.data?.imageUrl ? <Avatar source={{uri: message.data.imageUrl.toString()}} size='l'/> : <></>}
+                            <View>
+                                <TextComponent text={props.title} color={COLORS.socialBlue} style={{ ...FONTS.h3 }} />
+                                <TextComponent text={props.description} color={COLORS.black} numberOfLines={2} isShowTextRead />
+                            </View>
+                        </View>
+                    )
+                }
             })
         })
+
 
         return () => {
             unsubscribe()
@@ -95,16 +117,7 @@ const AppStack = () => {
         if (message) {
             switch (message.data!.type) {
                 case 'message':
-                    Promise.all([
-                        await getUserFromHook(message.data!.id.toString()),
-                        await getChatCondition(message.data!.id.toString())
-                    ]).then((response) => {
-                        const userData = response[0]
-                        const chatID = response[1]
-                        if (userData && chatID) {
-                            navigation.navigate('Chat', { userData: userData, chatID: chatID })
-                        }
-                    })
+                    navigation.navigate('Messages')
                     break
                 case TypeNotification.Like: case TypeNotification.Comment:
                 case TypeNotification.Angry: case TypeNotification.Care:

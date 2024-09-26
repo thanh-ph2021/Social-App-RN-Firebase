@@ -3,8 +3,8 @@ import { fetchUser, fetchUsers } from './user'
 import { fetchPosts } from './post'
 
 export const reload = (): AppThunk => async (dispatch) => {
-    await dispatch(fetchUsers())
     await dispatch(fetchUser())
+    await dispatch(fetchUsers())
     await dispatch(fetchPosts())
 }
 

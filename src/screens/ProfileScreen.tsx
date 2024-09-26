@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, ListRenderItemInfo, FlatList } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import useAuthContext from '../hooks/useAuthContext'
 import LinearGradient from 'react-native-linear-gradient'
 import firestore from '@react-native-firebase/firestore'
 
 import { COLORS, SIZES, images, FONTS, TypeNotification } from '../constants'
 import { PostModel, UserModel } from '../models'
 import PostCard from '../components/Post/PostCard'
-import { useAppDispatch, useAppSelector, useChat } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../hooks'
 import { utilStyles } from '../styles'
 import { Divider } from '../components'
 import { UtilIcons } from '../utils/icons'
 import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
 import { addNotification } from '../redux/actions/notification'
+import { addChat } from '../redux/actions/chat'
 
 const tagDatas = [
     {
@@ -37,10 +37,8 @@ const tagDatas = [
 
 const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
-    const { logout } = useAuthContext()
     const [isDelete, setIsDelete] = useState<boolean>(false)
     const params = route.params
-    const { addChatData } = useChat()
     const [tag, setTag] = useState<number>(1)
     const currentUser = useAppSelector(state => state.userState.currentUser)
     const userParam = params ? useAppSelector(state => selectUserByUID(state, params.userID)) : null
@@ -107,7 +105,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
             } else {
                 followings = [...followings, params!.userID]
                 followers = [...followers, currentUser.uid]
-                
+
                 if (userParam.uid != currentUser.uid && followNoti) {
                     await dispatch(addNotification({
                         createdAt: firestore.Timestamp.fromDate(new Date()),
@@ -168,7 +166,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                         {userData.fname} {userData.lname}
                     </Text>
                     <TouchableOpacity
-                        onPress={() => addChatData(params?.userID, navigateChatScreen)}
+                        onPress={() => dispatch(addChat(params?.userID, navigateChatScreen))}
                         style={{
                             width: 35,
                             height: 35,

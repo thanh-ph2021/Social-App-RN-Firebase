@@ -138,9 +138,9 @@ export const markAsReadNoti = (notification: NotificationModel): AppThunk => asy
 export const markAllReadNoti = (): AppThunk => async (dispatch, getState) => {
     try {
 
-        const { notifications } = getState().notificationState
+        const { notifications, hashMore } = getState().notificationState
         const newNotis = notifications.map((noti: NotificationModel) => { return { ...noti, isRead: true } })
-        await dispatch({ type: MARK_ALL_READ, payload: newNotis })
+        await dispatch({ type: MARK_ALL_READ, payload: { notifications: newNotis, hashMore } })
 
         const tasks = notifications
             .filter((noti: NotificationModel) => noti.isRead === false)

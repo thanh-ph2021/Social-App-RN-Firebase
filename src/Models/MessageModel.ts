@@ -1,7 +1,15 @@
+import { MessageItemModel } from "./MessageItemModel";
 
 export interface MessageModel {
-    id: string,
+    id?: string,
     userID: string,
-    messageText: string,
+    lastMessage: string,
     messageTime: any,
+    unread: UnreadMessage,
+    messages?: MessageItemModel[],
+    pinned?: boolean
+}
+
+export interface UnreadMessage {
+    [uid: string]: number
 }

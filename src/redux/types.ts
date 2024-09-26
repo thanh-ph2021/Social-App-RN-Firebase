@@ -6,6 +6,8 @@ import store from './store'
 import device from './reducers/device'
 import { notification } from './reducers/notification'
 import asyncstorage from './reducers/asyncstorage'
+import chat from './reducers/chat'
+import message from './reducers/message'
 
 export type ActionType = {
     type: string,
@@ -24,6 +26,8 @@ export interface RootState {
     deviceState: ReturnType<typeof device>
     notificationState: ReturnType<typeof notification>
     asyncstorageState: ReturnType<typeof asyncstorage>
+    chatState: ReturnType<typeof chat>
+    messageState: ReturnType<typeof message>
 }
 
 export type AppDispatch = typeof store.dispatch

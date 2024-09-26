@@ -1,11 +1,11 @@
 import { memo, forwardRef, useState } from 'react'
-import { StyleProp, StyleSheet, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { StyleProp, StyleSheet, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { COLORS, SIZES } from '../constants'
 import { UtilIcons } from '../utils/icons'
 
-interface Props {
+interface Props extends TextInputProps {
     placeholder?: string,
     value?: string,
     onChangeText?: (text: string) => void,
@@ -15,9 +15,7 @@ interface Props {
     onPressMainButton?: () => void,
 }
 
-const InputBar = (props: Props, ref: any) => {
-
-    const { placeholder, value, onChangeText, mainButton, options, containerStyle, onPressMainButton } = props
+const InputBar = ({ placeholder, value, onChangeText, mainButton, options, containerStyle, onPressMainButton, ...rest }: Props, ref: any) => {
     const [focusInput, setFocusInput] = useState(false)
 
     return (
@@ -33,6 +31,7 @@ const InputBar = (props: Props, ref: any) => {
                     value={value}
                     onChangeText={onChangeText}
                     multiline
+                    {...rest}
                 />
                 {options && !focusInput ? (
                     <TouchableOpacity style={styles.buttonAdd}>

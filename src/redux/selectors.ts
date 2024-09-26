@@ -1,9 +1,10 @@
 import { createSelector } from "reselect";
-import { PostModel, UserModel } from "../models";
+import { MessageItemModel, MessageModel, PostModel, UserModel } from "../models";
+import { RootState } from "./types";
 
 export const selectPostById = createSelector(
     [
-        state => state.userState.posts,
+        (state: RootState) => state.userState.posts,
         (state, postId) => postId
     ],
     (posts, postId) => posts.filter((post: PostModel) => post.id === postId)[0]
@@ -78,4 +79,40 @@ export const selectUserbySearch = createSelector(
         }
         return []
     }
+)
+
+export const selectMessagesByChatId = createSelector(
+    [
+        state => state.messageState,
+        (state, chatId) => chatId
+    ],
+    (messages, chatId) => messages[chatId] || []
+)
+
+export const calculateUnreadCount = createSelector(
+    [
+        state => state.chatState.conversations,
+        (state, userId) => userId
+    ],
+    (conversations, userId) => {
+        return conversations.reduce((total: number, conversation: MessageModel) => {
+            const unreadCount = conversation.unread[userId] || 0
+            return total + unreadCount
+        }, 0)
+    }
+)
+
+export const selectChatByChatId = createSelector(
+    [
+        state => state.chatState.conversations,
+        (state, chatId) => chatId
+    ],
+    (conversations, chatId) => conversations.filter((con: MessageModel) => con.id === chatId)[0]
+)
+
+export const selectConversationPinned = createSelector(
+    [
+        state => state.chatState.conversations,
+    ],
+    (conversations) => conversations.filter((con: MessageModel) => con.pinned === true) || []
 )
