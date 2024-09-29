@@ -1,7 +1,7 @@
 import firestore, { firebase } from '@react-native-firebase/firestore'
 
 import { AppThunk } from "../types"
-import { MessageModel, UserModel } from '../../models'
+import { MessageItemModel, MessageModel, UserModel } from '../../models'
 import { ADD_CHAT, FETCH_CHATS, MARK_CHAT_AS_READ, PIN_CONVERSATION, SEARCH_CHAT, UPDATE_CHAT } from '../constants/chat'
 
 const chatCollection = firestore().collection('Chats')
@@ -75,20 +75,32 @@ export const addChat = (toUID: string, callback: (chatID: string) => void): AppT
     }
 }
 
-export const updateChat = (chatID: string, messages: any): AppThunk => async (dispatch) => {
+export const updateChat = (chatID: string, message: MessageItemModel): AppThunk => async (dispatch) => {
     try {
+        let lastMessage = message.text
+        if (message.image) {
+            lastMessage = `[image]`
+        }
+        if (message.video) {
+            lastMessage = `[video]`
+        }
+
+        if (message.document) {
+            lastMessage = `[document]`
+        }
+        
         await chatCollection
             .doc(chatID)
             .update({
-                lastMessage: messages[0].text,
-                messageTime: messages[0].createdAt,
+                lastMessage: lastMessage,
+                messageTime: message.createdAt,
             })
 
         dispatch({
             type: UPDATE_CHAT, payload: {
                 conversation: {
-                    messageTime: firestore.Timestamp.fromDate(messages[0].createdAt),
-                    lastMessage: messages[0].text,
+                    messageTime: firestore.Timestamp.fromDate(message.createdAt),
+                    lastMessage: lastMessage,
                 },
                 id: chatID
             }

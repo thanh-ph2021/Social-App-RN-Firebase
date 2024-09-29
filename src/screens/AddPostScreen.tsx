@@ -245,7 +245,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 const imageUri: string | undefined = Platform.OS == 'ios' ? image.sourceURL : image.path
                 setArrayMedia([...arrayMedia, { uri: imageUri ?? '', type: 'image' }])
             }
-        });
+        })
         handleCloseBottomSheet()
     }
     const handleChoosePhoto = () => {
@@ -264,7 +264,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 }
             })
             setArrayMedia([...arrayMedia, ...mediaUri])
-        });
+        })
     }
     const delMedia = (uri: string) => {
         const newArrayImage = arrayMedia.filter((item) => item.uri != uri)
@@ -321,17 +321,17 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                         message: 'This app needs access to your location.',
                         buttonPositive: 'OK',
                     }
-                );
+                )
                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
                     getCurrentLocation();
                 } else {
-                    console.log('Location permission denied');
+                    console.log('Location permission denied')
                 }
             } else {
-                getCurrentLocation();
+                getCurrentLocation()
             }
         } catch (err) {
-            console.warn(err);
+            console.warn(err)
         }
     }
     const getCurrentLocation = async () => {
@@ -507,6 +507,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
             })
         } catch (error) {
+            console.log("🚀 ~ pickDocument ~ error:", error)
         }
 
 
@@ -583,98 +584,98 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
             />
-     
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={{ paddingHorizontal: SIZES.padding }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            {user?.userImg ? (
-                                <Avatar source={{ uri: user?.userImg }} size='m' />
-                            ) : (
-                                <Image source={images.defaultImage} style={styles.avatar} />
-                            )}
-                            <View style={{ paddingHorizontal: SIZES.padding }}>
-                                <TextComponent text={`${user?.fname} ${user?.lname}`} style={{ fontWeight: 'bold' }} />
-                                <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => handleOpenBottomSheet('scope')}>
-                                    <TextComponent text={scope} color={COLORS.socialPink} />
-                                    <Icon type={TypeIcons.MaterialIcons} name='arrow-drop-down' size={SIZES.icon} color={COLORS.socialPink} style={{ marginTop: -2 }} />
-                                </TouchableOpacity>
-                            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={{ paddingHorizontal: SIZES.padding }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {user?.userImg ? (
+                            <Avatar source={{ uri: user?.userImg }} size='m' />
+                        ) : (
+                            <Image source={images.defaultImage} style={styles.avatar} />
+                        )}
+                        <View style={{ paddingHorizontal: SIZES.padding }}>
+                            <TextComponent text={`${user?.fname} ${user?.lname}`} style={{ fontWeight: 'bold' }} />
+                            <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => handleOpenBottomSheet('scope')}>
+                                <TextComponent text={scope} color={COLORS.socialPink} />
+                                <Icon type={TypeIcons.MaterialIcons} name='arrow-drop-down' size={SIZES.icon} color={COLORS.socialPink} style={{ marginTop: -2 }} />
+                            </TouchableOpacity>
                         </View>
-
-                        {renderLocation()}
-
-                        <TextInput
-                            ref={inputRef}
-                            multiline
-                            value={text}
-                            onChangeText={setText}
-                            placeholder={placeholder}
-                            placeholderTextColor={COLORS.lightGrey}
-                            style={{ ...FONTS.body3, color: COLORS.socialWhite }}
-                        />
                     </View>
 
-                    {arrayMedia.length > 0 || giphyMedias.length > 0 ? <MediaGrid
-                        mediaArray={arrayMedia}
-                        giphyMedias={giphyMedias}
-                        delMedia={delMedia}
-                        delGiphyMedia={delGiphyMedia}
-                    /> : <></>}
+                    {renderLocation()}
 
-                    {arrayDocs.length > 0 ? <DocumentGrid
-                        documentArray={arrayDocs}
-                        delDocument={delDocument}
-                    /> : <></>}
+                    <TextInput
+                        ref={inputRef}
+                        multiline
+                        value={text}
+                        onChangeText={setText}
+                        placeholder={placeholder}
+                        placeholderTextColor={COLORS.lightGrey}
+                        style={{ ...FONTS.body3, color: COLORS.socialWhite }}
+                    />
+                </View>
 
-                    {showChecklist ? <ChecklistComponent
-                        data={checkListData!}
-                        addOption={addOption}
-                        setValueOption={setValueOption}
-                        setTimeLimit={setTimeLimit}
-                        invisible={() => {
-                            setShowAlert(true)
+                {arrayMedia.length > 0 || giphyMedias.length > 0 ? <MediaGrid
+                    mediaArray={arrayMedia}
+                    giphyMedias={giphyMedias}
+                    delMedia={delMedia}
+                    delGiphyMedia={delGiphyMedia}
+                /> : <></>}
 
-                        }} /> : <></>
-                    }
+                {arrayDocs.length > 0 ? <DocumentGrid
+                    documentArray={arrayDocs}
+                    delDocument={delDocument}
+                /> : <></>}
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: SIZES.padding }}>
-                        <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => setShowButton(!showButton)}>
-                            {showButton ? <UtilIcons.svgClose color={COLORS.socialWhite} size={16} /> : <UtilIcons.svgPlus color={COLORS.socialWhite} size={16} />}
-                        </TouchableOpacity>
+                {showChecklist ? <ChecklistComponent
+                    data={checkListData!}
+                    addOption={addOption}
+                    setValueOption={setValueOption}
+                    setTimeLimit={setTimeLimit}
+                    invisible={() => {
+                        setShowAlert(true)
 
-                        {showButton && <View
-                            style={{
-                                flexDirection: 'row',
-                                backgroundColor: COLORS.darkGrey,
-                                borderRadius: 32,
-                                paddingVertical: SIZES.base,
-                                paddingHorizontal: SIZES.padding * 2,
-                                marginLeft: SIZES.padding,
-                                gap: SIZES.padding
-                            }}
-                        >
-                            {buttonArray.map(button => {
-                                if (button.name == IconName.location && locationLoading) {
-                                    return <ActivityIndicator key={button.name} color={COLORS.socialBlue} />
-                                }
-                                // have data of button gif
-                                if ((button.name == IconName.image || button.name == IconName.camera || button.name == IconName.attachment || button.name == IconName.checkList) && giphyMedias.length > 0) {
-                                    return <View key={button.name} />
-                                }
-                                // have data of button photo/video
-                                if ((button.name == IconName.gif || button.name == IconName.attachment || button.name == IconName.checkList) && arrayMedia.length > 0) {
-                                    return <View key={button.name} />
-                                }
-                                return (
-                                    <TouchableOpacity key={button.name} onPress={() => onPressButton(button.name)}>
-                                        <SvgIcon name={button.name} color={COLORS.socialWhite} size={24} />
-                                    </TouchableOpacity>
-                                )
-                            })}
-                        </View>}
-                    </View>
-                </ScrollView>
-           
+                    }} /> : <></>
+                }
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: SIZES.padding }}>
+                    <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => setShowButton(!showButton)}>
+                        {showButton ? <UtilIcons.svgClose color={COLORS.socialWhite} size={16} /> : <UtilIcons.svgPlus color={COLORS.socialWhite} size={16} />}
+                    </TouchableOpacity>
+
+                    {showButton && <View
+                        style={{
+                            flexDirection: 'row',
+                            backgroundColor: COLORS.darkGrey,
+                            borderRadius: 32,
+                            paddingVertical: SIZES.base,
+                            paddingHorizontal: SIZES.padding * 2,
+                            marginLeft: SIZES.padding,
+                            gap: SIZES.padding
+                        }}
+                    >
+                        {buttonArray.map(button => {
+                            if (button.name == IconName.location && locationLoading) {
+                                return <ActivityIndicator key={button.name} color={COLORS.socialBlue} />
+                            }
+                            // have data of button gif
+                            if ((button.name == IconName.image || button.name == IconName.camera || button.name == IconName.attachment || button.name == IconName.checkList) && giphyMedias.length > 0) {
+                                return <View key={button.name} />
+                            }
+                            // have data of button photo/video
+                            if ((button.name == IconName.gif || button.name == IconName.attachment || button.name == IconName.checkList) && arrayMedia.length > 0) {
+                                return <View key={button.name} />
+                            }
+                            return (
+                                <TouchableOpacity key={button.name} onPress={() => onPressButton(button.name)}>
+                                    <SvgIcon name={button.name} color={COLORS.socialWhite} size={24} />
+                                </TouchableOpacity>
+                            )
+                        })}
+                    </View>}
+                </View>
+            </ScrollView>
+
             <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={() => setTypeCreate(1)}>

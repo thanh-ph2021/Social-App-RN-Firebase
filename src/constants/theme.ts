@@ -8,12 +8,14 @@ export const COLORS = {
     socialWhite: "#ECEBED",
     gradient: ["#F62E8E", "#AC1AF0"],
     socialBlue: "#2E8AF6",
+    socialBlue2: "#1077a3",
     socialPink: "#F62E8E",
     socialPink2: "#f598c4",
     darkGrey: "#323436",
     darkGrey2: "#2f2f30",
     lightGrey: "#727477",
     lightGrey2: "#606263",
+    lightGrey3: "#c5c6c7",
 
 
     //colors
@@ -69,4 +71,4 @@ export const URL_HOSTING = 'http://192.168.0.11:8086/api/notification/send'
 
 const appTheme = {COLORS, SIZES, FONTS, URL_HOSTING}
 
-export default appTheme;
+export default appTheme

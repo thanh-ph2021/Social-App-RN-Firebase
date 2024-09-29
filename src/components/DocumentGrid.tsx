@@ -11,12 +11,13 @@ import { readableFileSize } from '../utils'
 interface DocumentGridProps {
     documentArray: DocumentItem[]
     delDocument?: (name: string) => void,
-    containerStyle?: StyleProp<ViewStyle>
+    containerStyle?: StyleProp<ViewStyle>,
+    colorTextSize?: string,
 }
 
 const DocumentGrid = (props: DocumentGridProps) => {
 
-    const { documentArray, delDocument, containerStyle } = props
+    const { documentArray, delDocument, containerStyle, colorTextSize } = props
 
     const renderItem: ListRenderItem<DocumentItem> = ({ item }) => {
 
@@ -36,13 +37,13 @@ const DocumentGrid = (props: DocumentGridProps) => {
 
         return (
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => item.url && Linking.openURL(item.url)}>
-                <View style={{ paddingRight: SIZES.base }}>
+                <View style={{ padding: SIZES.base, marginRight: SIZES.base, backgroundColor: COLORS.lightGrey3, borderRadius: SIZES.base }}>
                     {renderIconTypeFile()}
                 </View>
 
-                <View style={{ width: '70%' }}>
+                <View style={{flexShrink: 1}}>
                     <TextComponent text={item.name ?? ''} />
-                    <TextComponent text={readableFileSize(item.size)} color={COLORS.lightGrey} />
+                    <TextComponent text={readableFileSize(item.size)} color={colorTextSize ? colorTextSize : COLORS.lightGrey} />
                 </View>
                 {delDocument && <TouchableOpacity
                     style={{ padding: SIZES.base, alignItems: 'flex-end', flex: 1 }}

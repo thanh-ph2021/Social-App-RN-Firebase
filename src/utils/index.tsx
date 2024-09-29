@@ -1,13 +1,15 @@
+import React, { useRef } from 'react'
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 import { Alert, Platform, View, Text } from 'react-native'
 import messaging from '@react-native-firebase/messaging'
 import { PermissionsAndroid } from 'react-native'
-import React, { useRef } from 'react'
 import { Notifier } from 'react-native-notifier'
+import { ImageOrVideo } from 'react-native-image-crop-picker'
 
 import { COLORS, FONTS, SIZES } from '../constants'
 import { UserModel } from '../models'
+import { DocumentItem } from '../models/DocumentItem'
 
 export const deletePost = async (postId: string, setIsDelete: any) => {
     firestore().collection('Posts')
@@ -143,5 +145,36 @@ export function readableFileSize(attachmentSize?: number) {
         return `${(sizeInKb / 1024).toFixed(2)} mb`;
     } else {
         return `${sizeInKb.toFixed(2)} kb`;
+    }
+}
+
+export const uploadMedia = async (nameFolder: string, media?: ImageOrVideo, doc?: DocumentItem) => {
+    try {
+        if (media) {
+            const url = Platform.OS == 'ios' ? media.sourceURL : media.path
+
+            if (url) {
+                let filename = url.substring(url.lastIndexOf('/') + 1)
+                const storageRef = storage().ref(`${nameFolder}/${filename}`)
+
+                await storageRef.putFile(url)
+
+                return {
+                    type: media.mime.includes('image') ? 'image' : 'video',
+                    url: await storageRef.getDownloadURL()
+                }
+            }
+        } else if (doc) { // doc
+            const storageRef = storage().ref(`${nameFolder}/${doc.name}`)
+            await storageRef.putFile(doc.url!)
+
+            const urlFile = await storageRef.getDownloadURL()
+            return {
+                ...doc,
+                url: urlFile
+            }
+        }
+    } catch (error) {
+        console.log('Upload media to firebase error', error)
     }
 }

@@ -1,3 +1,4 @@
+import { DocumentItem } from "./DocumentItem"
 
 export interface MessageItemModel {
     _id: string,
@@ -7,4 +8,11 @@ export interface MessageItemModel {
         _id: string,
         avatar: string
     }
+    image?: string
+    video?: string
+    audio?: string
+    sent?: boolean
+    received?: boolean
+    pending?: boolean,
+    document?: DocumentItem 
 }
