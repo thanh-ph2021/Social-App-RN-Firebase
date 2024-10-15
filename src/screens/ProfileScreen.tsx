@@ -11,10 +11,11 @@ import { useAppDispatch, useAppSelector } from '../hooks'
 import { utilStyles } from '../styles'
 import { Divider } from '../components'
 import { UtilIcons } from '../utils/icons'
-import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectUserByUID } from '../redux/selectors'
+import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectStoryByUID, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
 import { addNotification } from '../redux/actions/notification'
 import { addChat } from '../redux/actions/chat'
+import StoryCard from '../components/StoryCard'
 
 const tagDatas = [
     {
@@ -49,6 +50,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const postUserLiked = useAppSelector(state => selectPostUserLiked(state, currentUser.uid))
     const postTags = currentUser.postTags ? useAppSelector(state => selectPostTagged(state, currentUser.postTags)) : []
     const followNoti = useAppSelector(state => state.asyncstorageState.followNoti)
+    const userStories = useAppSelector(state => selectStoryByUID(state, currentUser.uid))
 
     useEffect(() => {
         setUserData(params ? userParam : currentUser)
@@ -248,6 +250,25 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                         )
                     })
                 }
+
+                {
+                    tag === 2 && (
+                        <FlatList
+                            data={userStories}
+                            horizontal
+                            contentContainerStyle={{ margin: SIZES.padding }}
+                            ListFooterComponent={() => <View style={{ height: 100 }} />}
+                            renderItem={({ item }) => {
+                                return <StoryCard
+                                    story={item}
+                                    onPress={() => navigation.navigate('StoryScreen', { userStories })}
+                                />
+                            }}
+                            keyExtractor={(item, index) => `${item.id}_${index}`}
+                        />
+                    )
+                }
+
                 {
                     tag === 3 && postUserLiked.map((item: PostModel, index: number) => {
                         return (

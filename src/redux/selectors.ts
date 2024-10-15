@@ -1,6 +1,7 @@
 import { createSelector } from "reselect";
 import { MessageItemModel, MessageModel, PostModel, UserModel } from "../models";
 import { RootState } from "./types";
+import { StoryModel } from "../models/StoryModel";
 
 export const selectPostById = createSelector(
     [
@@ -115,4 +116,12 @@ export const selectConversationPinned = createSelector(
         state => state.chatState.conversations,
     ],
     (conversations) => conversations.filter((con: MessageModel) => con.pinned === true) || []
+)
+
+export const selectStoryByUID = createSelector(
+    [
+        state => state.storyState.stories,
+        (state, uid) => uid
+    ],
+    (stories, uid) => stories.filter((story: StoryModel) => story.userId === uid)
 )

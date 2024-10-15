@@ -10,7 +10,7 @@ import BottomTabsNavigation from './BottomTabsNavigator'
 
 import { requestUserPermission } from '../utils'
 import { useAppDispatch, useAuthContext, useUser } from '../hooks'
-import { AddPostScreen, ChatScreen, CreatePageScreen, FriendScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, ProfileScreen, SettingsNotificationScreen, SettingsScreen, StoryScreen, UpdateProfileScreen, VideoDetailScreen } from '../screens'
+import { AddPostScreen, AddStoryScreen, ChatScreen, CreatePageScreen, FriendScreen, ImageViewScreen, MessagesScreen, PostDetailScreen, ProfileScreen, SettingsNotificationScreen, SettingsScreen, StoryScreen, UpdateProfileScreen, VideoDetailScreen } from '../screens'
 import { addDevice } from '../redux/actions/device'
 import { reload } from '../redux/actions'
 import { fetchNotifications } from '../redux/actions/notification'

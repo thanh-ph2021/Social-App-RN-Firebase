@@ -6,6 +6,7 @@ import { notification } from "./notification"
 import asyncstorage from "./asyncstorage"
 import chat from "./chat"
 import message from "./message"
+import story from "./story"
 
 
 const rootReducer = combineReducers({
@@ -14,7 +15,8 @@ const rootReducer = combineReducers({
   notificationState: notification,
   asyncstorageState: asyncstorage,
   chatState: chat,
-  messageState: message
+  messageState: message,
+  storyState: story
 })
 
 export default rootReducer

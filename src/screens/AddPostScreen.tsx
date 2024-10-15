@@ -2,8 +2,9 @@ import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import {
     View, TextInput, TouchableOpacity, Text, Platform, Image, StyleSheet, ScrollView,
     KeyboardAvoidingView, SafeAreaView, PermissionsAndroid,
-    ActivityIndicator, Modal
+    ActivityIndicator, Modal, Alert, NativeModules
 } from 'react-native'
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import ImagePicker from 'react-native-image-crop-picker'
 import Geolocation, { GeolocationResponse } from '@react-native-community/geolocation'
@@ -25,7 +26,11 @@ import DocumentGrid from '../components/DocumentGrid'
 import { DocumentItem } from '../models/DocumentItem'
 import { useAppDispatch } from '../hooks'
 import { addPost } from '../redux/actions'
+import { StoryModel } from '../models/StoryModel'
+import { addStory } from '../redux/actions/story'
+import { CHANGE_LOADING_STORY_STATE } from '../redux/constants/story'
 
+const { ImageEditorModule } = NativeModules
 
 enum IconName {
     image = 'Image',
@@ -128,7 +133,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [typeCreate, setTypeCreate] = useState<number>(1)
 
     useEffect(() => {
-        inputRef.current.focus()
+        // inputRef.current.focus()
     }, [])
 
 
@@ -509,8 +514,6 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         } catch (error) {
             console.log("🚀 ~ pickDocument ~ error:", error)
         }
-
-
     }
 
     const addOption = () => {
@@ -565,6 +568,54 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         setShowChecklist(false)
         setCheckListData(initChecklistData)
         setShowAlert(false)
+    }
+
+    const addStoryHandle = () => {
+        navigation.goBack()
+        ImagePicker.openPicker({
+            width: 1200,
+            height: 780,
+            multiple: true,
+            mediaType: 'any'
+        }).then(medias => {
+            const media = medias[0]
+            const uri = Platform.OS == 'ios' ? media.sourceURL : media.path
+            openPhotoEditor(uri!)
+        })
+    }
+
+    const openPhotoEditor = async (imagePath: string) => {
+        const hasPermission = await requestPermissions()
+        if (!hasPermission) {
+            showNotification('Access is required to edit photos', UtilIcons.warning, 'warning')
+            return
+        }
+
+        if (!imagePath) {
+            showNotification('Please select a photo first', UtilIcons.warning, 'warning')
+            return
+        }
+
+        await ImageEditorModule.openPhotoEditor(imagePath)
+            .then(async (editedImagePath: string) => {
+                dispatch({type: CHANGE_LOADING_STORY_STATE, payload: true})
+                const media: any = await uploadMedia('photos', { uri: editedImagePath, type: 'image' })
+                dispatch(addStory(media))
+            })
+            .catch((error: any) => {
+                showNotification(error.toString(), UtilIcons.error, 'error')
+            })
+        
+    }
+
+    const requestPermissions = async () => {
+        const cameraPermission = await request(
+            PERMISSIONS.ANDROID.CAMERA
+        )
+        const storagePermission = await request(
+            PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
+        )
+        return cameraPermission === RESULTS.GRANTED && storagePermission === RESULTS.GRANTED;
     }
 
     return (
@@ -686,7 +737,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                             <TextComponent text='POST' />
                         </LinearGradient>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setTypeCreate(2)}>
+                    <TouchableOpacity onPress={addStoryHandle}>
                         <LinearGradient
                             style={styles.buttonTypeCreate}
                             colors={typeCreate == 2 ? [COLORS.gradient[0], COLORS.gradient[1]] : ['transparent', 'transparent']}

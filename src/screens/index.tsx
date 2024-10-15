@@ -18,9 +18,11 @@ import FollowScreen from "./FollowScreen"
 import VideoDetailScreen from "./VideoDetailScreen"
 import ForgotPasswordScreen from "./ForgotPasswordScreen"
 import SettingsNotificationScreen from "./SettingsNotificationScreen"
+import AddStoryScreen from "./AddStoryScreen"
 
 export {
     LoginScreen, OnBoardingScreen, SignupScreen, ChatScreen, ProfileScreen, MessagesScreen, UpdateProfileScreen,
     NotificationScreen, ImageViewScreen, AddPostScreen, PostDetailScreen, SearchScreen, StoryScreen, SettingsScreen,
-    CreatePageScreen, FriendScreen, FollowScreen, VideoDetailScreen, ForgotPasswordScreen, SettingsNotificationScreen
+    CreatePageScreen, FriendScreen, FollowScreen, VideoDetailScreen, ForgotPasswordScreen, SettingsNotificationScreen,
+    AddStoryScreen
 }

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator } from 'react-native'
+import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
@@ -86,6 +86,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [isloadNext, setIsLoadNext] = useState<boolean>(false)
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.userState.posts)
+    const { stories, loading: storyLoading} = useAppSelector(state => state.storyState)
     const scrollY = new Animated.Value(0)
     const currentUser = useAppSelector(state => state.userState.currentUser)
     const unreadCount = useAppSelector(state => currentUser ? calculateUnreadCount(state, currentUser.uid) : 0)
@@ -127,7 +128,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         await dispatch(fetchNextPosts()).then(() => {
             setIsLoadNext(false)
         })
-
     }
 
     const onPressHandle = useCallback((userID: string) => {
@@ -204,15 +204,27 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 {/* Story */}
                 <View style={{ borderBottomColor: COLORS.darkGrey, borderBottomWidth: 1, paddingBottom: SIZES.padding }}>
                     <FlatList
-                        data={storyData}
+                        data={storyLoading ? [{id: 'loading'}, ...stories] : stories}
                         horizontal
                         contentContainerStyle={{ margin: SIZES.padding, columnGap: SIZES.padding }}
                         ListFooterComponent={() => <View style={{ height: 100 }} />}
-                        renderItem={(item) => <StoryCard
-                            storySource={item.item.storyImage}
-                            avatarSource={item.item.storyImage}
-                            onPress={() => navigation.navigate('StoryScreen')}
-                        />}
+                        renderItem={({ item, index }) => {
+                            if (item.id === 'loading') {
+                                // Hiển thị trạng thái đang tải
+                                return (
+                                    <View style={styles.storyStyle}>
+                                        <ActivityIndicator size="small" color={COLORS.socialPink} />
+                                        <TextComponent text='Creating story ...'/>
+                                    </View>
+                                );
+                            }
+                            return <StoryCard
+                                story={item}
+                                onPress={() => navigation.navigate('StoryScreen', {index})}
+                            />
+
+
+                        }}
                         keyExtractor={(item, index) => `${item.id}_${index}`}
                     />
                 </View>
@@ -233,4 +245,18 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 }
 
 export default HomeScreen
+
+const styles = StyleSheet.create({
+    storyStyle: {
+        width: 100,
+        height: 140,
+        flex: 1,
+        borderRadius: 16,
+        backgroundColor: COLORS.darkGrey,
+        flexShrink: 1,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+})
 
