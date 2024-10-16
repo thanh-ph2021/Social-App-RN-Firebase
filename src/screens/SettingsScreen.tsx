@@ -9,6 +9,7 @@ import { useAuthContext } from '../hooks'
 import { UtilIcons } from '../utils/icons'
 import { utilStyles } from '../styles'
 import FormButton from '../components/FormButton'
+import { showNotificationComingSoon } from '../utils'
 
 const settings = [
     'Account',
@@ -29,16 +30,20 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const handlePress = (str: string) => {
         switch (str) {
             case settings[0]:
+                showNotificationComingSoon()
                 break
             case settings[1]:
+                showNotificationComingSoon()
                 break
             case settings[2]:
                 //notification
                 navigation.navigate('SettingsNotification')
                 break
             case settings[3]:
+                showNotificationComingSoon()
                 break
             case settings[4]:
+                showNotificationComingSoon()
                 break
         }
     }

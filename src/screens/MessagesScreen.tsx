@@ -9,6 +9,7 @@ import { UtilIcons } from '../utils/icons'
 import { useState } from 'react'
 import { searchChat } from '../redux/actions/chat'
 import { selectConversationPinned } from '../redux/selectors'
+import { showNotificationComingSoon } from '../utils'
 
 const MessagesScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
@@ -44,7 +45,7 @@ const MessagesScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
                 rightComponent={
-                    <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => console.log('settings')}>
+                    <TouchableOpacity style={styles.btnHeaderLeft} onPress={() => showNotificationComingSoon()}>
                         <UtilIcons.svgSettings color={COLORS.socialWhite} />
                     </TouchableOpacity>
                 }

@@ -24,7 +24,7 @@ const StoryScreen = () => {
 
     const [userIndex, setUserIndex] = useState<number>(params.index ?? 0)
     const [storyIndex, setStoryIndex] = useState<number>(0)
-    const stories = !params.index ? params.userStories : useAppSelector(state => state.storyState.stories)
+    const stories = params.userStories ? params.userStories : useAppSelector(state => state.storyState.stories)
     const dispatch = useAppDispatch()
     const [text, setText] = useState('')
     const currentUser = useAppSelector(state => state.userState.currentUser)

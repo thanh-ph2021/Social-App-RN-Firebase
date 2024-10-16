@@ -10,6 +10,7 @@ import { ImageOrVideo } from 'react-native-image-crop-picker'
 import { COLORS, FONTS, SIZES } from '../constants'
 import { UserModel } from '../models'
 import { DocumentItem } from '../models/DocumentItem'
+import { UtilIcons } from './icons'
 
 export const deletePost = async (postId: string, setIsDelete: any) => {
     firestore().collection('Posts')
@@ -176,5 +177,23 @@ export const uploadMedia = async (nameFolder: string, media?: ImageOrVideo, doc?
         }
     } catch (error) {
         console.log('Upload media to firebase error', error)
+    }
+}
+
+export const showNotificationComingSoon = () => {
+    showNotification('This feature will be available in an upcoming update. Stay tuned!', UtilIcons.success, 'success')
+}
+
+export function getGreeting() {
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 5 && currentHour < 12) {
+        return "Good morning";
+    } else if (currentHour >= 12 && currentHour < 17) {
+        return "Good afternoon";
+    } else if (currentHour >= 17 && currentHour < 21) {
+        return "Good evening";
+    } else {
+        return "Good night";
     }
 }

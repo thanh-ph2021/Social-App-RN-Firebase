@@ -22,6 +22,7 @@ import { selectUserByUID } from "../../redux/selectors"
 import { updateUser } from "../../redux/actions/user"
 import { shallowEqual } from "react-redux"
 import { addNotification } from "../../redux/actions/notification"
+import { showNotificationComingSoon } from "../../utils"
 
 type PostCardProps = {
     item: PostModel,
@@ -89,7 +90,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
     const handleLike = useCallback(async (typeEmotion: string, isModal?: boolean) => {
         const newLikes = updateLike(data.likes, typeEmotion, currentUser.uid, isModal)
         setData({ ...data, likes: newLikes })
-    
+
         dispatch(updatePost({ ...item, likes: newLikes }))
     }, [data])
 
@@ -293,7 +294,10 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                         <UtilIcons.svgComment />
                         <TextComponent text={`${item.commentCount ? item.commentCount : item.comments ? item.comments.length : 0}`} style={{ paddingLeft: SIZES.base }} />
                     </TouchableOpacity>
-                    <UtilIcons.svgShare />
+                    <TouchableOpacity onPress={() => showNotificationComingSoon()}>
+                        <UtilIcons.svgShare />
+                    </TouchableOpacity>
+
                 </View>
                 <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onTag}>
                     <UtilIcons.svgBookmark fill={tag ? COLORS.socialBlue : undefined} />

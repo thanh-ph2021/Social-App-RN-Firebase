@@ -1,14 +1,13 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 
 import PostCard from '../components/Post/PostCard'
 import { PostModel } from '../models'
-import { COLORS, SIZES, images } from '../constants'
+import { COLORS, SIZES } from '../constants'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { showNotification } from '../utils'
+import { getGreeting, showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { Divider, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
@@ -16,80 +15,21 @@ import { reload } from '../redux/actions'
 import { fetchNextPosts } from '../redux/actions/post'
 import Badges from '../components/Badges'
 import { calculateUnreadCount } from '../redux/selectors'
-
-export const LoadScreen = () => {
-    return (
-        <ScrollView showsVerticalScrollIndicator={false}>
-            <SkeletonPlaceholder >
-                <View>
-                    <View style={{ marginBottom: SIZES.padding, marginHorizontal: SIZES.padding }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SIZES.base }}>
-                            <View style={{ width: 40, height: 40, borderRadius: 60 }} />
-                            <View style={{ marginLeft: SIZES.base }}>
-                                <View style={{ marginBottom: SIZES.base, width: 80, height: 20, borderRadius: SIZES.base }} />
-                                <View style={{ width: 120, height: 20, borderRadius: SIZES.base }} />
-                            </View>
-                        </View>
-                        <View style={{ marginBottom: SIZES.base }}>
-                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
-                            <View style={{ width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
-                        </View>
-
-                        <View style={{ width: SIZES.width - 20, height: 200, borderRadius: SIZES.base }} />
-                    </View>
-                    <View style={{ marginBottom: SIZES.padding, marginHorizontal: SIZES.padding }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SIZES.base }}>
-                            <View style={{ width: 40, height: 40, borderRadius: 60 }} />
-                            <View style={{ marginLeft: SIZES.base }}>
-                                <View style={{ marginBottom: SIZES.base, width: 80, height: 20, borderRadius: SIZES.base }} />
-                                <View style={{ width: 120, height: 20, borderRadius: SIZES.base }} />
-                            </View>
-                        </View>
-                        <View style={{ marginBottom: SIZES.base }}>
-                            <View style={{ marginBottom: SIZES.base, width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
-                            <View style={{ width: SIZES.width - 20, height: 20, borderRadius: SIZES.base }} />
-                        </View>
-
-                        <View style={{ width: SIZES.width - 20, height: 200, borderRadius: SIZES.base }} />
-                    </View>
-                </View>
-            </SkeletonPlaceholder>
-        </ScrollView>
-
-    )
-}
-
-export const storyData = [
-    {
-        id: 1,
-        storyImage: images.OnBoarding01,
-        avatarImage: images.angry
-    },
-    {
-        id: 2,
-        storyImage: images.OnBoarding01,
-        avatarImage: images.angry
-    },
-    {
-        id: 3,
-        storyImage: images.OnBoarding01,
-        avatarImage: images.angry
-    },
-    {
-        id: 4,
-        storyImage: images.OnBoarding01,
-        avatarImage: images.angry
-    },
-]
+import { PostLoader, StoryLoader } from '../components/Loader'
 
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [isloadNext, setIsLoadNext] = useState<boolean>(false)
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.userState.posts)
-    const { stories, loading: storyLoading} = useAppSelector(state => state.storyState)
+    const { stories, loading: storyLoading } = useAppSelector(state => state.storyState)
     const scrollY = new Animated.Value(0)
     const currentUser = useAppSelector(state => state.userState.currentUser)
     const unreadCount = useAppSelector(state => currentUser ? calculateUnreadCount(state, currentUser.uid) : 0)
+    const [greating, setGreating] = useState('')
+
+    useEffect(() => {
+        setGreating(getGreeting())
+    }, [])
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: any) => {
         const paddingToBottom = 100
@@ -157,12 +97,11 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
     return (
         <SafeAreaView style={{ backgroundColor: COLORS.darkBlack, flex: 1 }}>
-
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SIZES.padding }}>
                 <TextComponent
                     title={true}
-                    text={`Good Morning${currentUser && currentUser.lname ? ', ' + currentUser.lname : ''} `}
+                    text={`${greating}, ${currentUser && currentUser.lname ? currentUser.lname : ''} `}
                     style={{ fontWeight: 'bold' }}
                 />
 
@@ -184,7 +123,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     <Badges unreadCount={unreadCount} containerStyle={{ top: -10, right: -15 }} />
                 </TouchableOpacity>
             </View>
-
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl onRefresh={() => dispatch(reload())} refreshing={false} />}
@@ -203,42 +141,51 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             >
                 {/* Story */}
                 <View style={{ borderBottomColor: COLORS.darkGrey, borderBottomWidth: 1, paddingBottom: SIZES.padding }}>
-                    <FlatList
-                        data={storyLoading ? [{id: 'loading'}, ...stories] : stories}
-                        horizontal
-                        contentContainerStyle={{ margin: SIZES.padding, columnGap: SIZES.padding }}
-                        ListFooterComponent={() => <View style={{ height: 100 }} />}
-                        renderItem={({ item, index }) => {
-                            if (item.id === 'loading') {
-                                // Hiển thị trạng thái đang tải
-                                return (
-                                    <View style={styles.storyStyle}>
-                                        <ActivityIndicator size="small" color={COLORS.socialPink} />
-                                        <TextComponent text='Creating story ...'/>
-                                    </View>
-                                );
-                            }
-                            return <StoryCard
-                                story={item}
-                                onPress={() => navigation.navigate('StoryScreen', {index})}
-                            />
+                    {!stories || stories.length == 0 ? <StoryLoader /> : (
+                        <FlatList
+                            data={storyLoading ? [{ id: 'loading' }, ...stories] : stories}
+                            horizontal
+                            contentContainerStyle={{ margin: SIZES.padding, columnGap: SIZES.padding }}
+                            ListFooterComponent={() => <View style={{ height: 100 }} />}
+                            renderItem={({ item, index }) => {
+                                if (item.id === 'loading') {
+                                    // Hiển thị trạng thái đang tải
+                                    return (
+                                        <View style={styles.storyStyle}>
+                                            <ActivityIndicator size="small" color={COLORS.socialPink} />
+                                            <TextComponent text='Creating story ...' />
+                                        </View>
+                                    );
+                                }
+                                return <StoryCard
+                                    story={item}
+                                    onPress={() => navigation.navigate('StoryScreen', { index })}
+                                />
 
 
-                        }}
-                        keyExtractor={(item, index) => `${item.id}_${index}`}
-                    />
+                            }}
+                            keyExtractor={(item, index) => `${item.id}_${index}`}
+                        />
+                    )}
                 </View>
 
-                <FlatList
-                    data={posts}
-                    scrollEnabled={false}
-                    renderItem={renderItem}
-                    keyExtractor={(item, index) => `${item.id}_${index}`}
-                    ListFooterComponent={() => isloadNext ? <ActivityIndicator style={{ marginBottom: 70 }} color={COLORS.lightGrey} /> : <View style={{ height: 70 }} />}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <Divider />}
-                    style={{ paddingTop: SIZES.base }}
-                />
+                {!posts || posts.length == 0 ? (
+                    <>
+                        <PostLoader />
+                        <PostLoader />
+                    </>
+                ) : (
+                    <FlatList
+                        data={posts}
+                        scrollEnabled={false}
+                        renderItem={renderItem}
+                        keyExtractor={(item, index) => `${item.id}_${index}`}
+                        ListFooterComponent={() => isloadNext ? <ActivityIndicator style={{ marginBottom: 70 }} color={COLORS.lightGrey} /> : <View style={{ height: 70 }} />}
+                        showsVerticalScrollIndicator={false}
+                        ItemSeparatorComponent={() => <Divider />}
+                        style={{ paddingTop: SIZES.base }}
+                    />
+                )}
             </ScrollView>
         </SafeAreaView>
     )

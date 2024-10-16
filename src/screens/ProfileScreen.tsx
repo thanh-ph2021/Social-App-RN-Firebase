@@ -14,7 +14,7 @@ import { UtilIcons } from '../utils/icons'
 import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectStoryByUID, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
 import { addNotification } from '../redux/actions/notification'
-import { addChat } from '../redux/actions/chat'
+import { addChat, markChatAsRead } from '../redux/actions/chat'
 import StoryCard from '../components/StoryCard'
 
 const tagDatas = [
@@ -57,6 +57,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     }, [currentUser, userParam])
 
     const navigateChatScreen = (chatID: string) => {
+        dispatch(markChatAsRead(chatID))
         navigation.navigate('Chat', { userData: userData, chatID: chatID })
     }
 
@@ -139,6 +140,10 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
         }
     }
 
+    const onPressMessage = () => {
+        dispatch(addChat(params?.userID, navigateChatScreen))
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -167,8 +172,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     <Text style={styles.textTitle}>
                         {userData.fname} {userData.lname}
                     </Text>
-                    <TouchableOpacity
-                        onPress={() => dispatch(addChat(params?.userID, navigateChatScreen))}
+                    {params && <TouchableOpacity
+                        onPress={onPressMessage}
                         style={{
                             width: 35,
                             height: 35,
@@ -182,7 +187,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                             bottom: -5
                         }}>
                         <UtilIcons.svgMessage />
-                    </TouchableOpacity>
+                    </TouchableOpacity>}
                 </View>
 
                 {/* address */}

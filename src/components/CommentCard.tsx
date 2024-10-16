@@ -10,6 +10,7 @@ import { UserModel } from '../models'
 import { UtilIcons } from '../utils/icons'
 import LikeButton from './Post/LikeButton'
 import { updateComment } from '../redux/actions/post'
+import { CommentLoader } from './Loader'
 
 export type CommentCardProps = {
     commentData: CommentModel,
@@ -131,32 +132,36 @@ const CommentCard = ({ commentData, postId, handleReply, seeReply, parentData }:
     }
 
     return (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row', width: '90%' }}>
-                {
-                    userData ? <Avatar source={{ uri: userData.userImg }} size='s' /> : <></>
-                }
-                <View style={{ marginLeft: SIZES.padding }}>
-                    <View style={{ flexDirection: 'row' }}>
-                        <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold' }} color={COLORS.socialWhite} />
-                        <TextComponent text={` - ${moment(data.createAt.toDate()).fromNow()}`} color={COLORS.lightGrey} />
+        <View>
+            {!userData ? (<CommentLoader />) : (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', width: '90%' }}>
+                        {
+                            userData ? <Avatar source={{ uri: userData.userImg }} size='s' /> : <></>
+                        }
+                        <View style={{ marginLeft: SIZES.padding }}>
+                            <View style={{ flexDirection: 'row' }}>
+                                <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold' }} color={COLORS.socialWhite} />
+                                <TextComponent text={` - ${moment(data.createAt.toDate()).fromNow()}`} color={COLORS.lightGrey} />
+                            </View>
+                            {renderTextComment()}
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: SIZES.base, width: 120 }}>
+                                <LikeButton
+                                    data={data.likes ?? []}
+                                    handleLike={handleLike}
+                                    containerStyle={{ alignSelf: 'flex-start', width: 60 }}
+                                />
+                                <TouchableOpacity onPress={() => handleReply && handleReply(`${userData?.fname}${userData?.lname}`)}>
+                                    <UtilIcons.svgComment />
+                                </TouchableOpacity>
+                            </View>
+                            {data.reply.length > 0 && seeReply && <TouchableOpacity onPress={seeReply} style={{ paddingVertical: SIZES.padding }}>
+                                <TextComponent text={`${data.reply.length} replies`} color={COLORS.socialBlue} />
+                            </TouchableOpacity>}
+                        </View>
                     </View>
-                    {renderTextComment()}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: SIZES.base, width: 120 }}>
-                        <LikeButton
-                            data={data.likes ?? []}
-                            handleLike={handleLike}
-                            containerStyle={{ alignSelf: 'flex-start', width: 60 }}
-                        />
-                        <TouchableOpacity onPress={() => handleReply && handleReply(`${userData?.fname}${userData?.lname}`)}>
-                            <UtilIcons.svgComment />
-                        </TouchableOpacity>
-                    </View>
-                    {data.reply.length > 0 && seeReply && <TouchableOpacity onPress={seeReply} style={{ paddingVertical: SIZES.padding }}>
-                        <TextComponent text={`${data.reply.length} replies`} color={COLORS.socialBlue} />
-                    </TouchableOpacity>}
                 </View>
-            </View>
+            )}
         </View>
     )
 }
