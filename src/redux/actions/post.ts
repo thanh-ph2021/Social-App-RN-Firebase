@@ -1,7 +1,7 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 
-import { ADD_COMMENT_POST, ADD_POST, LOAD_COMMENTS_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
+import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LOAD_COMMENTS_POST, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
 import { LIMIT } from '../../constants'
 import { CommentModel, PostModel } from '../../models'
 import { AppThunk } from '../types'
@@ -35,7 +35,7 @@ export const fetchPostById = (postId: string): AppThunk => async (dispatch, getS
         if (postIds.includes(postId)) {
             return
         }
-        
+
         await postCollection
             .doc(postId)
             .get()
@@ -203,6 +203,34 @@ export const updateComment = (commentData: CommentModel, postId: string): AppThu
     }
 }
 
+export const deleteComment = (commentData: CommentModel, postId: string): AppThunk => async (dispatch) => {
+    try {
+
+        const postReference = postCollection.doc(postId)
+
+        return firestore().runTransaction(async transaction => {
+            const postSnapshot = await transaction.get(postReference)
+
+            await postCollection
+                .doc(postId)
+                .collection('comments')
+                .doc(commentData.id)
+                .delete()
+
+            if (postSnapshot.exists) {
+                transaction.update(postReference, {
+                    commentCount: postSnapshot.data()!.commentCount - 1
+                })
+            }
+
+            dispatch({ type: DELETE_COMMENT_POST, payload: { postId: postId, commentId: commentData.id } })
+        })
+        
+    } catch (error) {
+        console.log("🚀 ~ deleteComment ~ error:", error)
+    }
+}
+
 export const searchPosts = async (textSearch: string, type?: 'image' | 'video') => {
     try {
         const posts: PostModel[] = await postCollection
@@ -234,5 +262,13 @@ export const searchPosts = async (textSearch: string, type?: 'image' | 'video') 
 
     } catch (error) {
         console.log("🚀 ~ searchPosts ~ error:", error)
+    }
+}
+
+export const selectPost = (post: PostModel | null): AppThunk => async (dispatch) => {
+    try {
+        dispatch({ type: SELECT_POST, payload: post })
+    } catch (error) {
+        console.log("🚀 ~ selectPost ~ error:", error)
     }
 }

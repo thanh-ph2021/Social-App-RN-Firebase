@@ -43,6 +43,10 @@ const StoryScreen = () => {
         width: `${progress.value * 100}%`
     }))
 
+    const handlePressOptions = () => {
+
+    }
+
     const goToNextStory = () => {
         setStoryIndex(index => {
             if (storyIndex == user.data.length - 1) {
@@ -140,7 +144,7 @@ const StoryScreen = () => {
                     })}
                 </View>
                 {/* user */}
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center'}}>
                     <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.avatarStyle}>
                         <Image source={{ uri: user.userImg }} style={styles.avatarStyle1} />
                     </LinearGradient>
@@ -148,6 +152,9 @@ const StoryScreen = () => {
                         <TextComponent text={user.userName} style={{ fontWeight: 'bold' }} />
                         <TextComponent text={moment(user.createdAt).fromNow()} />
                     </View>
+                    <TouchableOpacity style={{flex: 1,alignItems: 'flex-end'}} onPress={handlePressOptions}>
+                        <UtilIcons.svgDotsVertical color={COLORS.socialWhite} size={25}/>
+                    </TouchableOpacity>
                 </View>
             </LinearGradient>
 

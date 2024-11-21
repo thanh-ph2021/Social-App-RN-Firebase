@@ -3,7 +3,6 @@ import { Modal, StyleSheet, View, TouchableOpacity } from "react-native"
 import { COLORS, FONTS, SIZES } from "../../constants"
 import TextComponent from "../TextComponent"
 
-
 interface Props {
     title: string,
     description: string,
@@ -11,7 +10,6 @@ interface Props {
     onClose: () => void,
     onConfirm?: () => void,
 }
-
 
 const AlertV1 = (props: Props) => {
 
@@ -58,10 +56,10 @@ const AlertV1 = (props: Props) => {
                 transparent={true}
                 visible={visible}
                 onRequestClose={onClose}>
-                <View style={styles.centeredView}>
+                <View style={[styles.centeredView, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
                     <View style={styles.modalView}>
                         <TextComponent text={title} style={[styles.modalText, { ...FONTS.h3 }]} />
-                        <TextComponent text={description} style={styles.modalText} color={COLORS.socialWhite} />
+                        {description && <TextComponent text={description} style={styles.modalText} color={COLORS.socialWhite} />}
                         {renderButton()}
                     </View>
                 </View>
@@ -77,12 +75,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-
     },
-    
+
     modalView: {
         margin: SIZES.base,
-        backgroundColor: COLORS.darkGrey,
+        backgroundColor: COLORS.lightGrey2,
         borderRadius: SIZES.base,
         width: '80%',
         padding: SIZES.padding,

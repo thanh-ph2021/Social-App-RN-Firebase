@@ -71,7 +71,7 @@ public class EmojiBSFragment extends BottomSheetDialogFragment {
 
         EmojiAdapter emojiAdapter = new EmojiAdapter();
         rvEmoji.setAdapter(emojiAdapter);
-        rvEmoji.setHasFixedSize(true);
+        // rvEmoji.setHasFixedSize(true);
         rvEmoji.setItemViewCacheSize(emojisList.size());
     }
 

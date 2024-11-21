@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { NotifierWrapper } from 'react-native-notifier'
 import { StatusBar } from 'react-native'
 import { Provider } from 'react-redux'
+import { PortalProvider } from '@gorhom/portal'
 
 import AuthStack from './AuthStack.android'
 import AppStack from './AppStack'
@@ -38,12 +39,14 @@ const Routes = () => {
     return (
         <Provider store={store}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-                <NotifierWrapper>
-                    <NavigationContainer>
-                        <StatusBar backgroundColor={COLORS.darkBlack} />
-                        {user ? <AppStack /> : <AuthStack />}
-                    </NavigationContainer>
-                </NotifierWrapper>
+                <PortalProvider>
+                    <NotifierWrapper>
+                        <NavigationContainer>
+                            <StatusBar backgroundColor={COLORS.darkBlack} />
+                            {user ? <AppStack /> : <AuthStack />}
+                        </NavigationContainer>
+                    </NotifierWrapper>
+                </PortalProvider>
             </GestureHandlerRootView>
         </Provider>
     )

@@ -15,8 +15,11 @@ import { getTimeNow, showNotification } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { CommentModel, UserModel } from '../models'
 import { selectPostById, selectUserByUID } from '../redux/selectors'
-import { addComment, loadComments, updateComment } from '../redux/actions/post'
+import { addComment, loadComments, selectPost, updateComment } from '../redux/actions/post'
 import { addNotification } from '../redux/actions/notification'
+import PostOptionBottomSheet from '../components/Post/PostOptionBottomSheet'
+import AppBottomSheet from '../components/AppBottomSheet'
+import CommentOption from '../components/Post/CommentOption'
 
 
 export const IconArray = [
@@ -34,11 +37,14 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const post = useAppSelector(state => selectPostById(state, params.data.id)) ?? params.data
     const userCreatePost: UserModel = useAppSelector(state => selectUserByUID(state, post.userID), shallowEqual)
     const dispatch = useAppDispatch()
-    const inputRef = useRef<any>()
     const bottomSheetRef = useRef<BottomSheet>(null)
     const snapPoints = useMemo(() => ['80%'], [])
-    const [bottomData, setBottomData] = useState<string>()
+    const [bottomData, setBottomData] = useState<CommentModel>()
     const commentNoti = useAppSelector(state => state.asyncstorageState.commentNoti)
+    const inputRef = useRef<any>()
+    const optionsPostSheetRef = useRef<any>()
+    const optionsCommentSheetRef = useRef<any>()
+    const [commentState, setCommentState] = useState<CommentModel>()
 
     useEffect(() => {
         dispatch(loadComments(post.id))
@@ -50,7 +56,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 setProcessing(true)
 
                 if (bottomData) {
-                    const commnetData: CommentModel = post.comments.filter((item: CommentModel) => item.id == bottomData)[0]
+                    const commnetData: CommentModel = post.comments.filter((item: CommentModel) => item.id == bottomData.id!)[0]
                     await dispatch(updateComment(
                         {
                             ...commnetData,
@@ -103,6 +109,13 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         }
     }
 
+    const onPressCommentOptions = (comment: CommentModel) => {
+        setCommentState(comment)
+        if (optionsCommentSheetRef.current) {
+            optionsCommentSheetRef.current.snapTo(0)
+        }
+    }
+
     const renderItemComment = ({ item }: ListRenderItemInfo<CommentModel>) => {
         const handleReply = (userReply: string) => {
             handleOpenBottomSheet(item)
@@ -114,7 +127,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         }
 
         return (
-            <CommentCard commentData={item} postId={post.id} handleReply={handleReply} seeReply={seeReply} />
+            <CommentCard commentData={item} postId={post.id} handleReply={handleReply} seeReply={seeReply} onPressOptions={() => onPressCommentOptions(item)} />
         )
     }
 
@@ -134,7 +147,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     const handleOpenBottomSheet = (data: CommentModel) => {
-        setBottomData(data.id!)
+        setBottomData(data)
 
         bottomSheetRef.current && bottomSheetRef.current.snapToIndex(0)
     }
@@ -143,6 +156,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         <BottomSheetBackdrop
             {...props}
             appearsOnIndex={0}
+            disappearsOnIndex={-1}
         />
     ), [])
 
@@ -156,7 +170,7 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             }
         }
 
-        const commentData: CommentModel = bottomData ? post.comments.filter((item: CommentModel) => item.id == bottomData)[0] : null
+        const commentData: CommentModel = bottomData ? post.comments.filter((item: CommentModel) => item.id == bottomData.id!)[0] : null
 
         return (
             <BottomSheet
@@ -177,35 +191,49 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     backgroundColor: COLORS.darkGrey
                 }}
                 onChange={onChange}
-
             >
-
                 {bottomData && <BottomSheetView>
                     <TextComponent text={'Replies'} style={{ ...FONTS.h2, paddingLeft: SIZES.padding, paddingBottom: SIZES.padding }} />
                     <View style={{
                         paddingVertical: SIZES.padding,
                         backgroundColor: COLORS.darkGrey2,
-                        paddingLeft: SIZES.padding,
+                        padding: SIZES.padding,
                         borderTopWidth: 1,
                         borderTopColor: COLORS.lightGrey
                     }}>
-                        <CommentCard commentData={commentData} postId={post.id} handleReply={forcusReply} />
+                        <CommentCard
+                            commentData={commentData}
+                            postId={post.id}
+                            handleReply={forcusReply}
+                            onPressOptions={() => onPressCommentOptions(commentData)}
+                        />
                     </View>
                 </BottomSheetView>}
                 {bottomData && <BottomSheetFlatList
                     data={commentData.reply}
                     renderItem={({ item }) => {
                         return (
-                            <CommentCard commentData={item} postId={post.id} handleReply={forcusReply} parentData={commentData} />
+                            <CommentCard
+                                commentData={item}
+                                postId={post.id}
+                                handleReply={forcusReply}
+                                parentData={commentData}
+                                onPressOptions={() => onPressCommentOptions(item)}
+                            />
                         )
                     }}
                     keyExtractor={(item, index) => item.createAt.toString() + index}
                     showsVerticalScrollIndicator={false}
                     ListFooterComponent={() => <View style={{ height: 60 }} />}
-                    contentContainerStyle={{ paddingLeft: SIZES.padding * 4, paddingVertical: SIZES.padding, gap: SIZES.padding }}
+                    contentContainerStyle={{ paddingLeft: SIZES.padding * 4, paddingRight: SIZES.padding, paddingVertical: SIZES.padding, gap: SIZES.padding }}
                 />}
             </BottomSheet>
         )
+    }
+
+    const onPressOptions = async () => {
+        await dispatch(selectPost(post))
+        optionsPostSheetRef.current.snapTo(0)
     }
 
 
@@ -219,9 +247,9 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
             />
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {/* content post */}
-                <PostCard item={post} />
+                <PostCard item={post} onPressOptions={onPressOptions} />
 
                 <View style={{ height: 2, backgroundColor: COLORS.darkGrey }} />
 
@@ -278,6 +306,28 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     }}
                 />
             </View>
+
+            <PostOptionBottomSheet
+                index={-1}
+                ref={optionsPostSheetRef}
+            />
+
+            <AppBottomSheet
+                ref={optionsCommentSheetRef}
+                snapPoints={[SIZES.height * 0.3]}
+                backgroundStyle={{ backgroundColor: COLORS.darkGrey }}
+                containerStyle={{ margin: SIZES.base, borderRadius: SIZES.padding }}
+                handleIndicatorStyle={{ backgroundColor: COLORS.lightGrey }}
+                onClose={() => setCommentState(undefined)}
+            >
+                {commentState ? <CommentOption
+                    parentData={bottomData}
+                    comment={commentState}
+                    postId={post.id}
+                    onClose={() => optionsCommentSheetRef.current.close()}
+                    callback={() => { bottomSheetRef.current && bottomSheetRef.current.close() }}
+                /> : <></>}
+            </AppBottomSheet>
         </SafeAreaView>
     )
 }

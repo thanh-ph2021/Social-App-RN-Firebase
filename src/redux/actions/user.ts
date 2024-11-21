@@ -19,6 +19,7 @@ export const fetchUser = (): AppThunk => async (dispatch) => {
                 }
             })
     } catch (error) {
+        console.log("🚀 ~ fetchUser ~ error:", error)
     }
 }
 

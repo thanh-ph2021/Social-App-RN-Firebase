@@ -6,6 +6,7 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
 import firestore from '@react-native-firebase/firestore'
+import { shallowEqual } from "react-redux"
 
 import { SIZES, images, FONTS, COLORS, SECOND_TO_MILISECOND, DAY_TO_SECOND, HOUR_TO_SECOND, MINUTE_TO_SECOND } from '../../constants'
 import { ChecklistModel, LikeModel, OptionDataModel, PostModel, TimeLimitModel, UserModel } from "../../models"
@@ -20,7 +21,6 @@ import MediaViewSample from "../Giphy/MediaViewSample"
 import { updatePost } from "../../redux/actions/post"
 import { selectUserByUID } from "../../redux/selectors"
 import { updateUser } from "../../redux/actions/user"
-import { shallowEqual } from "react-redux"
 import { addNotification } from "../../redux/actions/notification"
 import { showNotificationComingSoon } from "../../utils"
 
@@ -28,9 +28,10 @@ type PostCardProps = {
     item: PostModel,
     onDeletePost?: (item: PostModel) => void,
     onPressUserName?: (userID: string) => void,
+    onPressOptions?: () => void,
 }
 
-const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
+const PostCard = ({ item, onDeletePost, onPressUserName, onPressOptions }: PostCardProps) => {
 
     const [data, setData] = useState<PostModel>(item)
     const [voteResult, setVoteResult] = useState({ total: 0, checked: false, expired: false })
@@ -171,10 +172,6 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
         }
     }
 
-    const onPressOptionPost = () => {
-
-    }
-
     const renderChecklistData = () => {
         return data.checklistData ? (
             <View style={{ paddingHorizontal: SIZES.padding, gap: SIZES.base }}>
@@ -237,13 +234,13 @@ const PostCard = ({ item, onDeletePost, onPressUserName }: PostCardProps) => {
                             <Image source={images.defaultImage} style={styles.avatar} />
                         )}
                     </TouchableWithoutFeedback>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
                         <View style={styles.textWrap}>
                             <Text style={[styles.text, { fontWeight: 'bold' }]}>{userCreatePost.fname} {userCreatePost.lname}</Text>
                             <Text style={[styles.text, { ...FONTS.body4, color: COLORS.lightGrey }]}>{moment(data.postTime.toDate()).fromNow()}</Text>
                         </View>
                     </View>
-                    <TouchableOpacity onPress={onPressOptionPost}>
+                    <TouchableOpacity onPress={onPressOptions}>
                         <UtilIcons.svgDotsVertical />
                     </TouchableOpacity>
                 </View>

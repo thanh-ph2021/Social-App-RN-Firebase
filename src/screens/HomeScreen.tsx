@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, ScrollView, View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
@@ -12,10 +12,11 @@ import { UtilIcons } from '../utils/icons'
 import { Divider, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
 import { reload } from '../redux/actions'
-import { fetchNextPosts } from '../redux/actions/post'
+import { fetchNextPosts, selectPost } from '../redux/actions/post'
 import Badges from '../components/Badges'
 import { calculateUnreadCount } from '../redux/selectors'
 import { PostLoader, StoryLoader } from '../components/Loader'
+import PostOptionBottomSheet from '../components/Post/PostOptionBottomSheet'
 
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [isloadNext, setIsLoadNext] = useState<boolean>(false)
@@ -26,6 +27,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const currentUser = useAppSelector(state => state.userState.currentUser)
     const unreadCount = useAppSelector(state => currentUser ? calculateUnreadCount(state, currentUser.uid) : 0)
     const [greating, setGreating] = useState('')
+    const sheetRef = useRef<any>()
 
     useEffect(() => {
         setGreating(getGreeting())
@@ -70,30 +72,36 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         })
     }
 
-    const onPressHandle = useCallback((userID: string) => {
-        navigation.navigate('Profile', { userID: userID })
-    }, [])
-
     const onPressImage = useCallback((imageUrl: string) => {
         if (imageUrl) {
             navigation.navigate('ImageViewScreen', { imageUrl: imageUrl })
         }
     }, [])
 
-    const onDeletePost = useCallback((item: PostModel) => {
-        // deletePost(item)
-        showNotification('Post deleted successfully', UtilIcons.success)
-    }, [])
+    const renderItem = useCallback(({ item }: ListRenderItemInfo<PostModel>) => {
+        const onDeletePost = (item: PostModel) => {
+            // deletePost(item)
+            showNotification('Post deleted successfully', UtilIcons.success)
+        }
 
-    const renderItem = ({ item }: ListRenderItemInfo<PostModel>) => {
+        const onPressHandle = (userID: string) => {
+            navigation.navigate('Profile', { userID: userID })
+        }
+
+        const onPressOptions = () => {
+            dispatch(selectPost(item))
+            sheetRef.current.snapTo(0)
+        }
+
         return (
             <PostCard
                 item={item}
                 onDeletePost={onDeletePost}
                 onPressUserName={onPressHandle}
+                onPressOptions={onPressOptions}
             />
         )
-    }
+    }, [])
 
     return (
         <SafeAreaView style={{ backgroundColor: COLORS.darkBlack, flex: 1 }}>
@@ -187,6 +195,10 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     />
                 )}
             </ScrollView>
+            <PostOptionBottomSheet
+                index={-1}
+                ref={sheetRef}
+            />
         </SafeAreaView>
     )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, ListRenderItemInfo, FlatList } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import LinearGradient from 'react-native-linear-gradient'
@@ -16,6 +16,8 @@ import { updateUser } from '../redux/actions/user'
 import { addNotification } from '../redux/actions/notification'
 import { addChat, markChatAsRead } from '../redux/actions/chat'
 import StoryCard from '../components/StoryCard'
+import PostOptionBottomSheet from '../components/Post/PostOptionBottomSheet'
+import { selectPost } from '../redux/actions/post'
 
 const tagDatas = [
     {
@@ -51,6 +53,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const postTags = currentUser.postTags ? useAppSelector(state => selectPostTagged(state, currentUser.postTags)) : []
     const followNoti = useAppSelector(state => state.asyncstorageState.followNoti)
     const userStories = useAppSelector(state => selectStoryByUID(state, currentUser.uid))
+    const sheetRef = useRef<any>()
 
     useEffect(() => {
         setUserData(params ? userParam : currentUser)
@@ -142,6 +145,11 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
     const onPressMessage = () => {
         dispatch(addChat(params?.userID, navigateChatScreen))
+    }
+
+    const onPressOptions = (post: PostModel) => {
+        dispatch(selectPost(post))
+        sheetRef.current.snapTo(0)
     }
 
     return (
@@ -247,8 +255,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                             <View key={item.id}>
                                 <PostCard
                                     item={item}
-                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
                                     key={item.id}
+                                    onPressOptions={() => onPressOptions(item)}
                                 />
                                 {index == posts.length - 1 ? <></> : <Divider />}
                             </View>
@@ -280,8 +288,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                             <View key={item.id}>
                                 <PostCard
                                     item={item}
-                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
                                     key={item.id}
+                                    onPressOptions={() => onPressOptions(item)}
                                 />
                                 {index == postUserLiked.length - 1 ? <></> : <Divider />}
                             </View>
@@ -296,8 +304,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                             <View key={item.id}>
                                 <PostCard
                                     item={item}
-                                    // onDeletePost={(post) => deletePost(post.id, setIsDelete)}
                                     key={item.id}
+                                    onPressOptions={() => onPressOptions(item)}
                                 />
                                 {index == postTags.length - 1 ? <></> : <Divider />}
                             </View>
@@ -306,6 +314,10 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     })
                 }
             </ScrollView>
+            <PostOptionBottomSheet
+                index={0}
+                ref={sheetRef}
+            />
         </SafeAreaView>
     )
 }

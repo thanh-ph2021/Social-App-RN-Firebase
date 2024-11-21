@@ -2,17 +2,19 @@ import { FlatList, ListRenderItemInfo, StyleSheet, Text, TextInput, View } from 
 import { useCallback, useRef, useState } from "react"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
+import LottieView from "lottie-react-native"
 
 import { UtilIcons } from "../utils/icons"
 import { COLORS, FONTS, SIZES } from "../constants"
 import { utilStyles } from "../styles"
 import { PostModel, UserModel } from "../models"
 import { Divider, PostCard, TextComponent, UserComponent } from "../components"
-import LottieView from "lottie-react-native"
-import { searchPosts } from "../redux/actions/post"
+import { searchPosts, selectPost } from "../redux/actions/post"
 import { searchUsers } from "../redux/actions/user"
 import ImageItem from "../components/Post/ImageItem"
 import VideoItem from "../components/Post/VideoItem"
+import PostOptionBottomSheet from "../components/Post/PostOptionBottomSheet"
+import { useAppDispatch } from "../hooks"
 
 const tagDatas = [
     {
@@ -43,13 +45,14 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [postVideos, setPostVideos] = useState<PostModel[]>([])
     const [users, setUsers] = useState<UserModel[]>([])
     const [activeIndex, setActiveIndex] = useState(0)
+    const sheetRef = useRef<any>()
+    const dispatch = useAppDispatch()
 
     const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
         if (viewableItems[0]) {
             setActiveIndex(viewableItems[0].index)
         }
     })
-
 
     const onPressHandle = useCallback((userID: string) => {
         navigation.navigate('Profile', { userID: userID })
@@ -60,10 +63,16 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }, [])
 
     const renderPostItem = ({ item }: ListRenderItemInfo<PostModel>) => {
+        const onPressOptions = () => {
+            dispatch(selectPost(item))
+            sheetRef.current.snapTo(0)
+        }
+
         return (
             <PostCard
                 item={item}
                 onPressUserName={onPressHandle}
+                onPressOptions={onPressOptions}
             />
         )
     }
@@ -137,7 +146,6 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     return (
-
         <View style={{ flex: 1, paddingVertical: SIZES.padding, backgroundColor: COLORS.darkBlack }}>
             {/* search bar */}
             <View style={{
@@ -252,6 +260,10 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </>
                 )}
             </View>
+            <PostOptionBottomSheet
+                    index={-1}
+                    ref={sheetRef}
+                />
         </View>
 
     )

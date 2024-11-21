@@ -61,7 +61,7 @@ public class PropertiesBSFragment extends BottomSheetDialogFragment implements S
         LinearLayoutManager layoutManager = new LinearLayoutManager(
                 requireActivity(), LinearLayoutManager.HORIZONTAL, false);
         rvColor.setLayoutManager(layoutManager);
-        rvColor.setHasFixedSize(true);
+        // rvColor.setHasFixedSize(true);
 
         ColorPickerAdapter colorPickerAdapter = new ColorPickerAdapter(requireActivity());
         colorPickerAdapter.setOnColorPickerClickListener(colorCode -> {

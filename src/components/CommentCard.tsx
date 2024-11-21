@@ -19,10 +19,11 @@ export type CommentCardProps = {
     seeReply?: () => void,
     isReply?: boolean,
     // comment data contains reply
-    parentData?: CommentModel
+    parentData?: CommentModel,
+    onPressOptions?: () => void
 }
 
-const CommentCard = ({ commentData, postId, handleReply, seeReply, parentData }: CommentCardProps) => {
+const CommentCard = ({ commentData, postId, handleReply, seeReply, parentData, onPressOptions }: CommentCardProps) => {
 
     const [userData, setUserData] = useState<UserModel>()
     const [data, setData] = useState<CommentModel>(commentData)
@@ -139,10 +140,16 @@ const CommentCard = ({ commentData, postId, handleReply, seeReply, parentData }:
                         {
                             userData ? <Avatar source={{ uri: userData.userImg }} size='s' /> : <></>
                         }
-                        <View style={{ marginLeft: SIZES.padding }}>
-                            <View style={{ flexDirection: 'row' }}>
-                                <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold' }} color={COLORS.socialWhite} />
-                                <TextComponent text={` - ${moment(data.createAt.toDate()).fromNow()}`} color={COLORS.lightGrey} />
+                        <View style={{ marginLeft: SIZES.padding, width: '100%' }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: -5 }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TextComponent text={`${userData?.fname} ${userData?.lname}`} style={{ fontWeight: 'bold' }} color={COLORS.socialWhite} />
+                                    <TextComponent text={` - ${moment(data.createAt.toDate()).fromNow()}`} color={COLORS.lightGrey} />
+                                </View>
+
+                                <TouchableOpacity onPress={onPressOptions}>
+                                    <UtilIcons.svgDotsHorizontal />
+                                </TouchableOpacity>
                             </View>
                             {renderTextComment()}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: SIZES.base, width: 120 }}>

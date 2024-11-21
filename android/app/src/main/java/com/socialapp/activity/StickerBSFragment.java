@@ -69,7 +69,7 @@ public class StickerBSFragment extends BottomSheetDialogFragment {
         rvEmoji.setLayoutManager(gridLayoutManager);
         StickerAdapter stickerAdapter = new StickerAdapter();
         rvEmoji.setAdapter(stickerAdapter);
-        rvEmoji.setHasFixedSize(true);
+        // rvEmoji.setHasFixedSize(true);
         rvEmoji.setItemViewCacheSize(stickerPathList.length);
     }
 

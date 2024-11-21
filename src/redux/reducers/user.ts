@@ -1,5 +1,5 @@
 import { ActionType } from "../types"
-import { ADD_COMMENT_POST, ADD_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_USERS, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_POST, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
+import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_USERS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_POST, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
 import { MessageModel, PostModel, UserModel } from "../../models"
 
 export interface UserState {
@@ -7,7 +7,8 @@ export interface UserState {
     posts: PostModel[],
     chats: MessageModel[],
     following: any[]
-    users: UserModel[]
+    users: UserModel[],
+    selectedPost: PostModel | null,
 }
 
 const initialState: UserState = {
@@ -15,7 +16,8 @@ const initialState: UserState = {
     posts: [],
     chats: [],
     following: [],
-    users: []
+    users: [],
+    selectedPost: null,
 }
 
 export const user = (state: UserState = initialState, action: ActionType) => {
@@ -114,6 +116,24 @@ export const user = (state: UserState = initialState, action: ActionType) => {
                 posts: newPosts
             }
 
+        case DELETE_COMMENT_POST:
+            newPosts = oldPosts.map(post => {
+                if (post.id === action.payload.postId) {
+                    const oldComments = [...post.comments]
+                    let newComments = oldComments.filter(comment => comment.id !== action.payload.commentId)
+                    return {
+                        ...post,
+                        comments: [...newComments],
+                        commentCount: post.commentCount - 1
+                    }
+                }
+                return post
+            })
+            return {
+                ...state,
+                posts: newPosts
+            }
+
         case USER_CHATS_STATE_CHANGE:
             return {
                 ...state,
@@ -147,6 +167,18 @@ export const user = (state: UserState = initialState, action: ActionType) => {
             return {
                 ...state,
                 posts: [...state.posts, action.payload]
+            }
+
+        case SELECT_POST:
+            return {
+                ...state,
+                selectedPost: action.payload
+            }
+
+        case SELECT_POST:
+            return {
+                ...state,
+                selectedPost: action.payload
             }
 
         default:
