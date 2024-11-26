@@ -1,5 +1,5 @@
 import { StoryModel } from "../../models/StoryModel"
-import { FETCH_STORIES, CHANGE_LOADING_STORY_STATE } from "../constants/story"
+import { FETCH_STORIES, CHANGE_LOADING_STORY_STATE, DELETE_IMAGE } from "../constants/story"
 import { ActionType } from "../types"
 
 export interface StoryState {
@@ -19,11 +19,29 @@ const story = (state: StoryState = initialState, action: ActionType) => {
                 ...state,
                 stories: action.payload,
             }
-            case CHANGE_LOADING_STORY_STATE:
+        case CHANGE_LOADING_STORY_STATE:
             return {
                 ...state,
                 loading: action.payload,
             }
+        case DELETE_IMAGE:
+            if (action.payload.mode === 'update') {
+                return {
+                    ...state,
+                    stories: state.stories.map(item => {
+                        if (item.id === action.payload.storyData.id) {
+                            return action.payload.storyData
+                        }
+                        return item
+                    })
+                }
+            } else {
+                return {
+                    ...state,
+                    stories: [...state.stories].filter(item => item.id !== action.payload.storyId)
+                }
+            }
+
         default:
             return state
     }

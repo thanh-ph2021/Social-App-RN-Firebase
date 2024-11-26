@@ -1,92 +1,88 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { useState } from 'react'
 
-import { Loading } from '../Loader'
-import AlertV1 from '../Alert/AlertV1'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import { CommentModel, UserModel } from '../../models'
-import Divider from '../Divider'
-import { COLORS, FONTS, SIZES } from '../../constants'
-import TextComponent from '../TextComponent'
-import { UtilIcons } from '../../utils/icons'
-import { showNotification, showNotificationComingSoon } from '../../utils'
-import { deleteComment, updateComment } from '../../redux/actions/post'
+import Divider from './Divider'
+import { UtilIcons } from '../utils/icons'
+import { COLORS, FONTS, SIZES } from '../constants'
+import { showNotification, showNotificationComingSoon } from '../utils'
+import { UserModel } from '../models'
+import { useAppDispatch, useAppSelector } from '../hooks'
+import TextComponent from './TextComponent'
+import AlertV1 from './Alert/AlertV1'
+import { Loading } from './Loader'
+import { StoryModel } from '../models/StoryModel'
+import { deleteImage } from '../redux/actions/story'
 
 interface Props {
-    comment: CommentModel,
-    postId: string,
-    onClose?: () => void // close bottom sheet,
-    parentData?: CommentModel,
+    storyData: StoryModel,
+    indexImage: number,
+    onClose?: () => void, // close bottom sheet,
     callback?: () => void
 }
 
-const CommentOption = ({ comment, onClose, postId, parentData, callback }: Props) => {
+const StoryOption = ({ storyData, indexImage, onClose, callback }: Props) => {
 
     const dispatch = useAppDispatch()
     const currentUser: UserModel = useAppSelector(state => state.userState.currentUser)
-    const isMyComment = comment.userID === currentUser?.uid
+    const isMyStory = storyData.userId === currentUser?.uid
     const [showAlert, setShowAlert] = useState(false)
     const [processing, setProcessing] = useState(false)
 
     const removeHandle = async () => {
         onClose && onClose()
         setProcessing(true)
-        if(parentData && parentData.id !== comment.id){
-            let oldComment = {...parentData}
-            const newComment = {...oldComment, reply: oldComment.reply.filter(item => item.id !== comment.id)}
-            await dispatch(updateComment(newComment, postId))
-        } else {
-            if(parentData && parentData.id === comment.id){
-                callback && callback()
-            }
-            await dispatch(deleteComment(comment, postId))
-        }
+
+        await dispatch(deleteImage(storyData, indexImage))
+
         setProcessing(false)
-        showNotification('Comment deleted successfully', () => <UtilIcons.success />, 'success')
+        showNotification('Image deleted successfully', () => <UtilIcons.success />, 'success', SIZES.padding * 3)
+        callback && callback()
+    }
+
+    const showComingSoon = () => {
+        showNotificationComingSoon(SIZES.padding * 3)
+        onClose && onClose()
     }
 
     const editHandle = () => {
-        showNotificationComingSoon()
-        onClose && onClose()
+        showComingSoon()
     }
     const hideHandle = () => {
-        showNotificationComingSoon()
-        onClose && onClose()
+        showComingSoon()
     }
     const reportHandle = () => {
-        showNotificationComingSoon()
-        onClose && onClose()
+        showComingSoon()
     }
 
     return (
         <>
-            <TextComponent text={"Comment's Options"} style={{ ...FONTS.h3, textAlign: 'center' }} />
+            <TextComponent text={"Story's Options"} style={{ ...FONTS.h3, textAlign: 'center' }} />
             <Divider height={0.3} color={COLORS.lightGrey} />
-            {isMyComment ? (
+            {isMyStory ? (
                 <>
                     <TouchableOpacity style={styles.item} onPress={editHandle}>
                         <UtilIcons.svgAlert color={COLORS.socialWhite} />
-                        <TextComponent text={"Edit comment"} style={{ ...FONTS.h3 }} />
+                        <TextComponent text={"Edit story"} style={{ ...FONTS.h3 }} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.item} onPress={() => setShowAlert(true)}>
                         <UtilIcons.svgTrash />
-                        <TextComponent text={"Remove comment"} style={{ ...FONTS.h3 }} />
+                        <TextComponent text={"Remove story"} style={{ ...FONTS.h3 }} />
                     </TouchableOpacity>
                 </>
             ) : (
                 <>
                     <TouchableOpacity style={styles.item} onPress={hideHandle}>
                         <UtilIcons.svgHide color={COLORS.socialWhite} size={20} />
-                        <TextComponent text={"Hide comment"} style={{ ...FONTS.h3 }} />
+                        <TextComponent text={"Hide story"} style={{ ...FONTS.h3 }} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.item} onPress={reportHandle}>
                         <UtilIcons.svgReport color={COLORS.socialWhite} size={20} />
-                        <TextComponent text={"Report comment"} style={{ ...FONTS.h3 }} />
+                        <TextComponent text={"Report story"} style={{ ...FONTS.h3 }} />
                     </TouchableOpacity>
                 </>
             )}
             <AlertV1
-                title='Sure you want to delete comment?'
+                title='Sure you want to delete story?'
                 description=''
                 visible={showAlert}
                 onClose={() => setShowAlert(false)}
@@ -97,7 +93,7 @@ const CommentOption = ({ comment, onClose, postId, parentData, callback }: Props
     )
 }
 
-export default CommentOption
+export default StoryOption
 
 const styles = StyleSheet.create({
     item: {

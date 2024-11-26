@@ -87,7 +87,7 @@ export async function requestUserPermission() {
 
 }
 
-export const showNotification = (title: string, Icon: () => React.ReactElement, typeNoti?: 'error' | 'success' | 'warning') => {
+export const showNotification = (title: string, Icon: () => React.ReactElement, typeNoti?: 'error' | 'success' | 'warning', marginTop?: number) => {
     Notifier.showNotification({
         duration: 5000,
         title: title,
@@ -112,7 +112,8 @@ export const showNotification = (title: string, Icon: () => React.ReactElement, 
                     padding: SIZES.base,
                     margin: SIZES.base,
                     borderRadius: SIZES.base,
-                    elevation: 5
+                    elevation: 5,
+                    marginTop: marginTop ?? undefined
                 }}>
                     <Icon />
                     <Text style={{ ...FONTS.body3, color: color, paddingLeft: SIZES.padding, flexShrink: 1 }}>{props.title}</Text>
@@ -180,8 +181,8 @@ export const uploadMedia = async (nameFolder: string, media?: ImageOrVideo, doc?
     }
 }
 
-export const showNotificationComingSoon = () => {
-    showNotification('This feature will be available in an upcoming update. Stay tuned!', UtilIcons.success, 'success')
+export const showNotificationComingSoon = (marginTop?: number) => {
+    showNotification('This feature will be available in an upcoming update. Stay tuned!', UtilIcons.success, 'success', marginTop)
 }
 
 export function getGreeting() {
