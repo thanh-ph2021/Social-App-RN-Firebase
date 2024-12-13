@@ -1,4 +1,3 @@
-import { GiphyMedia } from "@giphy/react-native-sdk"
 
 export type MediaItem = {
     uri: string,

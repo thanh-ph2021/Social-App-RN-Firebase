@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
-import { Alert, Platform, View, Text } from 'react-native'
+import { Alert, Platform, View, Text, ImageRequireSource, Image } from 'react-native'
 import messaging from '@react-native-firebase/messaging'
 import { PermissionsAndroid } from 'react-native'
 import { Notifier } from 'react-native-notifier'
@@ -11,6 +11,7 @@ import { COLORS, FONTS, SIZES } from '../constants'
 import { UserModel } from '../models'
 import { DocumentItem } from '../models/DocumentItem'
 import { UtilIcons } from './icons'
+import { Source } from 'react-native-fast-image'
 
 export const deletePost = async (postId: string, setIsDelete: any) => {
     firestore().collection('Posts')
@@ -197,4 +198,26 @@ export function getGreeting() {
     } else {
         return "Good night";
     }
+}
+
+export const getHitSlop = (padding: number) => ({
+    top: padding,
+    bottom: padding,
+    left: padding,
+    right: padding,
+})
+
+export const getImageSize = (source: Source | ImageRequireSource): Promise<{ width: number, height: number }> => {
+    return new Promise((resolve, reject) => {
+        if (typeof source === 'number') {
+            const { width, height } = Image.resolveAssetSource(source)
+            resolve({ width, height })
+        } else if (typeof source === 'object' && 'uri' in source && source.uri) {
+            Image.getSize(source.uri, (width, height) => {
+                resolve({ width, height })
+            })
+        } else {
+            reject(console.log('Invalid image source'))
+        }
+    })
 }

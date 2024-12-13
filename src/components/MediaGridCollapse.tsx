@@ -1,23 +1,26 @@
+import { useState } from 'react'
 import { View, Image, Text, TouchableWithoutFeedback } from 'react-native'
 import Video from 'react-native-video'
 
 import { SIZES, COLORS, FONTS } from '../constants'
 import { MediaItem } from '../models'
+import LightBox, { ImageType } from './LightBox'
 
 type MediaGridCollapseProps = {
-    media: MediaItem[],
+    medias: MediaItem[],
     onPressImage: (media: MediaItem) => void
 }
 
-const MediaGridCollapse = ({ media, onPressImage }: MediaGridCollapseProps) => {
+const MediaGridCollapse = ({ medias, onPressImage }: MediaGridCollapseProps) => {
 
-    const check = media.length > 3
-    const length = media.length
+    const check = medias.length > 3
+    const length = medias.length
     const text = check ? (length - 3).toString() : undefined
-    const newMediaUri = check ? media.slice(0, 3) : media
+    const newMediaUri = check ? medias.slice(0, 3) : medias
+    const [visible, setVisible] = useState(false)
 
     const Item = ({ data, style }: { data: MediaItem, style: any }) => {
-        return <TouchableWithoutFeedback onPress={() => onPressImage(data)}>
+        return <TouchableWithoutFeedback onPress={() => setVisible(true)}>
             {
                 data.type == 'image' ? (
                     <Image source={{ uri: data.uri }} resizeMode='cover' style={style} />
@@ -35,12 +38,20 @@ const MediaGridCollapse = ({ media, onPressImage }: MediaGridCollapseProps) => {
 
     }
 
+    const renderLightBox = () => {
+        const sources: ImageType[] = [...medias].map(media => { return { source: { uri: media.uri } } })
+        return <LightBox visible={visible} onRequestClose={() => setVisible(false)} sources={sources} />
+    }
+
     if (newMediaUri.length == 0) {
         return <></>
     }
 
     if (newMediaUri.length == 1) {
-        return <Item data={newMediaUri[0]} style={{ height: 180, marginHorizontal: SIZES.padding, borderRadius: 16 }} />
+        return <>
+            <Item data={newMediaUri[0]} style={{ height: 180, marginHorizontal: SIZES.padding, borderRadius: 16 }} />
+            {renderLightBox()}
+        </>
     }
 
     if (newMediaUri.length == 2) {
@@ -48,6 +59,7 @@ const MediaGridCollapse = ({ media, onPressImage }: MediaGridCollapseProps) => {
             <View style={{ flexDirection: 'row', columnGap: SIZES.divider, height: 250 }}>
                 <Item data={newMediaUri[0]} style={{ flex: 1 }} />
                 <Item data={newMediaUri[1]} style={{ flex: 1 }} />
+                {renderLightBox()}
             </View>
         )
     }
@@ -75,6 +87,7 @@ const MediaGridCollapse = ({ media, onPressImage }: MediaGridCollapseProps) => {
                     ) : <></>}
                 </View>
             </View>
+            {renderLightBox()}
         </View>
     )
 }
