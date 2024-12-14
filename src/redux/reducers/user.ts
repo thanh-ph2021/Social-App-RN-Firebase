@@ -1,5 +1,5 @@
 import { ActionType } from "../types"
-import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_USERS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_POST, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
+import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LIKE_POST_STATE_CHANGE, LOAD_COMMENTS_POST, LOAD_NEXT_POSTS, LOAD_USERS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_CURRENT_USER_DATA, UPDATE_POST, UPDATE_USER_DATA, USER_CHATS_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_STATE_CHANGE } from "../constants"
 import { MessageModel, PostModel, UserModel } from "../../models"
 
 export interface UserState {
@@ -179,6 +179,12 @@ export const user = (state: UserState = initialState, action: ActionType) => {
             return {
                 ...state,
                 selectedPost: action.payload
+            }
+
+        case LOAD_NEXT_POSTS:
+            return {
+                ...state,
+                posts: [...state.posts, ...action.payload]
             }
 
         default:

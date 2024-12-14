@@ -26,12 +26,11 @@ import { showNotificationComingSoon } from "../../utils"
 
 type PostCardProps = {
     item: PostModel,
-    onDeletePost?: (item: PostModel) => void,
     onPressUserName?: (userID: string) => void,
     onPressOptions?: () => void,
 }
 
-const PostCard = ({ item, onDeletePost, onPressUserName, onPressOptions }: PostCardProps) => {
+const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
 
     const [data, setData] = useState<PostModel>(item)
     const [voteResult, setVoteResult] = useState({ total: 0, checked: false, expired: false })
@@ -75,13 +74,6 @@ const PostCard = ({ item, onDeletePost, onPressUserName, onPressOptions }: PostC
         const convertLimitToSecond = Number(limit.day) * DAY_TO_SECOND + Number(limit.hour) * HOUR_TO_SECOND + Number(limit.minute) * MINUTE_TO_SECOND
         const postTimeLimitVote = (postTimeSeconds + convertLimitToSecond) * SECOND_TO_MILISECOND // seconds * 1000 to miliseconds
         return postTimeLimitVote - Date.now().valueOf()
-    }
-
-    const handleDelete = () => {
-        Alert.alert('Delete post', 'Are you sure', [
-            { text: 'Cancel', onPress: () => { }, style: 'cancel' },
-            { text: 'Confirm', onPress: () => onDeletePost && onDeletePost(item) }
-        ])
     }
 
     const gotoPostDetail = () => {

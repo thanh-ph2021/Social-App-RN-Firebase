@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Image, Text, TouchableWithoutFeedback, StyleProp, ViewStyle } from 'react-native'
+import { View, Text, TouchableWithoutFeedback, StyleProp, ViewStyle } from 'react-native'
 import Video from 'react-native-video'
 import FastImage, { ImageStyle } from 'react-native-fast-image'
 
@@ -58,11 +58,15 @@ const MediaGridCollapse = ({ medias, style, imageStyle }: MediaGridCollapseProps
 
     if (newMediaUri.length == 2) {
         return (
-            <View style={{ flexDirection: 'row', columnGap: SIZES.divider, height: 250 }}>
-                <Item data={newMediaUri[0]} style={{ flex: 1 }} />
-                <Item data={newMediaUri[1]} style={{ flex: 1 }} />
+            <View>
+                <View style={{ flexDirection: 'row', columnGap: SIZES.divider, height: 250 }}>
+                    <Item data={newMediaUri[0]} style={{ flex: 1 }} />
+                    <Item data={newMediaUri[1]} style={{ flex: 1 }} />
+
+                </View>
                 {renderLightBox()}
             </View>
+
         )
     }
 

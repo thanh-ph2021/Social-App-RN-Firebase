@@ -8,10 +8,10 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetFlatList 
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import { shallowEqual } from 'react-redux'
 
-import { CommentCard, EmptyComponent, Header, Icon, InputBar, PostCard, TextComponent, TypeIcons } from "../components"
+import { CommentCard, EmptyComponent, Header, InputBar, PostCard, TextComponent, TypeIcons } from "../components"
 import { SIZES, COLORS, FONTS, TypeNotification } from "../constants"
 import { useAppDispatch, useAppSelector } from "../hooks"
-import { getTimeNow, showNotification } from '../utils'
+import { getTimeNow, showNotification, showNotificationComingSoon } from '../utils'
 import { UtilIcons } from '../utils/icons'
 import { CommentModel, UserModel } from '../models'
 import { selectPostById, selectUserByUID } from '../redux/selectors'
@@ -256,7 +256,10 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 {/* comment data */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: SIZES.padding }}>
                     <TextComponent text={`${'Comment'.toUpperCase()}`} style={{ paddingRight: SIZES.base }} color={COLORS.socialWhite} />
-                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                    <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'flex-end' }}
+                        onPress={() => showNotificationComingSoon()}
+                    >
                         <TextComponent text={'Recent'} style={{ paddingRight: SIZES.base, fontWeight: 'bold' }} color={COLORS.socialWhite} />
                         <UtilIcons.svgChevronDown color={COLORS.socialWhite} />
                     </TouchableOpacity>
@@ -284,26 +287,26 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     onChangeText={setComment}
                     mainButton={processing ? <ActivityIndicator color={COLORS.socialBlue} /> : undefined}
                     onPressMainButton={onPressMainButton}
-                    options={() => {
-                        return (
-                            <View style={{
-                                flex: 1,
-                                flexDirection: 'row',
-                                justifyContent: 'space-around',
-                                borderTopWidth: 0.3,
-                                borderTopColor: COLORS.lightGrey,
-                                padding: SIZES.base,
-                            }}>
-                                {IconArray.map((item, index) => {
-                                    return (
-                                        <TouchableOpacity onPress={item.onPress} key={index}>
-                                            <Icon type={item.type} name={item.name} color={COLORS.socialWhite} size={SIZES.icon} />
-                                        </TouchableOpacity>
-                                    )
-                                })}
-                            </View>
-                        )
-                    }}
+                // options={() => {
+                //     return (
+                //         <View style={{
+                //             flex: 1,
+                //             flexDirection: 'row',
+                //             justifyContent: 'space-around',
+                //             borderTopWidth: 0.3,
+                //             borderTopColor: COLORS.lightGrey,
+                //             padding: SIZES.base,
+                //         }}>
+                //             {IconArray.map((item, index) => {
+                //                 return (
+                //                     <TouchableOpacity onPress={item.onPress} key={index}>
+                //                         <Icon type={item.type} name={item.name} color={COLORS.socialWhite} size={SIZES.icon} />
+                //                     </TouchableOpacity>
+                //                 )
+                //             })}
+                //         </View>
+                //     )
+                // }}
                 />
             </View>
 

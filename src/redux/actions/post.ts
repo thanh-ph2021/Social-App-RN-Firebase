@@ -1,7 +1,7 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 
-import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LOAD_COMMENTS_POST, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
+import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LOAD_COMMENTS_POST, LOAD_NEXT_POSTS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
 import { LIMIT } from '../../constants'
 import { CommentModel, PostModel } from '../../models'
 import { AppThunk } from '../types'
@@ -78,7 +78,7 @@ export const fetchNextPosts = (): AppThunk => async (dispatch, getState) => {
                         return { id, ...data }
                     })
                     if (nextPosts.length > 0) {
-                        dispatch({ type: USER_POSTS_STATE_CHANGE, payload: [...posts, ...nextPosts] })
+                        dispatch({ type: LOAD_NEXT_POSTS, payload: [...nextPosts] })
                     }
                 })
         }
