@@ -9,7 +9,7 @@ import { PostModel, UserModel } from '../models'
 import PostCard from '../components/Post/PostCard'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { utilStyles } from '../styles'
-import { Divider } from '../components'
+import { Divider, MediaGridCollapse } from '../components'
 import { UtilIcons } from '../utils/icons'
 import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectStoryByUID, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
@@ -37,6 +37,8 @@ const tagDatas = [
         name: 'Tagged'
     },
 ]
+
+const SIZE_AVATAR = SIZES.width*0.35
 
 const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
@@ -77,7 +79,6 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
         return (
             <TouchableOpacity style={{
                 paddingVertical: SIZES.base,
-                // backgroundColor: item.id == tag ? COLORS.socialBlue : 'transparent',
             }} onPress={onPress}>
 
                 <Text style={[
@@ -137,7 +138,6 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                 followers: followers
             }))
 
-
         } catch (error) {
             console.log("🚀 ~ onFollow ~ error:", error)
         }
@@ -157,14 +157,16 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* banner */}
                 <View>
-                    {userData.bannerImg ? <Image source={{ uri: userData.bannerImg }} resizeMode='cover' style={{ height: 160, width: '100%' }} /> :
-                        <Image source={images.defaultImage} resizeMode='cover' style={{ height: 160, width: '100%' }} />
+                    {userData.bannerImg ? <MediaGridCollapse medias={[{ uri: userData.bannerImg, type: 'image' }]} imageStyle={styles.bannerImg} /> :
+                        <Image source={images.defaultImage} resizeMode='cover' style={styles.bannerImg} />
                     }
+                
                     <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.avatarStyle}>
-                        {userData.userImg ? <Image source={{ uri: userData.userImg }} style={styles.image} resizeMode='cover' /> : (
+                        {userData.userImg ? <MediaGridCollapse medias={[{ uri: userData.userImg, type: 'image' }]} imageStyle={styles.image} /> : (
                             <Image source={images.defaultImage} style={styles.image} resizeMode='cover' />
                         )}
                     </LinearGradient>
+          
                 </View>
 
                 {/* back button */}
@@ -332,22 +334,26 @@ const styles = StyleSheet.create({
     },
 
     avatarStyle: {
-        width: 120,
-        height: 120,
+        width: SIZE_AVATAR,
+        height: SIZE_AVATAR,
         borderRadius: SIZES.width / 0.25,
         alignSelf: 'center',
         marginTop: -50,
     },
 
     image: {
-        width: 115,
-        height: 115,
+        width: SIZE_AVATAR-5,
+        height: SIZE_AVATAR-5,
         borderRadius: SIZES.width / 0.25,
         alignSelf: 'center',
-        justifyContent: 'center',
         borderColor: COLORS.darkBlack,
         borderWidth: 3,
         marginTop: 2.5,
+    },
+
+    bannerImg: {
+        height: SIZES.height*0.25, 
+        width: '100%'
     },
 
     textTitle: {

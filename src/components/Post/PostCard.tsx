@@ -262,7 +262,7 @@ const PostCard = ({ item, onDeletePost, onPressUserName, onPressOptions }: PostC
             </View>
 
             {/* image post */}
-            {data.media && <MediaGridCollapse medias={data.media} onPressImage={(media) => gotoPostDetail()} />}
+            {data.media && <MediaGridCollapse medias={data.media} />}
             {data.giphyMedias && data.giphyMedias.length > 0 && (
                 <View style={[{ height: 250, width: SIZES.width, alignSelf: 'center' }, { aspectRatio: data.giphyMedias[0].aspectRatio }]}>
                     <MediaViewSample media={data.giphyMedias[0]} />
