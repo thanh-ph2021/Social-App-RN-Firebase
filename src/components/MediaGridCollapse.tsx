@@ -1,19 +1,20 @@
-import { useState } from 'react'
+import React, { memo, useState } from 'react'
 import { View, Text, TouchableWithoutFeedback, StyleProp, ViewStyle } from 'react-native'
-import Video from 'react-native-video'
 import FastImage, { ImageStyle } from 'react-native-fast-image'
 
 import { SIZES, COLORS, FONTS } from '../constants'
 import { MediaItem } from '../models'
 import LightBox, { ImageType } from './LightBox'
+import AppVideo from './AppVideo'
 
 type MediaGridCollapseProps = {
     medias: MediaItem[],
-    style?: StyleProp<ViewStyle>
-    imageStyle?: ImageStyle
+    style?: StyleProp<ViewStyle>,
+    imageStyle?: ImageStyle,
+    shouldPlayVideo?: boolean,
 }
 
-const MediaGridCollapse = ({ medias, style, imageStyle }: MediaGridCollapseProps) => {
+const MediaGridCollapse = ({ medias, style, imageStyle, shouldPlayVideo }: MediaGridCollapseProps) => {
 
     const check = medias.length > 3
     const length = medias.length
@@ -27,12 +28,10 @@ const MediaGridCollapse = ({ medias, style, imageStyle }: MediaGridCollapseProps
                 data.type == 'image' ? (
                     <FastImage source={{ uri: data.uri }} resizeMode='cover' style={style} />
                 ) : (
-                    <Video
-                        source={{ uri: data.uri }}
-                        resizeMode='cover'
-                        style={style}
-                        muted
-                        poster={data.uri}
+                    <AppVideo 
+                        source={{uri: data.uri}}
+                        onPressVideo={() => {}}
+                        shouldPlay={shouldPlayVideo ?? false}
                     />
                 )
             }
@@ -42,6 +41,7 @@ const MediaGridCollapse = ({ medias, style, imageStyle }: MediaGridCollapseProps
 
     const renderLightBox = () => {
         const sources: ImageType[] = [...medias].map(media => { return { source: { uri: media.uri } } })
+        if (medias[0].type === 'video') return
         return <LightBox visible={visible} onRequestClose={() => setVisible(false)} sources={sources} />
     }
 
@@ -100,4 +100,4 @@ const MediaGridCollapse = ({ medias, style, imageStyle }: MediaGridCollapseProps
     )
 }
 
-export default MediaGridCollapse
+export default memo(MediaGridCollapse)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, ListRenderItemInfo, FlatList } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import LinearGradient from 'react-native-linear-gradient'
@@ -38,7 +38,7 @@ const tagDatas = [
     },
 ]
 
-const SIZE_AVATAR = SIZES.width*0.35
+const SIZE_AVATAR = SIZES.width * 0.35
 
 const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
 
@@ -56,6 +56,28 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
     const followNoti = useAppSelector(state => state.asyncstorageState.followNoti)
     const userStories = useAppSelector(state => selectStoryByUID(state, currentUser.uid))
     const sheetRef = useRef<any>()
+    const [activeIndex, setActiveIndex] = useState(0)
+    const [activeData, setActiveData] = useState(posts)
+
+    const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+        if (viewableItems[0]) {
+            setActiveIndex(viewableItems[0].index)
+        }
+    })
+
+    useEffect(() => {
+        switch (tag) {
+            case 1:
+                setActiveData(posts)
+                break
+            case 3:
+                setActiveData(postUserLiked)
+                break
+            case 4:
+                setActiveData(postTags)
+                break
+        }
+    }, [tag])
 
     useEffect(() => {
         setUserData(params ? userParam : currentUser)
@@ -152,6 +174,27 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
         sheetRef.current.snapTo(0)
     }
 
+    const renderPosts = (data: PostModel[]) => {
+        return (
+            <FlatList
+                data={data}
+                scrollEnabled={false}
+                keyExtractor={(item) => item.id!}
+                renderItem={({ item, index }) => {
+                    return (
+                        <PostCard
+                            item={item}
+                            key={item.id}
+                            onPressOptions={() => onPressOptions(item)}
+                            shouldPlayVideo={index === activeIndex}
+                        />
+                    )
+                }}
+                ItemSeparatorComponent={() => <Divider />}
+            />
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -160,13 +203,13 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     {userData.bannerImg ? <MediaGridCollapse medias={[{ uri: userData.bannerImg, type: 'image' }]} imageStyle={styles.bannerImg} /> :
                         <Image source={images.defaultImage} resizeMode='cover' style={styles.bannerImg} />
                     }
-                
+
                     <LinearGradient colors={[COLORS.gradient[0], COLORS.gradient[1]]} style={styles.avatarStyle}>
                         {userData.userImg ? <MediaGridCollapse medias={[{ uri: userData.userImg, type: 'image' }]} imageStyle={styles.image} /> : (
                             <Image source={images.defaultImage} style={styles.image} resizeMode='cover' />
                         )}
                     </LinearGradient>
-          
+
                 </View>
 
                 {/* back button */}
@@ -251,21 +294,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                     keyExtractor={(item, index) => item.name + index}
                 />
 
-                {
-                    tag === 1 && posts.map((item: PostModel, index: number) => {
-                        return (
-                            <View key={item.id}>
-                                <PostCard
-                                    item={item}
-                                    key={item.id}
-                                    onPressOptions={() => onPressOptions(item)}
-                                />
-                                {index == posts.length - 1 ? <></> : <Divider />}
-                            </View>
-                        )
-                    })
-                }
-
+                {tag === 1 && renderPosts(posts)}
                 {
                     tag === 2 && (
                         <FlatList
@@ -283,38 +312,8 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                         />
                     )
                 }
-
-                {
-                    tag === 3 && postUserLiked.map((item: PostModel, index: number) => {
-                        return (
-                            <View key={item.id}>
-                                <PostCard
-                                    item={item}
-                                    key={item.id}
-                                    onPressOptions={() => onPressOptions(item)}
-                                />
-                                {index == postUserLiked.length - 1 ? <></> : <Divider />}
-                            </View>
-
-                        )
-                    })
-                }
-
-                {
-                    tag === 4 && postTags.map((item: PostModel, index: number) => {
-                        return (
-                            <View key={item.id}>
-                                <PostCard
-                                    item={item}
-                                    key={item.id}
-                                    onPressOptions={() => onPressOptions(item)}
-                                />
-                                {index == postTags.length - 1 ? <></> : <Divider />}
-                            </View>
-
-                        )
-                    })
-                }
+                {tag === 3 && renderPosts(postUserLiked)}
+                {tag === 4 && renderPosts(postTags)}
             </ScrollView>
             <PostOptionBottomSheet
                 index={0}
@@ -342,8 +341,8 @@ const styles = StyleSheet.create({
     },
 
     image: {
-        width: SIZE_AVATAR-5,
-        height: SIZE_AVATAR-5,
+        width: SIZE_AVATAR - 5,
+        height: SIZE_AVATAR - 5,
         borderRadius: SIZES.width / 0.25,
         alignSelf: 'center',
         borderColor: COLORS.darkBlack,
@@ -352,7 +351,7 @@ const styles = StyleSheet.create({
     },
 
     bannerImg: {
-        height: SIZES.height*0.25, 
+        height: SIZES.height * 0.25,
         width: '100%'
     },
 

@@ -1,10 +1,9 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import {
     View, TextInput, TouchableOpacity, Text, Platform, Image, StyleSheet, ScrollView,
-    KeyboardAvoidingView, SafeAreaView, PermissionsAndroid,
-    ActivityIndicator, Modal, Alert, NativeModules
+    SafeAreaView, PermissionsAndroid,
+    ActivityIndicator, Modal, NativeModules
 } from 'react-native'
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import ImagePicker from 'react-native-image-crop-picker'
 import Geolocation, { GeolocationResponse } from '@react-native-community/geolocation'
@@ -26,7 +25,6 @@ import DocumentGrid from '../components/DocumentGrid'
 import { DocumentItem } from '../models/DocumentItem'
 import { useAppDispatch } from '../hooks'
 import { addPost } from '../redux/actions'
-import { StoryModel } from '../models/StoryModel'
 import { addStory } from '../redux/actions/story'
 import { CHANGE_LOADING_STORY_STATE } from '../redux/constants/story'
 
@@ -147,19 +145,6 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         }
     }, [addMediaRef])
 
-    // useEffect(() => {
-    //     navigation.setOptions({
-    //         headerRight: () => {
-    //             const check = arrayMedia && arrayMedia.length > 0 || text
-    //             return (
-    //                 <TouchableOpacity onPress={submitPost} style={[styles.buttonPost, { backgroundColor: check ? COLORS.blue : COLORS.lightGrey }]} disabled={check ? false : true}>
-    //                     <Text style={{ ...FONTS.body3, color: COLORS.white, fontWeight: 'bold' }}>Post</Text>
-    //                 </TouchableOpacity>
-    //             )
-    //         }
-    //     })
-    // }, [arrayMedia, text])
-
     // Handle Post - begin
     const submitPost = async () => {
         try {
@@ -236,6 +221,10 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
     // Handle Post - end
 
+    const showNotiSizeExceedLimit = () => {
+        showNotification('File size exceeds limit. Please upload a file smaller than 10MB.', UtilIcons.warning, 'warning')
+    }
+
     const handleTakePhoto = (mediaType: 'video' | 'photo' | 'any' | undefined) => {
         ImagePicker.openCamera({
             width: 1200,
@@ -243,6 +232,10 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             mediaType: mediaType
         }).then(image => {
             if (image.mime.includes('video')) {
+                if (image.size > 10000000) { // > 10 MB
+                    showNotiSizeExceedLimit()
+                    return
+                }
                 const imageUri: string | undefined = Platform.OS == 'ios' ? image.sourceURL : image.path
                 setArrayMedia([...arrayMedia, { uri: imageUri ?? '', type: 'video' }])
             } else {
@@ -260,6 +253,10 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             multiple: true,
             mediaType: 'any'
         }).then(medias => {
+            if (medias[0].size > 10000000) { // > 10 MB
+                showNotiSizeExceedLimit()
+                return
+            }
             const mediasClone = [...medias]
             const mediaUri: MediaItem[] = mediasClone.map((media) => {
                 const uri = Platform.OS == 'ios' ? media.sourceURL : media.path
@@ -575,21 +572,15 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         ImagePicker.openPicker({
             width: 1200,
             height: 780,
-            multiple: true,
-            mediaType: 'any'
+            mediaType: 'photo'
         }).then(medias => {
-            const media = medias[0]
+            const media = medias
             const uri = Platform.OS == 'ios' ? media.sourceURL : media.path
             openPhotoEditor(uri!)
         })
     }
 
     const openPhotoEditor = async (imagePath: string) => {
-        const hasPermission = await requestPermissions()
-        if (!hasPermission) {
-            showNotification('Access is required to edit photos', UtilIcons.warning, 'warning')
-            return
-        }
 
         if (!imagePath) {
             showNotification('Please select a photo first', UtilIcons.warning, 'warning')
@@ -598,24 +589,14 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
         await ImageEditorModule.openPhotoEditor(imagePath)
             .then(async (editedImagePath: string) => {
-                dispatch({type: CHANGE_LOADING_STORY_STATE, payload: true})
+                dispatch({ type: CHANGE_LOADING_STORY_STATE, payload: true })
                 const media: any = await uploadMedia('photos', { uri: editedImagePath, type: 'image' })
                 dispatch(addStory(media))
             })
             .catch((error: any) => {
                 showNotification(error.toString(), UtilIcons.error, 'error')
             })
-        
-    }
 
-    const requestPermissions = async () => {
-        const cameraPermission = await request(
-            PERMISSIONS.ANDROID.CAMERA
-        )
-        const storagePermission = await request(
-            PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
-        )
-        return cameraPermission === RESULTS.GRANTED && storagePermission === RESULTS.GRANTED;
     }
 
     return (

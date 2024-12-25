@@ -5,6 +5,7 @@ import Video, { OnLoadData, OnProgressData } from 'react-native-video'
 import Orientation, { OrientationType } from 'react-native-orientation-locker'
 import Slider from '@react-native-community/slider'
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import moment from 'moment'
 
 import { utilStyles } from '../styles'
 import { Avatar, Header, TextComponent } from '../components'
@@ -13,7 +14,6 @@ import { UtilIcons } from '../utils/icons'
 import { LikeModel, UserModel } from '../models'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { selectUserByUID } from '../redux/selectors'
-import moment from 'moment'
 import LikeButton from '../components/Post/LikeButton'
 import { updatePost } from '../redux/actions/post'
 
@@ -279,7 +279,6 @@ const VideoDetailScreen = ({ navigation, route }: NativeStackScreenProps<any>) =
                         />
                         <TextComponent text={`${formatTime(currentTime)} / ${formatTime(duration)}`} style={{ alignSelf: 'flex-end' }} />
                     </View>
-
                 </View>}
                 {fullscreen ? <></> : (
                     <View>
@@ -291,10 +290,9 @@ const VideoDetailScreen = ({ navigation, route }: NativeStackScreenProps<any>) =
                                     <TextComponent text={moment(data.postTime.toDate()).fromNow()} color={COLORS.lightGrey} />
                                 </View>
                             </View>
-                            <TextComponent text={'Chiều 20.6, tại TP.Đà Nẵng, Tập đoàn Hệ thống Cisco khởi động chương trình Tăng tốc chuyển đổi số quốc gia (CDA). Chương trình CDA tại Việt Nam được xây dựng phù hợp với chương trình Chuyển đổi số quốc gia của Chính phủ đến năm 2025, định hướng đến năm 2030 với mục tiêu nâng cao năng lực công nghệ của đất nước.'} numberOfLines={2} />
+                            <TextComponent text={data.post} numberOfLines={2}/>
                         </View>
 
-                        {/* <TextComponent text={data.post} /> */}
                         <View style={styles.buttonContainer}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '45%' }}>
                                 {/* likes button */}
@@ -314,10 +312,7 @@ const VideoDetailScreen = ({ navigation, route }: NativeStackScreenProps<any>) =
                         </View>
                     </View>
                 )}
-
             </Animated.View>
-
-
         </View>
     )
 }

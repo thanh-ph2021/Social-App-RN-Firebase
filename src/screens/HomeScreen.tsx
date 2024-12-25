@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
@@ -9,7 +9,7 @@ import { COLORS, SIZES } from '../constants'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getGreeting } from '../utils'
 import { UtilIcons } from '../utils/icons'
-import { Divider, Header, TextComponent } from '../components'
+import { Divider, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
 import { reload } from '../redux/actions'
 import { fetchNextPosts, selectPost } from '../redux/actions/post'
@@ -19,7 +19,6 @@ import { PostLoader, StoryLoader } from '../components/Loader'
 import PostOptionBottomSheet from '../components/Post/PostOptionBottomSheet'
 
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
-    const [isLoadNext, setIsLoadNext] = useState<boolean>(false)
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.userState.posts)
     const { stories, loading: storyLoading } = useAppSelector(state => state.storyState)
@@ -58,14 +57,10 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     const onEndReached = async () => {
-        if (isLoadNext) return
-
-        // setIsLoadNext(true)
         await dispatch(fetchNextPosts())
-        // setIsLoadNext(false)
     }
 
-    const renderItem = useCallback(({ item }: ListRenderItemInfo<PostModel>) => {
+    const renderItem = useCallback(({ item, index }: ListRenderItemInfo<PostModel>) => {
 
         const onPressHandle = (userID: string) => {
             navigation.navigate('Profile', { userID: userID })
@@ -159,7 +154,8 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                             onRefresh={() => {
                                 dispatch(reload())
                             }}
-                            refreshing={false} />
+                            refreshing={false}
+                        />
                     }
                     onEndReachedThreshold={0.1}
                     onEndReached={onEndReached}

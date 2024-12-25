@@ -1,6 +1,5 @@
-import { useState, useEffect, memo, useCallback } from "react"
+import React, { useState, useEffect, memo, useCallback } from "react"
 import { View, Text, Image, StyleSheet } from "react-native"
-import { Alert } from "react-native"
 import moment from 'moment'
 import { TouchableWithoutFeedback } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
@@ -28,9 +27,10 @@ type PostCardProps = {
     item: PostModel,
     onPressUserName?: (userID: string) => void,
     onPressOptions?: () => void,
+    shouldPlayVideo?: boolean
 }
 
-const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
+const PostCard = ({ item, onPressUserName, onPressOptions, shouldPlayVideo }: PostCardProps) => {
 
     const [data, setData] = useState<PostModel>(item)
     const [voteResult, setVoteResult] = useState({ total: 0, checked: false, expired: false })
@@ -226,7 +226,7 @@ const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
                             <Image source={images.defaultImage} style={styles.avatar} />
                         )}
                     </TouchableWithoutFeedback>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
                         <View style={styles.textWrap}>
                             <Text style={[styles.text, { fontWeight: 'bold' }]}>{userCreatePost.fname} {userCreatePost.lname}</Text>
                             <Text style={[styles.text, { ...FONTS.body4, color: COLORS.lightGrey }]}>{moment(data.postTime.toDate()).fromNow()}</Text>
@@ -254,7 +254,7 @@ const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
             </View>
 
             {/* image post */}
-            {data.media && <MediaGridCollapse medias={data.media} />}
+            {data.media && <MediaGridCollapse medias={data.media} shouldPlayVideo={shouldPlayVideo} />}
             {data.giphyMedias && data.giphyMedias.length > 0 && (
                 <View style={[{ height: 250, width: SIZES.width, alignSelf: 'center' }, { aspectRatio: data.giphyMedias[0].aspectRatio }]}>
                     <MediaViewSample media={data.giphyMedias[0]} />
@@ -274,7 +274,6 @@ const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
             {/* button */}
             <View style={styles.buttonContainer}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '45%' }}>
-                    {/* likes button */}
                     <LikeButton
                         data={data.likes ?? []}
                         handleLike={handleLike}
@@ -286,7 +285,6 @@ const PostCard = ({ item, onPressUserName, onPressOptions }: PostCardProps) => {
                     <TouchableOpacity onPress={() => showNotificationComingSoon()}>
                         <UtilIcons.svgShare />
                     </TouchableOpacity>
-
                 </View>
                 <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={onTag}>
                     <UtilIcons.svgBookmark fill={tag ? COLORS.socialBlue : undefined} />

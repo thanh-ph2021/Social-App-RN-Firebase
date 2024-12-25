@@ -1,5 +1,5 @@
 import { FlatList, ListRenderItemInfo, StyleSheet, Text, TextInput, View } from "react-native"
-import { useCallback, useRef, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TouchableOpacity } from "@gorhom/bottom-sheet"
 import LottieView from "lottie-react-native"
@@ -8,7 +8,7 @@ import { UtilIcons } from "../utils/icons"
 import { COLORS, FONTS, SIZES } from "../constants"
 import { utilStyles } from "../styles"
 import { PostModel, UserModel } from "../models"
-import { Divider, PostCard, TextComponent, UserComponent } from "../components"
+import { Divider, EmptyComponent, PostCard, TextComponent, UserComponent } from "../components"
 import { searchPosts, selectPost } from "../redux/actions/post"
 import { searchUsers } from "../redux/actions/user"
 import ImageItem from "../components/Post/ImageItem"
@@ -62,7 +62,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         navigation.navigate('VideoDetail', { data: item })
     }, [])
 
-    const renderPostItem = ({ item }: ListRenderItemInfo<PostModel>) => {
+    const renderPostItem = ({ item, index }: ListRenderItemInfo<PostModel>) => {
         const onPressOptions = () => {
             dispatch(selectPost(item))
             sheetRef.current.snapTo(0)
@@ -73,6 +73,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 item={item}
                 onPressUserName={onPressHandle}
                 onPressOptions={onPressOptions}
+                shouldPlayVideo={index === activeIndex}
             />
         )
     }
@@ -126,6 +127,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     }
 
     const onSearch = async () => {
+        if (!searchText) return
         setIsLoad(true)
 
         try {
@@ -169,7 +171,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 </View>
             </View>
             {/* body */}
-            <View style={{ paddingVertical: SIZES.padding }}>
+            <View style={{ paddingVertical: SIZES.padding, flex: 1 }}>
                 {/* header title */}
                 <View style={{ marginLeft: SIZES.padding, marginBottom: SIZES.padding }}>
 
@@ -208,7 +210,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                 />
                                 <Divider />
                             </>
-                        ) : <></>}
+                        ) : (tag === 2) ? <EmptyComponent title={'No data yet'} /> : <></>}
 
                         {posts.length !== 0 && (tag === 1) ?
                             (<>
@@ -224,7 +226,8 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                     ListFooterComponent={<View style={{ height: 120 }} />}
                                 />
                             </>
-                            ) : <></>}
+                            ) : tag === 1 ? <EmptyComponent title={'No data yet'} /> : <></>}
+
 
                         {postImages.length !== 0 && (tag === 3) ?
                             (<>
@@ -238,7 +241,7 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                     ListFooterComponent={<View style={{ height: 100 }} />}
                                 />
                             </>
-                            ) : <></>}
+                            ) : tag === 3 ? <EmptyComponent title={'No data yet'} /> : <></>}
 
                         {postVideos.length !== 0 && (tag === 4) ?
                             (<>
@@ -249,21 +252,17 @@ const SearchScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                                     keyExtractor={(item, index) => `${item.id}_${index}`}
                                     showsVerticalScrollIndicator={false}
                                     contentContainerStyle={{ gap: SIZES.padding }}
-                                    onViewableItemsChanged={onViewableItemsChanged.current}
-                                    viewabilityConfig={{
-                                        itemVisiblePercentThreshold: 100,
-                                    }}
                                     ListFooterComponent={<View style={{ height: 100 }} />}
                                 />
                             </>
-                            ) : <></>}
+                            ) : tag === 4 ? <EmptyComponent title={'No data yet'} /> : <></>}
                     </>
                 )}
             </View>
             <PostOptionBottomSheet
-                    index={-1}
-                    ref={sheetRef}
-                />
+                index={-1}
+                ref={sheetRef}
+            />
         </View>
 
     )
