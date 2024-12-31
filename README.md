@@ -28,8 +28,8 @@ npm install
 ## 🔧 Firebase Configuration
 
 1. Visit [Firebase Console](https://console.firebase.google.com/u/0/).
-2. Create a new project and download the google-services.json file.
-3. Place the file in the ./android/app directory.
+2. Create a new project and download the `google-services.json` file.
+3. Place the file in the `./android/app directory`.
 
 ## 🏃‍♂️ Run the App
 
