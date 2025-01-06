@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 import Divider from './Divider'
 import { UtilIcons } from '../utils/icons'

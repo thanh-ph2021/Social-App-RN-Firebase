@@ -23,10 +23,11 @@ import { UtilIcons } from '../utils/icons'
 import { GoongAPI } from '../apis'
 import DocumentGrid from '../components/DocumentGrid'
 import { DocumentItem } from '../models/DocumentItem'
-import { useAppDispatch } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../hooks'
 import { addPost } from '../redux/actions'
 import { addStory } from '../redux/actions/story'
 import { CHANGE_LOADING_STORY_STATE } from '../redux/constants/story'
+import { useSelector } from 'react-redux'
 
 const { ImageEditorModule } = NativeModules
 
@@ -110,7 +111,7 @@ const AddPostScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [placeholder, setPlaceholder] = useState<string>(`What's on your mind?`)
     const [showAlert, setShowAlert] = useState<boolean>(false)
 
-    const { user } = useAuthContext()
+    const user = useAppSelector(state => state.userState.currentUser)
     const [arrayMedia, setArrayMedia] = useState<MediaItem[]>([])
     const [arrayDocs, setArrayDocs] = useState<DocumentItem[]>([])
     const [giphyMedias, setGiphyMedias] = useState<GiphyMedia[]>([])

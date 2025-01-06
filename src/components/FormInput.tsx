@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     },
 
     inputField: {
+        flex: 1,
         borderColor: COLORS.socialWhite,
         textAlignVertical: "top",
         padding: SIZES.padding,

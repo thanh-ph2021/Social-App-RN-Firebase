@@ -1,4 +1,4 @@
-import { memo } from "react"
+import React, { memo } from "react"
 import { ColorValue, Image, StyleSheet, TouchableOpacity, View } from "react-native"
 import moment from "moment"
 
@@ -26,9 +26,7 @@ const NotificationCard = (props: Props) => {
     const dispatch = useAppDispatch()
 
     const handlePress = async () => {
-        if(post){
-
-        } else {
+        if(!post){
             await dispatch(fetchPostById(data.postId))
         }
         switch (data.type) {

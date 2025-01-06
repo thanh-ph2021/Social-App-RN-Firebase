@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet } from 'react-native'
+import { FlatList, ListRenderItemInfo, RefreshControl, SafeAreaView, View, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import PushNotification from 'react-native-push-notification'
 
@@ -9,18 +9,19 @@ import { COLORS, SIZES } from '../constants'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getGreeting } from '../utils'
 import { UtilIcons } from '../utils/icons'
-import { Divider, TextComponent } from '../components'
+import { Divider, EmptyComponent, TextComponent } from '../components'
 import StoryCard from '../components/StoryCard'
 import { reload } from '../redux/actions'
 import { fetchNextPosts, selectPost } from '../redux/actions/post'
 import Badges from '../components/Badges'
 import { calculateUnreadCount } from '../redux/selectors'
-import { PostLoader, StoryLoader } from '../components/Loader'
+import { GreetingLoader, PostLoader, StoryLoader } from '../components/Loader'
 import PostOptionBottomSheet from '../components/Post/PostOptionBottomSheet'
 
 const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.userState.posts)
+    const loading = useAppSelector(state => state.userState.loading)
     const { stories, loading: storyLoading } = useAppSelector(state => state.storyState)
     const currentUser = useAppSelector(state => state.userState.currentUser)
     const unreadCount = useAppSelector(state => currentUser ? calculateUnreadCount(state, currentUser.uid) : 0)
@@ -108,15 +109,49 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         )
     }
 
+    const renderContent = () => {
+        if (!loading) {
+            return (
+                <FlatList
+                    data={posts}
+                    renderItem={renderItem}
+                    keyExtractor={(item, index) => `${item.id}_${index}`}
+                    ListHeaderComponent={renderStories()}
+                    showsVerticalScrollIndicator={false}
+                    ItemSeparatorComponent={() => <Divider />}
+                    ListEmptyComponent={() => <EmptyComponent title={'No data yet'} />}
+                    refreshControl={
+                        <RefreshControl
+                            onRefresh={() => {
+                                dispatch(reload())
+                            }}
+                            refreshing={false}
+                        />
+                    }
+                    onEndReachedThreshold={0.1}
+                    onEndReached={onEndReached}
+                />
+            )
+        }
+
+        return (
+            <>
+                <StoryLoader />
+                <PostLoader />
+                <PostLoader />
+            </>
+        )
+    }
+
     return (
         <SafeAreaView style={{ backgroundColor: COLORS.darkBlack, flex: 1 }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SIZES.padding }}>
-                <TextComponent
+                {greating ? <TextComponent
                     title={true}
                     text={`${greating}, ${currentUser && currentUser.lname ? currentUser.lname : ''} `}
                     style={{ fontWeight: 'bold' }}
-                />
+                /> : <GreetingLoader />}
                 <TouchableOpacity
                     onPress={() => navigation.navigate('Messages')}
                     style={{
@@ -135,38 +170,13 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<any>) => {
             </View>
 
             {/* Content */}
-            {!posts || posts.length == 0 || !stories || stories.length == 0 ? (
-                <>
-                    <StoryLoader />
-                    <PostLoader />
-                    <PostLoader />
-                </>
-            ) : (
-                <FlatList
-                    data={posts}
-                    renderItem={renderItem}
-                    keyExtractor={(item, index) => `${item.id}_${index}`}
-                    ListHeaderComponent={renderStories()}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <Divider />}
-                    refreshControl={
-                        <RefreshControl
-                            onRefresh={() => {
-                                dispatch(reload())
-                            }}
-                            refreshing={false}
-                        />
-                    }
-                    onEndReachedThreshold={0.1}
-                    onEndReached={onEndReached}
-                />
-            )}
+            {renderContent()}
 
             <PostOptionBottomSheet
                 index={-1}
                 ref={sheetRef}
             />
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }
 

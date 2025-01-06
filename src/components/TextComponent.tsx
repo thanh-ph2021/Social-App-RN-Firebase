@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import React, { memo, useState } from 'react'
 import { StyleProp, TextStyle, Text, Platform, TextLayoutEventData, NativeSyntheticEvent } from "react-native"
 
 import { utilStyles } from "../styles"

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo, JSX } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo, JSX } from 'react'
 import { View, StyleSheet, ListRenderItemInfo, FlatList, SafeAreaView, ScrollView, ActivityIndicator } from "react-native"
 import { useRoute } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native-gesture-handler"
@@ -34,8 +34,8 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [comment, setComment] = useState('')
     const [processing, setProcessing] = useState(false)
     const currentUser = useAppSelector(state => state.userState.currentUser, shallowEqual)
-    const post = useAppSelector(state => selectPostById(state, params.data.id)) ?? params.data
-    const userCreatePost: UserModel = useAppSelector(state => selectUserByUID(state, post.userID), shallowEqual)
+    const post = useAppSelector(state => selectPostById(state, params.data.id))
+    const userCreatePost: UserModel = post ? useAppSelector(state => selectUserByUID(state, post.userID), shallowEqual) : undefined
     const dispatch = useAppDispatch()
     const bottomSheetRef = useRef<BottomSheet>(null)
     const snapPoints = useMemo(() => ['80%'], [])
@@ -47,7 +47,9 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const [commentState, setCommentState] = useState<CommentModel>()
 
     useEffect(() => {
-        dispatch(loadComments(post.id))
+        if (post) {
+            dispatch(loadComments(post.id))
+        }
     }, [])
 
     const handleComment = async () => {
@@ -236,9 +238,99 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         optionsPostSheetRef.current.snapTo(0)
     }
 
+    const renderContent = () => {
+        return (
+            <>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    {/* content post */}
+                    <PostCard item={post} onPressOptions={onPressOptions} />
+
+                    <View style={{ height: 2, backgroundColor: COLORS.darkGrey }} />
+
+                    {/* comment data */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: SIZES.padding }}>
+                        <TextComponent text={`${'Comment'.toUpperCase()}`} style={{ paddingRight: SIZES.base }} color={COLORS.socialWhite} />
+                        <TouchableOpacity
+                            style={{ flexDirection: 'row', alignItems: 'flex-end' }}
+                            onPress={() => showNotificationComingSoon()}
+                        >
+                            <TextComponent text={'Recent'} style={{ paddingRight: SIZES.base, fontWeight: 'bold' }} color={COLORS.socialWhite} />
+                            <UtilIcons.svgChevronDown color={COLORS.socialWhite} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <FlatList
+                        scrollEnabled={false}
+                        data={post.comments}
+                        keyExtractor={(item, index) => index + item.userID}
+                        renderItem={renderItemComment}
+                        style={{ padding: SIZES.padding }}
+                        contentContainerStyle={{ gap: SIZES.padding }}
+                        ListFooterComponentStyle={{ height: 60 }}
+                        ListEmptyComponent={renderNoComment}
+                    />
+                    <View style={{ height: SIZES.padding * 7 }} />
+                </ScrollView>
+                {renderBottomSheet()}
+                {/* send comment */}
+                <View style={styles.inputContainer}>
+                    <InputBar
+                        ref={inputRef}
+                        placeholder="Type your comment here..."
+                        value={comment}
+                        onChangeText={setComment}
+                        mainButton={processing ? <ActivityIndicator color={COLORS.socialBlue} /> : undefined}
+                        onPressMainButton={onPressMainButton}
+                    // options={() => {
+                    //     return (
+                    //         <View style={{
+                    //             flex: 1,
+                    //             flexDirection: 'row',
+                    //             justifyContent: 'space-around',
+                    //             borderTopWidth: 0.3,
+                    //             borderTopColor: COLORS.lightGrey,
+                    //             padding: SIZES.base,
+                    //         }}>
+                    //             {IconArray.map((item, index) => {
+                    //                 return (
+                    //                     <TouchableOpacity onPress={item.onPress} key={index}>
+                    //                         <Icon type={item.type} name={item.name} color={COLORS.socialWhite} size={SIZES.icon} />
+                    //                     </TouchableOpacity>
+                    //                 )
+                    //             })}
+                    //         </View>
+                    //     )
+                    // }}
+                    />
+                </View>
+
+                <PostOptionBottomSheet
+                    index={-1}
+                    ref={optionsPostSheetRef}
+                />
+
+                <AppBottomSheet
+                    ref={optionsCommentSheetRef}
+                    snapPoints={[SIZES.height * 0.3]}
+                    backgroundStyle={{ backgroundColor: COLORS.darkGrey }}
+                    containerStyle={{ margin: SIZES.base, borderRadius: SIZES.padding }}
+                    handleIndicatorStyle={{ backgroundColor: COLORS.lightGrey }}
+                    onClose={() => setCommentState(undefined)}
+                >
+                    {commentState ? <CommentOption
+                        parentData={bottomData}
+                        comment={commentState}
+                        postId={post.id}
+                        onClose={() => optionsCommentSheetRef.current.close()}
+                        callback={() => { bottomSheetRef.current && bottomSheetRef.current.close() }}
+                    /> : <></>}
+                </AppBottomSheet>
+            </>
+        )
+    }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.darkBlack }}>
+        <SafeAreaView style={styles.container}>
             <Header
                 title={'Post'}
                 leftComponent={
@@ -247,90 +339,9 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 }
             />
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* content post */}
-                <PostCard item={post} onPressOptions={onPressOptions} />
-
-                <View style={{ height: 2, backgroundColor: COLORS.darkGrey }} />
-
-                {/* comment data */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: SIZES.padding }}>
-                    <TextComponent text={`${'Comment'.toUpperCase()}`} style={{ paddingRight: SIZES.base }} color={COLORS.socialWhite} />
-                    <TouchableOpacity
-                        style={{ flexDirection: 'row', alignItems: 'flex-end' }}
-                        onPress={() => showNotificationComingSoon()}
-                    >
-                        <TextComponent text={'Recent'} style={{ paddingRight: SIZES.base, fontWeight: 'bold' }} color={COLORS.socialWhite} />
-                        <UtilIcons.svgChevronDown color={COLORS.socialWhite} />
-                    </TouchableOpacity>
-                </View>
-
-                <FlatList
-                    scrollEnabled={false}
-                    data={post.comments}
-                    keyExtractor={(item, index) => index + item.userID}
-                    renderItem={renderItemComment}
-                    style={{ padding: SIZES.padding }}
-                    contentContainerStyle={{ gap: SIZES.padding }}
-                    ListFooterComponentStyle={{ height: 60 }}
-                    ListEmptyComponent={renderNoComment}
-                />
-                <View style={{ height: SIZES.padding * 7 }} />
-            </ScrollView>
-            {renderBottomSheet()}
-            {/* send comment */}
-            <View style={styles.inputContainer}>
-                <InputBar
-                    ref={inputRef}
-                    placeholder="Type your comment here..."
-                    value={comment}
-                    onChangeText={setComment}
-                    mainButton={processing ? <ActivityIndicator color={COLORS.socialBlue} /> : undefined}
-                    onPressMainButton={onPressMainButton}
-                // options={() => {
-                //     return (
-                //         <View style={{
-                //             flex: 1,
-                //             flexDirection: 'row',
-                //             justifyContent: 'space-around',
-                //             borderTopWidth: 0.3,
-                //             borderTopColor: COLORS.lightGrey,
-                //             padding: SIZES.base,
-                //         }}>
-                //             {IconArray.map((item, index) => {
-                //                 return (
-                //                     <TouchableOpacity onPress={item.onPress} key={index}>
-                //                         <Icon type={item.type} name={item.name} color={COLORS.socialWhite} size={SIZES.icon} />
-                //                     </TouchableOpacity>
-                //                 )
-                //             })}
-                //         </View>
-                //     )
-                // }}
-                />
-            </View>
-
-            <PostOptionBottomSheet
-                index={-1}
-                ref={optionsPostSheetRef}
-            />
-
-            <AppBottomSheet
-                ref={optionsCommentSheetRef}
-                snapPoints={[SIZES.height * 0.3]}
-                backgroundStyle={{ backgroundColor: COLORS.darkGrey }}
-                containerStyle={{ margin: SIZES.base, borderRadius: SIZES.padding }}
-                handleIndicatorStyle={{ backgroundColor: COLORS.lightGrey }}
-                onClose={() => setCommentState(undefined)}
-            >
-                {commentState ? <CommentOption
-                    parentData={bottomData}
-                    comment={commentState}
-                    postId={post.id}
-                    onClose={() => optionsCommentSheetRef.current.close()}
-                    callback={() => { bottomSheetRef.current && bottomSheetRef.current.close() }}
-                /> : <></>}
-            </AppBottomSheet>
+            {post ? renderContent() : (
+                <EmptyComponent title='Post deleted!' />
+            )}
         </SafeAreaView>
     )
 }
@@ -338,6 +349,9 @@ const PostDetailScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 export default PostDetailScreen
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1, backgroundColor: COLORS.darkBlack
+    },
     inputContainer: {
         position: 'absolute',
         bottom: 0,

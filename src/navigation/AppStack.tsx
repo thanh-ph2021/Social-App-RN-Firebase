@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Notifier, Easing } from 'react-native-notifier'
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import PushNotification, { Importance } from 'react-native-push-notification'
@@ -30,10 +30,10 @@ const AppStack = () => {
 
     useEffect(() => {
         // configureNotification()
-
+        
+        dispatch(reload())
         dispatch(fetchNotifications())
         dispatch(loadStorage())
-        dispatch(reload())
         dispatch(fetchChats())
 
         createChannelNoti()

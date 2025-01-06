@@ -6,7 +6,7 @@ import { GiphyMedia } from '@giphy/react-native-sdk'
 import { COLORS, SIZES } from '../constants'
 import Icon, { TypeIcons } from './Icon'
 import { MediaItem } from '../models'
-import { MediaViewSample } from './Giphy/MediaViewSample'
+import MediaViewSample from './Giphy/MediaViewSample'
 
 interface MediaGridProps {
   mediaArray: MediaItem[]

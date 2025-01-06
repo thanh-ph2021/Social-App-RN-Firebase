@@ -9,7 +9,7 @@ import { PostModel, UserModel } from '../models'
 import PostCard from '../components/Post/PostCard'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { utilStyles } from '../styles'
-import { Divider, MediaGridCollapse } from '../components'
+import { Divider, EmptyComponent, MediaGridCollapse } from '../components'
 import { UtilIcons } from '../utils/icons'
 import { selectPostByUserId, selectPostTagged, selectPostUserLiked, selectStoryByUID, selectUserByUID } from '../redux/selectors'
 import { updateUser } from '../redux/actions/user'
@@ -190,6 +190,7 @@ const ProfileScreen = ({ navigation, route }: NativeStackScreenProps<any>) => {
                         />
                     )
                 }}
+                ListEmptyComponent={() => <EmptyComponent title={'No data yet'} />}
                 ItemSeparatorComponent={() => <Divider />}
             />
         )

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { FlatList, SectionList, Text, View, TouchableOpacity, RefreshControl, ListRenderItemInfo, ActivityIndicator } from "react-native"
 import moment from "moment"
 import { shallowEqual } from "react-redux"

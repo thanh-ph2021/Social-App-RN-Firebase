@@ -4,6 +4,9 @@ import firestore from '@react-native-firebase/firestore'
 import { LOAD_USERS, UPDATE_CURRENT_USER_DATA, UPDATE_USER_DATA, USER_STATE_CHANGE } from '../constants'
 import { UserModel } from '../../models'
 import { AppThunk } from '../types'
+import { showNotification } from '../../utils'
+import { UtilIcons } from '../../utils/icons'
+import { fetchStories } from './story'
 
 const userCollection = firestore().collection('users')
 
@@ -53,7 +56,10 @@ export const updateUser = (userData: UserModel): AppThunk => async (dispatch) =>
             .doc(userData.uid)
             .update(userData)
 
+        await dispatch(fetchUser())
+        await dispatch(fetchStories())
 
+        showNotification('Profile updated successfully.', UtilIcons.success)
     } catch (error) {
         console.log("🚀 ~ updateUser ~ error:", error)
     }

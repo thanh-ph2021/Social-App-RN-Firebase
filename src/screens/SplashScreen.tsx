@@ -1,4 +1,5 @@
-import { ImageBackground, StatusBar } from "react-native"
+import React from 'react'
+import { ImageBackground, StatusBar } from 'react-native'
 import { images } from '../constants'
 
 const SplashScreen = () => {

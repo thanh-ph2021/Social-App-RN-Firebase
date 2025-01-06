@@ -1,14 +1,19 @@
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage'
 
-import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, LOAD_COMMENTS_POST, LOAD_NEXT_POSTS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
+import { ADD_COMMENT_POST, ADD_POST, DELETE_COMMENT_POST, FETCH_POSTS_REQUEST, LOAD_COMMENTS_POST, LOAD_NEXT_POSTS, SELECT_POST, UPDATE_COMMENT_POST, UPDATE_POST, USER_POSTS_STATE_CHANGE } from '../constants'
 import { LIMIT } from '../../constants'
 import { CommentModel, PostModel } from '../../models'
 import { AppThunk } from '../types'
 
 const postCollection = firestore().collection('Posts')
 
-export const fetchPosts = (): AppThunk => async (dispatch, getState) => {
+export const fetchPostsRequest = (): AppThunk => (dispatch) => {
+    dispatch({ type: FETCH_POSTS_REQUEST })
+}
+
+export const fetchPosts = (): AppThunk => async (dispatch) => {
+    dispatch(fetchPostsRequest())
     try {
         await postCollection
             .where('scope', '==', 'public')
@@ -40,8 +45,10 @@ export const fetchPostById = (postId: string): AppThunk => async (dispatch, getS
             .doc(postId)
             .get()
             .then((snapshot) => {
-                const post = { ...snapshot.data(), id: snapshot.id }
-                dispatch({ type: ADD_POST, payload: post })
+                if (snapshot.exists) {
+                    const post = { ...snapshot.data(), id: snapshot.id }
+                    dispatch({ type: ADD_POST, payload: post })
+                }
             })
     } catch (error) {
         console.log("🚀 ~ fetchPost ~ error:", error)
@@ -126,6 +133,12 @@ export const deletePost = (postData: PostModel): AppThunk => async (dispatch) =>
             const tasks = docs.map(item => deleteMedia(item.url))
             await Promise.all(tasks)
         }
+        // delete comments
+        const postRef = postCollection.doc(id)
+        const commentsSnapshot = await postRef.collection('comments').get()
+        const deleteCommentsPromises = commentsSnapshot.docs.map((doc) => doc.ref.delete())
+        await Promise.all(deleteCommentsPromises)
+        
         // delete post
         await postCollection.doc(id).delete()
         dispatch(fetchPosts())
@@ -225,7 +238,7 @@ export const deleteComment = (commentData: CommentModel, postId: string): AppThu
 
             dispatch({ type: DELETE_COMMENT_POST, payload: { postId: postId, commentId: commentData.id } })
         })
-        
+
     } catch (error) {
         console.log("🚀 ~ deleteComment ~ error:", error)
     }

@@ -9,11 +9,13 @@ interface Props {
     visible: boolean,
     onClose: () => void,
     onConfirm?: () => void,
+    textButtonClose?: string,
+    textButtonConfirm?: string,
 }
 
 const AlertV1 = (props: Props) => {
 
-    const { title, description, visible, onClose, onConfirm } = props
+    const { title, description, visible, onClose, onConfirm, textButtonClose, textButtonConfirm } = props
 
     const renderButton = () => {
 
@@ -23,7 +25,7 @@ const AlertV1 = (props: Props) => {
                     <TouchableOpacity
                         style={[styles.button]}
                         onPress={onClose}>
-                        <TextComponent text={'No, cancel'} />
+                        <TextComponent text={textButtonClose ? textButtonClose : 'No, cancel'} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -32,7 +34,7 @@ const AlertV1 = (props: Props) => {
                             onConfirm()
                             onClose()
                         }}>
-                        <TextComponent text={'Yes, confirm'} />
+                        <TextComponent text={textButtonConfirm ? textButtonConfirm : 'Yes, confirm'} />
                     </TouchableOpacity>
                 </View>
             )
@@ -43,7 +45,7 @@ const AlertV1 = (props: Props) => {
                 <TouchableOpacity
                     style={[styles.button]}
                     onPress={onClose} >
-                    <TextComponent text={'Close'} />
+                    <TextComponent text={textButtonClose ? textButtonClose : 'Close'} />
                 </TouchableOpacity>
             </View>
         )

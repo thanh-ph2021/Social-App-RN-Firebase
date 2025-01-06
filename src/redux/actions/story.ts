@@ -13,6 +13,8 @@ const storiesCollection = firestore().collection('Stories')
 export const fetchStories = (): AppThunk => async (dispatch, getState) => {
     try {
         const users = getState().userState.users
+        const currentUser = getState().userState.currentUser
+
         await storiesCollection
             .orderBy('createdAt', 'desc')
             .limit(LIMIT)
@@ -26,9 +28,18 @@ export const fetchStories = (): AppThunk => async (dispatch, getState) => {
                     return {
                         id, ...data,
                         userName: `${user?.lname} ${user?.fname}`,
-                        userImg: user.userImg
+                        userImg: user.userImg,
+                        userId: data.userId
                     }
                 })
+
+                let index = stories.findIndex(story => story.userId === currentUser.uid)
+
+                if(index !== -1){
+                    let targetStory = stories.splice(index, 1)[0]
+                    stories.unshift(targetStory)
+                }
+
                 dispatch({ type: FETCH_STORIES, payload: stories })
             })
     } catch (error) {

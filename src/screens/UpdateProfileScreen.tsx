@@ -1,28 +1,28 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, Platform, Alert, Modal, ActivityIndicator } from 'react-native'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import { Image, Text, View, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, Platform, Modal, ActivityIndicator, BackHandler } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { COLORS, SIZES, images, FONTS } from '../constants'
-import FormButton from '../components/FormButton'
-import FormInput from '../components/FormInput'
 import Feather from 'react-native-vector-icons/Feather'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
 import storage from '@react-native-firebase/storage'
-import BottomSheet from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import LinearGradient from 'react-native-linear-gradient'
+
 import { UserModel } from '../models'
-import { fetchUsers, updateUser } from '../redux/actions/user'
+import { COLORS, SIZES, images, FONTS } from '../constants'
+import FormButton from '../components/FormButton'
+import FormInput from '../components/FormInput'
+import { fetchUser, updateUser } from '../redux/actions/user'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { Header, TextComponent } from '../components'
+import { AlertV1, Header, TextComponent } from '../components'
 import { utilStyles } from '../styles'
 import { UtilIcons } from '../utils/icons'
-import LinearGradient from 'react-native-linear-gradient'
 import { showNotification } from '../utils'
 
 const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
-
-    const sheetRef = useRef<any>(null)
+    const [showAlert, setShowAlert] = useState(false)
     const dispatch = useAppDispatch()
     const [avatar, setAvatar] = useState<any>(null)
     const [banner, setBanner] = useState<any>(null)
@@ -31,6 +31,24 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
     const user = useAppSelector(state => state.userState.currentUser)
     const [userData, setUserData] = useState<UserModel>(user)
     const [typeImage, setTypeImage] = useState<'avatar' | 'banner'>('avatar')
+
+    const onBack = () => {
+        if (hasUnsavedChanges()) {
+            setShowAlert(true)
+        } else {
+            navigation.goBack()
+        }
+        return true
+    }
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            onBack,
+        )
+
+        return () => backHandler.remove()
+    }, [onBack])
 
     const snapPoints = useMemo(() => ['25%', '50%'], [])
 
@@ -68,11 +86,9 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
 
             await dispatch(updateUser(newUserCurrent))
 
-            await dispatch(fetchUsers())
-
-            showNotification('Profile updated successfully.', UtilIcons.success)
-
             setUpLoading(false)
+
+            navigation.goBack()
 
         } catch (error) {
             console.log("🚀 ~ handleUpdate ~ error:", error)
@@ -92,19 +108,12 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         const storageRef = storage().ref(`photos/${filename}`)
         const task = storageRef.putFile(uploadUri)
 
-        // image processing
-        // task.on('state_changed', taskSnapshot => {
-        //     setTransferred(Math.floor(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes * 100))
-        // });
-
         try {
-            setUpLoading(true)
             await task
 
             // url image in firebase
             const url = await storageRef.getDownloadURL()
 
-            setUpLoading(false)
             return url
         } catch (error) {
             console.log('Upload image to firebase error', error)
@@ -159,6 +168,13 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     shadowRadius: 4.65,
                     elevation: 7,
                 }}
+                backdropComponent={props => (
+                    <BottomSheetBackdrop
+                        {...props}
+                        appearsOnIndex={0}
+                        disappearsOnIndex={-1}
+                    />
+                )}
             >
                 <View style={{ flex: 1, margin: SIZES.base }}>
                     <Text style={{ ...FONTS.h2, alignSelf: 'center' }}>Upload Photo</Text>
@@ -186,12 +202,23 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
         )
     }
 
+    const hasUnsavedChanges = () => (
+        avatar !== null ||
+        banner !== null ||
+        user.fname !== userData.fname ||
+        user.lname !== userData.lname ||
+        user.about !== userData.about ||
+        user.phone !== userData.phone ||
+        user.city !== userData.city ||
+        user.country !== userData.country
+    )
+
     return (
         <SafeAreaView style={styles.container}>
             <Header
                 title={'Update Profile'}
                 leftComponent={
-                    <TouchableOpacity style={utilStyles.btnHeaderLeft} onPress={() => navigation.goBack()}>
+                    <TouchableOpacity style={utilStyles.btnHeaderLeft} onPress={onBack}>
                         <UtilIcons.svgArrowLeft color={COLORS.socialWhite} />
                     </TouchableOpacity>
                 }
@@ -243,13 +270,6 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* <TouchableOpacity style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} onPress={handleOpenBottomSheet}>
-                    {image || userData.userImg ? <Image source={{ uri: image ?? userData?.userImg }} style={styles.image} resizeMode='cover' /> : (
-                        <Image source={images.defaultImage} style={styles.image} resizeMode='cover' />
-                    )}
-                    <Feather name='camera' size={SIZES.icon} color={COLORS.darkGrey} style={{ position: 'absolute' }} />
-                </TouchableOpacity> */}
-
                 <TextComponent style={styles.textTitle} text={`${userData.fname} ${userData.lname}`} />
                 <TextComponent style={styles.text} text={`${userData.about}`} />
 
@@ -297,6 +317,15 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 <FormButton buttonTitle={'Update'} onPress={handleUpdate} />
 
             </ScrollView>
+            <AlertV1
+                title='Your profile is not updated. Leave anyway?'
+                description=''
+                visible={showAlert}
+                onClose={() => setShowAlert(false)}
+                onConfirm={() => navigation.goBack()}
+                textButtonClose='Stay'
+                textButtonConfirm='Leave'
+            />
             {renderBottomSheet()}
             {renderModal()}
         </SafeAreaView>
