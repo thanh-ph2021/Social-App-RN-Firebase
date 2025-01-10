@@ -159,6 +159,7 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 snapPoints={snapPoints}
                 enablePanDownToClose
                 backgroundStyle={{
+                    backgroundColor: COLORS.darkGrey,
                     shadowColor: "#000",
                     shadowOffset: {
                         width: 0,
@@ -177,8 +178,8 @@ const UpdateProfileScreen = ({ navigation }: NativeStackScreenProps<any>) => {
                 )}
             >
                 <View style={{ flex: 1, margin: SIZES.base }}>
-                    <Text style={{ ...FONTS.h2, alignSelf: 'center' }}>Upload Photo</Text>
-                    <Text style={{ ...FONTS.body3, marginBottom: SIZES.base, alignSelf: 'center' }}>Choose Your Profile Picture</Text>
+                    <TextComponent text='Upload Photo' style={{ ...FONTS.h2, alignSelf: 'center' }} />
+                    <TextComponent text='Choose Your Profile Picture' style={{ ...FONTS.body3, marginBottom: SIZES.base, alignSelf: 'center' }} />
                     <FormButton buttonTitle={'Take Photo'} onPress={handleTakePhoto} />
                     <FormButton buttonTitle={'Choose From Library'} onPress={handleChoosePhoto} />
                     <TouchableOpacity style={{ marginTop: SIZES.base, alignSelf: 'center' }} onPress={handleClosePress}>
